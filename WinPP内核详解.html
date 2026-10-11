@@ -153,11 +153,12 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
       <div class="ln">=== WinPP kernel boot ===</div>
       <div class="ln">kmain magic=0 mb=0</div>
       <div class="ln ok">[1] gdt ... [2] idt ... [3] pic ... [4] timer ...</div>
-      <div class="ln ok">[5] kbd ... [6] cpu ... [7] all init ok, drawing UI ...</div>
+      <div class="ln ok">[5] kbd ... [6] cpu ... [7] pmm ... [8] paging ...</div>
+      <div class="ln ok">[9] kheap ... [10] all init ok, drawing UI ...</div>
       <div class="ln">WinPP OS v0.1 | 2026-10-12 03:03:57 [up 00:34:16] [mem 65152 KB]</div>
       <div class="ln">WinPP kernel alive. RAM: 65152 KB. CPU: <b>GenuineIntel</b></div>
-      <div class="ln"><span class="am">winpp@kernel:~$</span> help<span class="cursor"></span></div>
-      <div class="ln cy">help / time / uptime / sysinfo / ls / about / demo ...</div>
+      <div class="ln"><span class="am">winpp@kernel:~$</span> pfault<span class="cursor"></span></div>
+      <div class="ln cy">page fault (err=2) → demand-map 0x120000 → value read back: 1234 → OK</div>
     </div>
   </div>
 
@@ -166,9 +167,9 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
       <h1>WinPP OS 内核<span class="grad">全解析</span></h1>
       <p class="lead">一个从零写起的 i386 迷你操作系统：用什么语言、什么底层逻辑、怎么一步步把它做完整、目前有什么功能——全部展开在这一个页面里，所有结论都经过 Bochs 2.8 实机验证。</p>
       <div class="metrics">
-        <div class="metric"><div class="num">20,496 <b>B</b></div><div class="lab">扁平内核 kernel.bin（入口 0x100000）</div></div>
-        <div class="metric"><div class="num">17 <b>条</b></div><div class="lab">Shell 内建命令，实机逐条执行</div></div>
-        <div class="metric"><div class="num">6 <b>个</b></div><div class="lab">实机修复的启动 / 显示 / 交互 Bug</div></div>
+        <div class="metric"><div class="num">28,688 <b>B</b></div><div class="lab">扁平内核 kernel.bin（入口 0x100000）</div></div>
+        <div class="metric"><div class="num">18 <b>条</b></div><div class="lab">Shell 内建命令，实机逐条执行</div></div>
+        <div class="metric"><div class="num">9 <b>个</b></div><div class="lab">实机修复的启动 / 显示 / 交互 / 分页 Bug</div></div>
         <div class="metric"><div class="num">0 <b>故障</b></div><div class="lab">bochs.log 全程无异常 / 无重启</div></div>
       </div>
     </div>
@@ -178,7 +179,8 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
         <dt>架构</dt><dd>i386，32 位保护模式，平坦内存模型</dd>
         <dt>启动</dt><dd>自写 512B 引导扇区，软盘 CHS 读盘进内核</dd>
         <dt>编译</dt><dd>Zig 0.17 交叉编译（x86-freestanding）</dd>
-        <dt>中断</dt><dd>256 门 IDT，异常 + IRQ 全接管</dd>
+        <dt>中断</dt><dd>256 门 IDT，异常 + IRQ 全接管（含 #PF 缺页）</dd>
+        <dt>内存</dt><dd>位图物理页分配 + 4KB 分页自映射 + 内核堆</dd>
         <dt>驱动</dt><dd>PIT / PS/2 / CMOS / VGA / COM1 串口</dd>
         <dt>实测</dt><dd>Bochs 2.8 实机开机 + 键盘交互闭环</dd>
       </dl>
@@ -255,7 +257,7 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
     </div>
     <div class="card">
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 9h6M7 13h4M15 9h2M15 13h2"/></svg></span>6. 应用层：Shell 与窗口 UI</h4>
-      <p>Shell 逐键读键盘、回显、回车分发命令，17 条内建命令。demo 是一个迷你窗口管理器：3 个重叠窗口（Terminal / Files / Settings），Tab 切焦点、方向键移动窗口、Esc 返回 Shell——全部在 80×25 文本显存上用画框实现。</p>
+      <p>Shell 逐键读键盘、回显、回车分发命令，18 条内建命令（第二阶段新增内存管理四条：<code>paging</code> / <code>meminfo</code> / <code>alloc</code> / <code>pfault</code>）。demo 是一个迷你窗口管理器：3 个重叠窗口（Terminal / Files / Settings），Tab 切焦点、方向键移动窗口、Esc 返回 Shell——全部在 80×25 文本显存上用画框实现。</p>
     </div>
   </div>
 </div>
@@ -265,7 +267,7 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
 <section class="sec" id="src">
 <div class="wrap">
   <div class="sec-head"><span class="tag">03 /</span><h2>怎么写的：源码结构</h2><div class="rule"></div></div>
-  <p class="sub">18 个源文件，按职责分成四组：引导与中断（汇编）、内核核心（C）、驱动（C）、应用（C）。所有文件都在 <code>D:\WinPP\winpp-os\src\</code>。</p>
+  <p class="sub">21 个源文件，按职责分成五组：引导与中断（汇编）、内核核心（C）、内存管理（C）、驱动（C）、应用（C）。所有文件都在 <code>D:\WinPP\winpp-os\src\</code>。</p>
   <div class="grid g2">
     <div class="card" style="grid-column:1/-1">
       <table>
@@ -274,15 +276,18 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
         <tr><td><b>bootsec.S</b> / bootsec.ld</td><td>GAS 汇编</td><td>512B 引导扇区：实模式 CHS 读内核到 0x100000 → A20 → LGDT → 进保护模式跳转</td></tr>
         <tr><td><b>boot.S</b></td><td>GAS 汇编</td><td>32 位内核入口：可选的 Multiboot v1 头（0x1BADB002）、开 SSE、设栈、A20/LGDT</td></tr>
         <tr><td><b>isr.S</b></td><td>GAS 汇编</td><td>32 个异常 + 16 个 IRQ 的汇编存根，保存寄存器后跳 C 处理函数</td></tr>
-        <tr><td><b>kernel.c</b></td><td>C</td><td>kmain 总入口：内存/CMOS 校验、初始化序列、IRQ 分发、Panic 屏、8042 重启、ACPI 关机、状态栏</td></tr>
+        <tr><td><b>kernel.c</b></td><td>C</td><td>kmain 总入口：内存/CMOS 校验、初始化序列、IRQ 分发、#PF 缺页处理、Panic 屏、8042 重启、ACPI 关机、状态栏</td></tr>
         <tr><td><b>gdt.c/.h</b></td><td>C</td><td>平坦内存模型 GDT（代码/数据段，4GB）</td></tr>
         <tr><td><b>idt.c/.h</b></td><td>C</td><td>256 门 IDT + 8259 PIC 重映射（IRQ 0–7 → 32–39，IRQ 8–15 → 40–47）</td></tr>
+        <tr><td><b>pmm.c/.h</b></td><td>C</td><td>物理页分配器：1KB 位图 + 4KB 页粒度，保留低 1MB 与内核，first-fit 找页</td></tr>
+        <tr><td><b>paging.c/.h</b></td><td>C</td><td>4KB 二级分页：PD/PT 构建、恒等映射 1MB+、递归自映射 PD[1023]、map/unmap、invlpg</td></tr>
+        <tr><td><b>kheap.c/.h</b></td><td>C</td><td>内核堆：0x800000 起 8MB，first-fit 边界标签 + 前后向合并（kmalloc/kfree）</td></tr>
         <tr><td><b>vga.c/.h</b></td><td>C</td><td>80×25 文本驱动：写 0xB8000、光标、画框、自实现 vga_printf（含 %d/%u/%x/%s 与补零）</td></tr>
         <tr><td><b>keyboard.c/.h</b></td><td>C</td><td>PS/2 键盘：扫描码表 → ASCII，Shift/CapsLock/E0 方向键，128 字节环形缓冲</td></tr>
         <tr><td><b>timer.c/.h</b></td><td>C</td><td>PIT 100Hz 节拍计数，供 uptime / 状态栏刷新</td></tr>
         <tr><td><b>rtc.c/.h</b></td><td>C</td><td>CMOS 实时时钟：读年月日时分秒</td></tr>
         <tr><td><b>serial.c/.h</b></td><td>C</td><td>COM1 串口输出——机器侧取证通道，按键日志与屏幕转储都走这里</td></tr>
-        <tr><td><b>shell.c/.h</b></td><td>C</td><td>交互 Shell：readline、17 条命令分发、命令前后全屏转储到串口</td></tr>
+        <tr><td><b>shell.c/.h</b></td><td>C</td><td>交互 Shell：readline、18 条命令分发、命令前后全屏转储到串口</td></tr>
         <tr><td><b>demo.c/.h</b></td><td>C</td><td>窗口 UI 演示：3 个重叠窗口、焦点切换、移动、Esc 返回</td></tr>
         <tr><td><b>linker_flat.ld / linker.ld</b></td><td>链接脚本</td><td>把内核链接到 0x100000 入口</td></tr>
       </table>
@@ -294,8 +299,8 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
       <pre>zig build-exe -target x86-freestanding
   → ELF
 zig objcopy -O binary
-  → kernel.bin (20,496 B)
-引导扇区 512B + 内核 41 扇区
+  → kernel.bin (28,688 B)
+引导扇区 512B + 内核 57 扇区
   → floppy.img (1.44MB)</pre>
     </div>
     <div class="card">
@@ -341,7 +346,7 @@ zig objcopy -O binary
     <div class="tl-item">
       <div class="tl-time">步骤 5</div><div class="tl-axis"><span class="tl-dot"></span></div>
       <div class="tl-body"><h4>Shell：把按键变成命令</h4>
-        <p>实现 readline（回显 / 退格 / 回车分发）、参数切分、17 条命令。键盘扫描码 → ASCII 的映射决定了后面一个关键 Bug 的埋点。</p></div>
+        <p>实现 readline（回显 / 退格 / 回车分发）、参数切分、18 条命令。键盘扫描码 → ASCII 的映射决定了后面一个关键 Bug 的埋点。</p></div>
     </div>
     <div class="tl-item">
       <div class="tl-time">步骤 6</div><div class="tl-axis"><span class="tl-dot"></span></div>
@@ -359,6 +364,12 @@ zig objcopy -O binary
       <div class="tl-body"><h4>收尾：一键启动器 + 文档</h4>
         <p>写 start-winpp.bat（双击即启动，自动关旧开新），README 记录全部排障链，实测截图归档到 shots/。</p></div>
     </div>
+    <div class="tl-item">
+      <div class="tl-time">步骤 9</div><div class="tl-axis"><span class="tl-dot"></span></div>
+      <div class="tl-body"><h4>第二阶段：分页内存管理子系统</h4>
+        <p>自下而上搭三层：pmm（位图物理页分配器）→ paging（4KB 二级分页 + 递归自映射 + #PF 缺页处理）→ kheap（内核堆 kmalloc/kfree）。新增 4 条命令实机全绿，期间修复 3 个新 Bug（见 Bug 卡 7–9）。</p>
+        <span class="badge">PD 17/1024 项 · demand paging OK · leak=0</span></div>
+    </div>
   </div>
 </div>
 </section>
@@ -366,8 +377,8 @@ zig objcopy -O binary
 <!-- ================= Bug 修复 ================= -->
 <section class="sec" id="bugs">
 <div class="wrap">
-  <div class="sec-head"><span class="tag">05 /</span><h2>实机踩过的 6 个 Bug</h2><div class="rule"></div></div>
-  <p class="sub">每个 Bug 都不是看代码猜的，而是用 bochs.log + 串口逐级探针定位、修复后再实机验证的。第 6 个是让交互闭环的最后一块拼图。</p>
+  <div class="sec-head"><span class="tag">05 /</span><h2>实机踩过的 9 个 Bug</h2><div class="rule"></div></div>
+  <p class="sub">每个 Bug 都不是看代码猜的，而是用 bochs.log + 串口逐级探针定位、修复后再实机验证的。第 6 个是让交互闭环的最后一块拼图，第 7–9 个来自第二阶段分页子系统。</p>
   <div class="grid g2">
     <div class="card">
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>1. 引导扇区 LBA 偏移 → 三重故障</h4>
@@ -393,6 +404,18 @@ zig objcopy -O binary
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>6. Enter 永不分发 → 命令永不执行</h4>
       <p>键盘驱动把 Enter 扫描码 0x1C 映射为 <code>'\n'</code>(10)，但 <code>keyboard.h</code> 里 <code>KEY_ENTER</code> 误定义成 <code>13</code>(CR)。Shell 判断 <code>k == KEY_ENTER</code> 永不命中——字母能回显、命令永远不执行，提示符文本不断累积。修复：<code>#define KEY_ENTER '\n'</code>。修复后 help / time / uptime / sysinfo / ls / about / demo 全部实机执行成功。</p>
     </div>
+    <div class="card">
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>7. 串口/屏幕打印不支持 <code>%#x</code> → 地址显示 <code>##x</code></h4>
+      <p>第二阶段 GUI 首测，cr3 一栏显示 <code>cr3 (PD phys) : ##x</code>——自实现的 vga_printf / serial_printf 都不支持 <code>#</code> 前缀格式符。修复：22 处（kernel.c 17、pmm.c 1、shell.c 4）批量替换为 <code>%x</code>，地址改为显式 <code>0x</code> 前缀。</p>
+    </div>
+    <div class="card">
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>8. PD entries 769/1024 假象 → 递归自映射读错了页表</h4>
+      <p><code>pd_entry(i)</code> 用了 <code>0xFFC00000 + i*4</code> 读页目录项，但该虚拟地址经自映射翻译到 <b>PT0 页</b>而非 PD 自身——769 恰好是 PT0 里 768 个恒等 PTE + 1 个 VGA PTE 之和，数值自洽的假象。修复：读 PD 必须走 <code>0xFFFFF000 + i*4</code>（PD[1023] 的二级自映射，PD 自身落在虚拟地址最高 4KB）。修复后 GUI 显示正确的 <code>PD entries used: 17 / 1024</code>。</p>
+    </div>
+    <div class="card">
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>9. kfree 合并越界 → alloc 挂起</h4>
+      <p>释放小块后做前向合并时，<code>nn == h</code> 的严格相等判断遇到垃圾 size 会越过堆边界；坏指针也没兜底。修复：① kfree 加坏指针边界检查（越堆直接拒绝）；② 向后合并加 <code>n+n-&gt;size &lt;= heap_end</code> 边界；③ 前向合并改 <code>if (nn &gt;= h) break</code>。修复后 alloc 六块分配/写回/释放全绿，<code>leak=0</code>，提示符恢复。</p>
+    </div>
   </div>
 </div>
 </section>
@@ -401,13 +424,13 @@ zig objcopy -O binary
 <section class="sec" id="feat">
 <div class="wrap">
   <div class="sec-head"><span class="tag">06 /</span><h2>目前有什么功能</h2><div class="rule"></div></div>
-  <p class="sub">开机进 Shell 后，顶部状态栏每秒刷新（系统时钟 / 运行时间 / 内存），下面是可以逐条敲的 17 条命令，外加一个窗口 UI 演示。</p>
+  <p class="sub">开机进 Shell 后，顶部状态栏每秒刷新（系统时钟 / 运行时间 / 内存），下面是可以逐条敲的 18 条命令，外加一个窗口 UI 演示。第二阶段新增的 4 条内存命令（<code>paging</code> / <code>meminfo</code> / <code>alloc</code> / <code>pfault</code>）在 Bochs 2.8 上全部实机执行并取证。</p>
   <div class="grid g2">
     <div class="card" style="grid-column:1/-1">
       <table>
         <colgroup><col style="width:22%"><col style="width:40%"><col style="width:38%"></colgroup>
         <tr><th>命令</th><th>作用</th><th>实机验证输出</th></tr>
-        <tr><td><b>help</b></td><td>显示全部命令</td><td>17 条命令列表逐行上屏</td></tr>
+        <tr><td><b>help</b></td><td>显示全部命令</td><td>18 条命令列表逐行上屏</td></tr>
         <tr><td><b>about</b></td><td>内核版本与编译信息</td><td>WinPP OS v0.1 / i386 / multiboot v1</td></tr>
         <tr><td><b>echo</b></td><td>回显文本</td><td>—</td></tr>
         <tr><td><b>clear</b></td><td>清屏</td><td>—</td></tr>
@@ -419,10 +442,14 @@ zig objcopy -O binary
         <tr><td><b>ls</b></td><td>虚拟文件系统</td><td>bin/ dev/ etc/ proc/ usr/ winpp.ini</td></tr>
         <tr><td><b>demo</b></td><td>窗口 UI 演示</td><td>Terminal / Files / Settings 三窗口</td></tr>
         <tr><td><b>beep</b></td><td>PC 扬声器蜂鸣</td><td>—</td></tr>
+        <tr><td><b>paging</b></td><td>分页状态：CR0.PG / CR3 / PD 项数 / 自映射 / 缺页计数</td><td>enabled YES · cr3=0x10f000 · PD entries 17/1024</td></tr>
+        <tr><td><b>meminfo</b></td><td>物理内存与内核堆账目</td><td>16288 pages · used 2336 · heap 8192 KB / 0 used</td></tr>
+        <tr><td><b>alloc</b></td><td>kmalloc/kfree 压力测试（分配+写回校验+释放）</td><td>6 块分配链 800008→8014C8 全 ok · leak=0</td></tr>
+        <tr><td><b>pfault</b></td><td>触发缺页 + demand mapping 恢复</td><td>#PF(err=2) → map 0x120000 → 读回 0x1234 → OK</td></tr>
         <tr><td><b>reboot</b></td><td>8042 键盘控制器复位</td><td>—</td></tr>
         <tr><td><b>poweroff</b></td><td>ACPI 关机</td><td>—</td></tr>
       </table>
-      <p style="font-size:12.5px;color:var(--ink3);margin-top:8px">另有 clear / echo / help 等共 17 条；"—"为未逐一实机展示但命令已内建。</p>
+      <p style="font-size:12.5px;color:var(--ink3);margin-top:8px">另有 clear / echo / help 等共 18 条；"—"为未逐一实机展示但命令已内建。</p>
     </div>
     <div class="card">
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 9h6M7 13h4M15 9h2M15 13h2"/></svg></span>demo：文本显存上的窗口管理器</h4>
@@ -446,8 +473,17 @@ zig objcopy -O binary
     <div class="layer">
       <div class="l-head"><span class="nm">应用层</span><span class="ds">用户直接交互的界面</span></div>
       <div class="l-body">
-        <span class="mod hot"><b>shell.c</b> 交互 Shell · 17 条命令</span>
+        <span class="mod hot"><b>shell.c</b> 交互 Shell · 18 条命令</span>
         <span class="mod hot"><b>demo.c</b> 窗口 UI（Terminal / Files / Settings）</span>
+      </div>
+    </div>
+    <div class="arrow-down">▼</div>
+    <div class="layer">
+      <div class="l-head"><span class="nm">内存管理层</span><span class="ds">第二阶段：物理页 → 分页 → 内核堆</span></div>
+      <div class="l-body">
+        <span class="mod"><b>pmm.c</b> 位图物理页分配（4KB 粒度）</span>
+        <span class="mod"><b>paging.c</b> 4KB 二级分页 · 恒等映射 · 递归自映射 · #PF demand-map</span>
+        <span class="mod"><b>kheap.c</b> first-fit 内核堆（kmalloc / kfree + 合并）</span>
       </div>
     </div>
     <div class="arrow-down">▼</div>
@@ -534,7 +570,7 @@ zig objcopy -O binary
         <g>
           <rect x="730" y="55" width="140" height="80" rx="10" fill="#1a2642" stroke="#243456"/>
           <text x="800" y="85" text-anchor="middle" fill="#e8eef7" font-size="14" font-weight="bold">读内核入内存</text>
-          <text x="800" y="106" text-anchor="middle" fill="#6f7fa0" font-size="11.5">CHS · 41 扇区</text>
+          <text x="800" y="106" text-anchor="middle" fill="#6f7fa0" font-size="11.5">CHS · 57 扇区</text>
         </g>
         <g>
           <rect x="910" y="55" width="140" height="80" rx="10" fill="#1a2642" stroke="#243456"/>
@@ -612,7 +648,7 @@ zig objcopy -O binary
         <g>
           <rect x="960" y="55" width="150" height="80" rx="10" fill="#1a2642" stroke="#6c8cff" stroke-width="1.5"/>
           <text x="1035" y="85" text-anchor="middle" fill="#e8eef7" font-size="14" font-weight="bold">命令分发</text>
-          <text x="1035" y="106" text-anchor="middle" fill="#6f7fa0" font-size="11.5">匹配 17 条命令表</text>
+          <text x="1035" y="106" text-anchor="middle" fill="#6f7fa0" font-size="11.5">匹配 18 条命令表</text>
         </g>
         <g>
           <rect x="1140" y="10" width="130" height="80" rx="10" fill="#151f38" stroke="#4ade80" stroke-width="1.5"/>
@@ -651,12 +687,16 @@ zig objcopy -O binary
 <section class="sec" id="proof">
 <div class="wrap">
   <div class="sec-head"><span class="tag">09 /</span><h2>实测证据（Bochs 2.8 实机）</h2><div class="rule"></div></div>
-  <p class="sub">不是截图自证——机器侧真值由内核自己写进 COM1 串口：39 次按键日志、14 次命令前后全屏转储，bochs.log 全程 0 故障。下面是实机屏幕截图。</p>
+  <p class="sub">不是截图自证——机器侧真值由内核自己写进 COM1 串口：按键日志 + 每命令前后全屏转储，bochs.log 全程 0 故障。第一阶段 39 次按键 / 14 次转储；第二阶段 4 条内存命令全部实机取证（截图 11–14）。下面是实机屏幕截图。</p>
   <div class="shot-grid">
     <div class="shot"><img src="assets/05-fixed-boot.png" alt="WinPP 内核开机画面"><div class="cap"><b>开机</b> — 状态栏 / 时钟 / 内存 / 提示符就位</div></div>
     <div class="shot"><img src="assets/06-help-time.png" alt="help 与 time 命令输出"><div class="cap"><b>help + time</b> — 命令表逐行上屏，CMOS 时钟读出</div></div>
     <div class="shot"><img src="assets/07-uptime-sysinfo-ls.png" alt="uptime sysinfo ls 输出"><div class="cap"><b>uptime / sysinfo / ls</b> — 真实节拍 1661509，GenuineIntel，虚拟 FS</div></div>
     <div class="shot"><img src="assets/08-demo-ui.png" alt="demo 窗口 UI"><div class="cap"><b>demo</b> — Terminal / Files / Settings 三窗口</div></div>
+    <div class="shot"><img src="assets/11-paging.png" alt="paging 命令输出"><div class="cap"><b>paging</b> — CR0.PG=YES · CR3=0x10f000 · PD 17/1024 · 自映射就位</div></div>
+    <div class="shot"><img src="assets/12-meminfo.png" alt="meminfo 命令输出"><div class="cap"><b>meminfo</b> — 16288 pages · used 2336 · heap 8192 KB / 0 used</div></div>
+    <div class="shot"><img src="assets/13-pfault.png" alt="alloc 与 pfault 输出"><div class="cap"><b>alloc + pfault</b> — 6 块分配链 leak=0 · #PF→demand-map→读回 0x1234→OK</div></div>
+    <div class="shot"><img src="assets/14-help.png" alt="18 条命令列表"><div class="cap"><b>help（回归）</b> — 18 条命令表逐行上屏</div></div>
   </div>
   <div class="grid g2" style="margin-top:16px">
     <div class="card">
@@ -665,26 +705,36 @@ zig objcopy -O binary
 kmain magic=0 mb=0
 [1] gdt ... [2] idt ... [3] pic ...
 [4] timer ... [5] kbd ... [6] cpu ...
-[7] all init ok, drawing UI ...
+[7] pmm ... total=16288 pages (65152 KB)
+        kernel_end=10f000 used=271
+[8] paging ... step1 pd alloc
+        step2 identity map · step3 vga pt
+        step4 selfmap · step5 cr3 · step6 cr0
+[paging] ON cr3=10f000 identity=1MB..65152KB
+[9] kheap ... base=800000 size=8192 KB
+[10] all init ok, drawing UI ...
 <span class="c">bochs.log: 0 exception / 0 panic / 0 fault</span></pre>
     </div>
     <div class="card">
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 8h10M7 12h10M7 16h6"/></svg></span>屏幕转储（命令执行后串口原文）</h4>
-      <pre><span class="c">=== screen dump (after) ===</span>
-r6| winpp@kernel:~$ help
-r7| WinPP shell commands:
-r8|   help      show this list
-r9|   about     kernel version info
-r10|   echo &lt;t&gt;  print text
-r11|   clear     clear screen
-r12|   time      show CMOS clock
-r13|   uptime    show system uptime
-r14|   sysinfo   CPU / memory / ticks</pre>
+      <pre><span class="c">=== screen dump (after alloc / pfault) ===</span>
+r14| winpp@kernel:~$ alloc
+r15| kmalloc stress: heap used 8 -&gt; [0] 16B@800008ok
+r16|   [1] 128B@800020ok [2] 1024B@8000a8ok
+r17|   [3] 7B@8004b0ok [4] 4096B@8004c0ok
+r18|   [5] 3B@8014c8ok
+r19| all freed: heap used 8 -&gt; 8 (leak=0)
+r20| winpp@kernel:~$ pfault
+r21| faults before: 0. writing 0x1234 to NULL...
+r22| page fault @0 (err=2: not-present+write+supervisor)
+r23| demand-mapped page 120000 for 0x0, retrying
+r24| faults after : 1. value read back: 1234
+r25| demand paging OK</pre>
     </div>
   </div>
   <div class="card" style="margin-top:16px">
     <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb454" stroke-width="2"><path d="M12 2a4 4 0 014 4v8a4 4 0 01-4 4 4 4 0 01-4-4V6a4 4 0 014-4z"/><path d="M4 15a8 8 0 0016 0"/></svg></span>想自己跑一遍？</h4>
-    <p>双击 <code>D:\WinPP\start-winpp.bat</code> —— 自动关旧 Bochs、加载 <code>bochsrc.txt</code>、直接开机进 Shell。窗口里敲 <code>help</code> 看全部命令，敲 <code>demo</code> 玩窗口 UI（Tab 切焦点、方向键移动、Esc 返回）。重建内核：<code>powershell -ExecutionPolicy Bypass -File D:\WinPP\winpp-os\build_flat.ps1</code>。</p>
+    <p>双击 <code>D:\WinPP\start-winpp.bat</code> —— 自动关旧 Bochs、加载 <code>bochsrc.txt</code>、直接开机进 Shell。窗口里敲 <code>help</code> 看全部命令，敲 <code>demo</code> 玩窗口 UI（Tab 切焦点、方向键移动、Esc 返回）；第二阶段可以敲 <code>paging</code> / <code>meminfo</code> 看分页与内存账目，敲 <code>alloc</code> 看堆分配压力测试，敲 <code>pfault</code> 看缺页被内核捕获并 demand-map 恢复。重建内核：<code>powershell -ExecutionPolicy Bypass -File D:\WinPP\winpp-os\build_flat.ps1</code>。</p>
   </div>
 </div>
 </section>

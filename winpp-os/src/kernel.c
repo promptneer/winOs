@@ -6,6 +6,9 @@
 #include "rtc.h"
 #include "shell.h"
 #include "serial.h"
+#include "pmm.h"
+#include "paging.h"
+#include "kheap.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -49,16 +52,38 @@ static void cpu_detect(void)
 
 void isr_handler(regs_t *r)
 {
+    /* #PF 专用：打印 CR2/错误码，可恢复（demand paging 演示） */
+    if (r->int_no == 14) {
+        u32 cr2;
+        asm volatile("mov %%cr2, %0" : "=r"(cr2));
+        pf_inc();
+        serial_printf("PAGE FAULT @%x err=%x\r\n", cr2, r->err_code);
+        vga_printf("page fault @%x (err=%x: %s%s%s)\n", cr2, r->err_code,
+                   (r->err_code & 1) ? "present" : "not-present",
+                   (r->err_code & 2) ? "+write" : "+read",
+                   (r->err_code & 4) ? "+user" : "+supervisor");
+        /* 按需映射：0x0 未映射访问 -> 映射一页后重试（demand paging 闭环） */
+        if (cr2 == 0) {
+            u32 page = pmm_alloc_page();
+            if (page) {
+                map_page(0, page, 0x3);
+                vga_printf("demand-mapped page %x for 0x0, retrying\n", page);
+                serial_printf("DEMAND MAP 0x0 -> %x\r\n", page);
+            }
+        }
+        return;   /* 返回后 CPU 重试 faulting 指令 */
+    }
+
     if (r->int_no < 32) {
         vga_set_attr(0x1F);
         vga_clear();
         vga_printf("=== KERNEL PANIC ===\n\n");
-        vga_printf("exception %s  (int=%u err=%#x)\n",
+        vga_printf("exception %s  (int=%u err=%x)\n",
                    exc_names[r->int_no], r->int_no, r->err_code);
-        vga_printf("eip=%#x  cs=%#x  eflags=%#x\n", r->eip, r->cs, r->eflags);
-        vga_printf("eax=%#x ebx=%#x ecx=%#x edx=%#x\n",
+        vga_printf("eip=%x  cs=%x  eflags=%x\n", r->eip, r->cs, r->eflags);
+        vga_printf("eax=%x ebx=%x ecx=%x edx=%x\n",
                    r->eax, r->ebx, r->ecx, r->edx);
-        vga_printf("esi=%#x edi=%#x ebp=%#x esp=%#x\n",
+        vga_printf("esi=%x edi=%x ebp=%x esp=%x\n",
                    r->esi, r->edi, r->ebp, r->esp);
         vga_printf("\nSystem halted. Press nothing -- restart the machine.\n");
         for (;;) asm volatile("cli; hlt");
@@ -159,7 +184,7 @@ void kmain(u32 magic, u32 mb_info)
     serial_init();
     serial_puts("\r\n=== WinPP kernel boot ===\r\n");
     vga_clear();
-    vga_printf("kmain magic=%#x mb=%#x\n", magic, mb_info);
+    vga_printf("kmain magic=%x mb=%x\n", magic, mb_info);
     serial_printf("kmain magic=%x mb=%x\n", magic, mb_info);
 
     serial_puts("[1] gdt ...\r\n");
@@ -180,8 +205,17 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[6] cpu ...\r\n");
     vga_printf("[6] cpu ...\n");
     cpu_detect();
-    serial_puts("[7] all init ok, drawing UI ...\r\n");
-    vga_printf("[7] all init ok, drawing UI ...\n");
+    serial_puts("[7] pmm ...\r\n");
+    vga_printf("[7] pmm ...\n");
+    pmm_init(g_mem_kb);
+    serial_puts("[8] paging ...\r\n");
+    vga_printf("[8] paging ...\n");
+    paging_init(g_mem_kb);
+    serial_puts("[9] kheap ...\r\n");
+    vga_printf("[9] kheap ...\n");
+    kheap_init();
+    serial_puts("[10] all init ok, drawing UI ...\r\n");
+    vga_printf("[10] all init ok, drawing UI ...\n");
 
     vga_set_area(4, 24);
     kernel_redraw_shell();

@@ -25,6 +25,9 @@ SECTIONS
         *(.bss*)
     }
 
+    . = ALIGN(4K);
+    _kernel_end = .;
+
     /DISCARD/ : {
         *(.comment)
         *(.eh_frame*)

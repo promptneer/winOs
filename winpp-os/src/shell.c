@@ -6,6 +6,9 @@
 #include "demo.h"
 #include "io.h"
 #include "serial.h"
+#include "pmm.h"
+#include "paging.h"
+#include "kheap.h"
 
 extern u32 g_mem_kb;
 extern char g_cpu_vendor[13];
@@ -47,6 +50,10 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  ls        list virtual filesystem\n");
     vga_printf("  demo      window UI demo\n");
     vga_printf("  beep      PC speaker beep\n");
+    vga_printf("  paging    page table / fault stats\n");
+    vga_printf("  meminfo   physical memory + heap usage\n");
+    vga_printf("  alloc     kmalloc/kfree stress test\n");
+    vga_printf("  pfault    trigger page fault + demand map\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -187,6 +194,72 @@ static void cmd_poweroff(int argc, char **argv)
     kernel_poweroff();
 }
 
+/* ---------------- 第二阶段：内存管理命令 ---------------- */
+
+static void cmd_paging(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    vga_printf("paging enabled : %s\n", paging_enabled() ? "YES (CR0.PG)" : "no");
+    vga_printf("cr3 (PD phys)  : %x\n", read_cr3());
+    vga_printf("PD entries used: %u / 1024\n", pd_used_entries());
+    vga_printf("self-map       : %x (PD[1023])\n", 0xFFC00000u);
+    vga_printf("page faults    : %u (recoverable)\n", pf_count());
+    vga_printf("4KB pages, identity map 1MB+; NULL unmapped\n");
+}
+
+static void cmd_meminfo(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    u32 tp = pmm_total_pages(), up = pmm_used_pages();
+    vga_printf("physical total : %u KB (%u pages)\n", tp * 4, tp);
+    vga_printf("physical used  : %u pages, free: %u pages\n", up, tp - up);
+    vga_printf("kernel heap    : %u KB total, %u KB used\n",
+               kheap_total() / 1024, kheap_used() / 1024);
+}
+
+static void cmd_alloc(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    static const u32 sizes[6] = { 16, 128, 1024, 7, 4096, 3 };
+    u8 *ptrs[6];
+    u32 before = kheap_used();
+
+    vga_printf("kmalloc stress: heap used %u -> ", before);
+    for (int i = 0; i < 6; i++) {
+        ptrs[i] = (u8 *)kmalloc(sizes[i]);
+        if (!ptrs[i]) { vga_printf("OOM at block %d!\n", i); return; }
+        /* 写模式并回读校验 */
+        for (u32 j = 0; j < sizes[i]; j++) ptrs[i][j] = (u8)(0xAA + i);
+        int ok = 1;
+        for (u32 j = 0; j < sizes[i]; j++) {
+            if (ptrs[i][j] != (u8)(0xAA + i)) { ok = 0; break; }
+        }
+        vga_printf("[%d] %uB@%x%s ", i, sizes[i], (u32)ptrs[i], ok ? "ok" : "CORRUPT");
+        serial_printf("[alloc] [%d] %uB@%x%s\r\n", i, sizes[i], (u32)ptrs[i], ok ? "ok" : "CORRUPT");
+    }
+    vga_printf("\n");
+    serial_printf("[alloc] kfree pass\r\n");
+    for (int i = 0; i < 6; i++) {
+        serial_printf("[alloc] kfree(%d)=%x ...\r\n", i, (u32)ptrs[i]);
+        kfree(ptrs[i]);
+        serial_printf("[alloc] kfree(%d) done, used=%u\r\n", i, kheap_used());
+    }
+    vga_printf("all freed: heap used %u -> %u (leak=%u)\n",
+               kheap_used(), before, kheap_used() - before);
+    serial_printf("[alloc] all freed used=%u leak=%u\r\n", kheap_used(), kheap_used() - before);
+}
+
+static void cmd_pfault(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    u32 before = pf_count();
+    vga_printf("faults before: %u. writing 0x1234 to NULL...\n", before);
+    *(volatile u32 *)0 = 0x1234;          /* 触发 #PF -> handler demand-map -> 重试 */
+    u32 v = *(volatile u32 *)0;           /* 重试成功后读回 */
+    vga_printf("faults after : %u. value read back: %x\n", pf_count(), v);
+    vga_printf("%s\n", (v == 0x1234) ? "demand paging OK" : "MISMATCH!");
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -208,6 +281,10 @@ static const cmd_t cmds[] = {
     { "ls",       "list virtual fs",            cmd_ls },
     { "demo",     "window UI demo",             cmd_demo },
     { "beep",     "PC speaker beep",            cmd_beep },
+    { "paging",   "page table / fault stats",   cmd_paging },
+    { "meminfo",  "physical mem + heap",        cmd_meminfo },
+    { "alloc",    "kmalloc/kfree stress",       cmd_alloc },
+    { "pfault",   "page fault + demand map",    cmd_pfault },
     { "reboot",   "restart machine",            cmd_reboot },
     { "poweroff", "ACPI power off (QEMU)",      cmd_poweroff },
 };

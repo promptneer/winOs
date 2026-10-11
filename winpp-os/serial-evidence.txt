@@ -1,4 +1,4 @@
-
+﻿
 === WinPP kernel boot ===
 kmain magic=0 mb=0
 [1] gdt ...
@@ -7,20 +7,35 @@ kmain magic=0 mb=0
 [4] timer ...
 [5] kbd ...
 [6] cpu ...
-[7] all init ok, drawing UI ...
-[key 104]
-[key 101]
-[key 108]
+[7] pmm ...
+[pmm] total=16288 pages (65152 KB) kernel_end=10f000 used=271
+[8] paging ...
+[pg] step1 pd alloc
+[pg] step2 identity map
+[pg] step3 vga pt
+[pg] step4 selfmap
+[pg] step5 cr3
+[pg] step6 cr0
+[pg] step7 after cr0
+[paging] ON cr3=10f000 identity=1MB..65152KB vga+selfmap ok
+[9] kheap ...
+[kheap] base=800000 size=8192 KB
+[10] all init ok, drawing UI ...
 [key 112]
+[key 97]
+[key 103]
+[key 105]
+[key 110]
+[key 103]
 [key 10]
 === screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 04:18:29 [up 02:10:07] [mem 65152 KB]                |
+r0| WinPP OS v0.1. 2026-10-12 07:26:18 [up 00:29:34] [mem 65152 KB]                |
 r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
 r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
 r3|                                                                                |
 r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
 r5|                                                                                |
-r6|winpp@kernel:~$ help                                                            |
+r6|winpp@kernel:~$ paging                                                          |
 r7|                                                                                |
 r8|                                                                                |
 r9|                                                                                |
@@ -40,366 +55,54 @@ r22|                                                                            
 r23|                                                                                |
 r24|                                                                                |
 === screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 04:18:29 [up 02:10:07] [mem 65152 KB]                |
+r0| WinPP OS v0.1. 2026-10-12 07:26:19 [up 00:29:35] [mem 65152 KB]                |
 r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
 r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
 r3|                                                                                |
 r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
 r5|                                                                                |
-r6|winpp@kernel:~$ help                                                            |
-r7|WinPP shell commands:                                                           |
-r8|  help      show this list                                                      |
-r9|  about     kernel version info                                                 |
-r10|  echo <t>  print text                                                          |
-r11|  clear     clear screen                                                        |
-r12|  time      show CMOS clock                                                     |
-r13|  uptime    show system uptime                                                  |
-r14|  sysinfo   CPU / memory / ticks                                                |
-r15|  calc a o b  integer math (+ - * / %)                                          |
-r16|  color     show VGA palette                                                    |
-r17|  ls        list virtual filesystem                                             |
-r18|  demo      window UI demo                                                      |
-r19|  beep      PC speaker beep                                                     |
-r20|  reboot    restart machine                                                     |
-r21|  poweroff  ACPI power off (QEMU)                                               |
+r6|winpp@kernel:~$ paging                                                          |
+r7|paging enabled : YES (CR0.PG)                                                   |
+r8|cr3 (PD phys)  : 10f000                                                         |
+r9|PD entries used: 17 / 1024                                                      |
+r10|self-map       : ffc00000 (PD[1023])                                            |
+r11|page faults    : 0 (recoverable)                                                |
+r12|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
 r22|                                                                                |
 r23|                                                                                |
 r24|                                                                                |
-[key 116]
-[key 105]
 [key 109]
 [key 101]
-[key 10]
-=== screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 04:33:07 [up 02:24:45] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
-r5|                                                                                |
-r6|winpp@kernel:~$ help                                                            |
-r7|WinPP shell commands:                                                           |
-r8|  help      show this list                                                      |
-r9|  about     kernel version info                                                 |
-r10|  echo <t>  print text                                                          |
-r11|  clear     clear screen                                                        |
-r12|  time      show CMOS clock                                                     |
-r13|  uptime    show system uptime                                                  |
-r14|  sysinfo   CPU / memory / ticks                                                |
-r15|  calc a o b  integer math (+ - * / %)                                          |
-r16|  color     show VGA palette                                                    |
-r17|  ls        list virtual filesystem                                             |
-r18|  demo      window UI demo                                                      |
-r19|  beep      PC speaker beep                                                     |
-r20|  reboot    restart machine                                                     |
-r21|  poweroff  ACPI power off (QEMU)                                               |
-r22|winpp@kernel:~$ time                                                            |
-r23|                                                                                |
-r24|                                                                                |
-=== screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 04:33:08 [up 02:24:46] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
-r5|                                                                                |
-r6|winpp@kernel:~$ help                                                            |
-r7|WinPP shell commands:                                                           |
-r8|  help      show this list                                                      |
-r9|  about     kernel version info                                                 |
-r10|  echo <t>  print text                                                          |
-r11|  clear     clear screen                                                        |
-r12|  time      show CMOS clock                                                     |
-r13|  uptime    show system uptime                                                  |
-r14|  sysinfo   CPU / memory / ticks                                                |
-r15|  calc a o b  integer math (+ - * / %)                                          |
-r16|  color     show VGA palette                                                    |
-r17|  ls        list virtual filesystem                                             |
-r18|  demo      window UI demo                                                      |
-r19|  beep      PC speaker beep                                                     |
-r20|  reboot    restart machine                                                     |
-r21|  poweroff  ACPI power off (QEMU)                                               |
-r22|winpp@kernel:~$ time                                                            |
-r23|CMOS clock: 2026-10-12 04:33:08                                                 |
-r24|                                                                                |
-[key 117]
-[key 112]
-[key 116]
-[key 105]
 [key 109]
-[key 101]
-[key 10]
-=== screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 06:45:16 [up 04:36:54] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|                                                                                |
-r5|winpp@kernel:~$ help                                                            |
-r6|WinPP shell commands:                                                           |
-r7|  help      show this list                                                      |
-r8|  about     kernel version info                                                 |
-r9|  echo <t>  print text                                                          |
-r10|  clear     clear screen                                                        |
-r11|  time      show CMOS clock                                                     |
-r12|  uptime    show system uptime                                                  |
-r13|  sysinfo   CPU / memory / ticks                                                |
-r14|  calc a o b  integer math (+ - * / %)                                          |
-r15|  color     show VGA palette                                                    |
-r16|  ls        list virtual filesystem                                             |
-r17|  demo      window UI demo                                                      |
-r18|  beep      PC speaker beep                                                     |
-r19|  reboot    restart machine                                                     |
-r20|  poweroff  ACPI power off (QEMU)                                               |
-r21|winpp@kernel:~$ time                                                            |
-r22|CMOS clock: 2026-10-12 04:33:08                                                 |
-r23|winpp@kernel:~$ uptime                                                          |
-r24|                                                                                |
-=== screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 06:45:17 [up 04:36:55] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|winpp@kernel:~$ help                                                            |
-r5|WinPP shell commands:                                                           |
-r6|  help      show this list                                                      |
-r7|  about     kernel version info                                                 |
-r8|  echo <t>  print text                                                          |
-r9|  clear     clear screen                                                        |
-r10|  time      show CMOS clock                                                     |
-r11|  uptime    show system uptime                                                  |
-r12|  sysinfo   CPU / memory / ticks                                                |
-r13|  calc a o b  integer math (+ - * / %)                                          |
-r14|  color     show VGA palette                                                    |
-r15|  ls        list virtual filesystem                                             |
-r16|  demo      window UI demo                                                      |
-r17|  beep      PC speaker beep                                                     |
-r18|  reboot    restart machine                                                     |
-r19|  poweroff  ACPI power off (QEMU)                                               |
-r20|winpp@kernel:~$ time                                                            |
-r21|CMOS clock: 2026-10-12 04:33:08                                                 |
-r22|winpp@kernel:~$ uptime                                                          |
-r23|uptime: 04:36:55 (ticks=1661509)                                                |
-r24|                                                                                |
-[key 115]
-[key 121]
-[key 115]
 [key 105]
 [key 110]
 [key 102]
 [key 111]
 [key 10]
 === screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 06:59:37 [up 04:51:15] [mem 65152 KB]                |
+r0| WinPP OS v0.1. 2026-10-12 09:56:47 [up 03:00:02] [mem 65152 KB]                |
 r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
 r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
 r3|                                                                                |
-r4|WinPP shell commands:                                                           |
-r5|  help      show this list                                                      |
-r6|  about     kernel version info                                                 |
-r7|  echo <t>  print text                                                          |
-r8|  clear     clear screen                                                        |
-r9|  time      show CMOS clock                                                     |
-r10|  uptime    show system uptime                                                  |
-r11|  sysinfo   CPU / memory / ticks                                                |
-r12|  calc a o b  integer math (+ - * / %)                                          |
-r13|  color     show VGA palette                                                    |
-r14|  ls        list virtual filesystem                                             |
-r15|  demo      window UI demo                                                      |
-r16|  beep      PC speaker beep                                                     |
-r17|  reboot    restart machine                                                     |
-r18|  poweroff  ACPI power off (QEMU)                                               |
-r19|winpp@kernel:~$ time                                                            |
-r20|CMOS clock: 2026-10-12 04:33:08                                                 |
-r21|winpp@kernel:~$ uptime                                                          |
-r22|uptime: 04:36:55 (ticks=1661509)                                                |
-r23|winpp@kernel:~$ sysinfo                                                         |
-r24|                                                                                |
-=== screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 06:59:38 [up 04:51:16] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|  clear     clear screen                                                        |
-r5|  time      show CMOS clock                                                     |
-r6|  uptime    show system uptime                                                  |
-r7|  sysinfo   CPU / memory / ticks                                                |
-r8|  calc a o b  integer math (+ - * / %)                                          |
-r9|  color     show VGA palette                                                    |
-r10|  ls        list virtual filesystem                                             |
-r11|  demo      window UI demo                                                      |
-r12|  beep      PC speaker beep                                                     |
-r13|  reboot    restart machine                                                     |
-r14|  poweroff  ACPI power off (QEMU)                                               |
-r15|winpp@kernel:~$ time                                                            |
-r16|CMOS clock: 2026-10-12 04:33:08                                                 |
-r17|winpp@kernel:~$ uptime                                                          |
-r18|uptime: 04:36:55 (ticks=1661509)                                                |
-r19|winpp@kernel:~$ sysinfo                                                         |
-r20|CPU vendor : GenuineIntel                                                       |
-r21|RAM (mb)   : 65152 KB                                                           |
-r22|ticks      : 1747653 (100 Hz)                                                   |
-r23|video      : 80x25 VGA text, 16 colors                                          |
-r24|                                                                                |
-[key 108]
-[key 115]
-[key 10]
-=== screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 07:08:39 [up 05:00:17] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|  time      show CMOS clock                                                     |
-r5|  uptime    show system uptime                                                  |
-r6|  sysinfo   CPU / memory / ticks                                                |
-r7|  calc a o b  integer math (+ - * / %)                                          |
-r8|  color     show VGA palette                                                    |
-r9|  ls        list virtual filesystem                                             |
-r10|  demo      window UI demo                                                      |
-r11|  beep      PC speaker beep                                                     |
-r12|  reboot    restart machine                                                     |
-r13|  poweroff  ACPI power off (QEMU)                                               |
-r14|winpp@kernel:~$ time                                                            |
-r15|CMOS clock: 2026-10-12 04:33:08                                                 |
-r16|winpp@kernel:~$ uptime                                                          |
-r17|uptime: 04:36:55 (ticks=1661509)                                                |
-r18|winpp@kernel:~$ sysinfo                                                         |
-r19|CPU vendor : GenuineIntel                                                       |
-r20|RAM (mb)   : 65152 KB                                                           |
-r21|ticks      : 1747653 (100 Hz)                                                   |
-r22|video      : 80x25 VGA text, 16 colors                                          |
-r23|winpp@kernel:~$ ls                                                              |
-r24|                                                                                |
-=== screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 07:08:40 [up 05:00:18] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|  calc a o b  integer math (+ - * / %)                                          |
-r5|  color     show VGA palette                                                    |
-r6|  ls        list virtual filesystem                                             |
-r7|  demo      window UI demo                                                      |
-r8|  beep      PC speaker beep                                                     |
-r9|  reboot    restart machine                                                     |
-r10|  poweroff  ACPI power off (QEMU)                                               |
-r11|winpp@kernel:~$ time                                                            |
-r12|CMOS clock: 2026-10-12 04:33:08                                                 |
-r13|winpp@kernel:~$ uptime                                                          |
-r14|uptime: 04:36:55 (ticks=1661509)                                                |
-r15|winpp@kernel:~$ sysinfo                                                         |
-r16|CPU vendor : GenuineIntel                                                       |
-r17|RAM (mb)   : 65152 KB                                                           |
-r18|ticks      : 1747653 (100 Hz)                                                   |
-r19|video      : 80x25 VGA text, 16 colors                                          |
-r20|winpp@kernel:~$ ls                                                              |
-r21|virtual root:                                                                   |
-r22|  bin/  dev/  etc/  proc/  usr/                                                 |
-r23|  (no storage driver yet -- this is a demo vfs)                                 |
-r24|                                                                                |
-[key 97]
-[key 98]
-[key 111]
-[key 117]
-[key 116]
-[key 10]
-=== screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 07:21:06 [up 05:12:44] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|  color     show VGA palette                                                    |
-r5|  ls        list virtual filesystem                                             |
-r6|  demo      window UI demo                                                      |
-r7|  beep      PC speaker beep                                                     |
-r8|  reboot    restart machine                                                     |
-r9|  poweroff  ACPI power off (QEMU)                                               |
-r10|winpp@kernel:~$ time                                                            |
-r11|CMOS clock: 2026-10-12 04:33:08                                                 |
-r12|winpp@kernel:~$ uptime                                                          |
-r13|uptime: 04:36:55 (ticks=1661509)                                                |
-r14|winpp@kernel:~$ sysinfo                                                         |
-r15|CPU vendor : GenuineIntel                                                       |
-r16|RAM (mb)   : 65152 KB                                                           |
-r17|ticks      : 1747653 (100 Hz)                                                   |
-r18|video      : 80x25 VGA text, 16 colors                                          |
-r19|winpp@kernel:~$ ls                                                              |
-r20|virtual root:                                                                   |
-r21|  bin/  dev/  etc/  proc/  usr/                                                 |
-r22|  (no storage driver yet -- this is a demo vfs)                                 |
-r23|winpp@kernel:~$ about                                                           |
-r24|                                                                                |
-=== screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 07:21:07 [up 05:12:45] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|  beep      PC speaker beep                                                     |
-r5|  reboot    restart machine                                                     |
-r6|  poweroff  ACPI power off (QEMU)                                               |
-r7|winpp@kernel:~$ time                                                            |
-r8|CMOS clock: 2026-10-12 04:33:08                                                 |
-r9|winpp@kernel:~$ uptime                                                          |
-r10|uptime: 04:36:55 (ticks=1661509)                                                |
-r11|winpp@kernel:~$ sysinfo                                                         |
-r12|CPU vendor : GenuineIntel                                                       |
-r13|RAM (mb)   : 65152 KB                                                           |
-r14|ticks      : 1747653 (100 Hz)                                                   |
-r15|video      : 80x25 VGA text, 16 colors                                          |
-r16|winpp@kernel:~$ ls                                                              |
-r17|virtual root:                                                                   |
-r18|  bin/  dev/  etc/  proc/  usr/                                                 |
-r19|  (no storage driver yet -- this is a demo vfs)                                 |
-r20|winpp@kernel:~$ about                                                           |
-r21|WinPP OS v0.1 -- a tiny unix-like kernel for i386                               |
-r22|cpu: GenuineIntel                                                               |
-r23|compiled freestanding, multiboot v1, VGA text mode                              |
-r24|                                                                                |
-[key 100]
-[key 101]
-[key 109]
-[key 111]
-[key 10]
-=== screen dump (before) ===
-r0| WinPP OS v0.1. 2026-10-12 09:32:42 [up 07:24:19] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|  reboot    restart machine                                                     |
-r5|  poweroff  ACPI power off (QEMU)                                               |
-r6|winpp@kernel:~$ time                                                            |
-r7|CMOS clock: 2026-10-12 04:33:08                                                 |
-r8|winpp@kernel:~$ uptime                                                          |
-r9|uptime: 04:36:55 (ticks=1661509)                                                |
-r10|winpp@kernel:~$ sysinfo                                                         |
-r11|CPU vendor : GenuineIntel                                                       |
-r12|RAM (mb)   : 65152 KB                                                           |
-r13|ticks      : 1747653 (100 Hz)                                                   |
-r14|video      : 80x25 VGA text, 16 colors                                          |
-r15|winpp@kernel:~$ ls                                                              |
-r16|virtual root:                                                                   |
-r17|  bin/  dev/  etc/  proc/  usr/                                                 |
-r18|  (no storage driver yet -- this is a demo vfs)                                 |
-r19|winpp@kernel:~$ about                                                           |
-r20|WinPP OS v0.1 -- a tiny unix-like kernel for i386                               |
-r21|cpu: GenuineIntel                                                               |
-r22|compiled freestanding, multiboot v1, VGA text mode                              |
-r23|winpp@kernel:~$ demo                                                            |
-r24|                                                                                |
-=== screen dump (after) ===
-r0| WinPP OS v0.1. 2026-10-12 12:02:46 [up 09:54:23] [mem 65152 KB]                |
-r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
-r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
-r3|                                                                                |
-r4|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
 r5|                                                                                |
-r6|                                                                                |
-r7|                                                                                |
-r8|                                                                                |
-r9|                                                                                |
-r10|                                                                                |
-r11|                                                                                |
-r12|                                                                                |
-r13|                                                                                |
+r6|winpp@kernel:~$ paging                                                          |
+r7|paging enabled : YES (CR0.PG)                                                   |
+r8|cr3 (PD phys)  : 10f000                                                         |
+r9|PD entries used: 17 / 1024                                                      |
+r10|self-map       : ffc00000 (PD[1023])                                            |
+r11|page faults    : 0 (recoverable)                                                |
+r12|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r13|winpp@kernel:~$ meminfo                                                         |
 r14|                                                                                |
 r15|                                                                                |
 r16|                                                                                |
@@ -411,3 +114,169 @@ r21|                                                                            
 r22|                                                                                |
 r23|                                                                                |
 r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-12 09:56:48 [up 03:00:03] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:~$ paging                                                          |
+r7|paging enabled : YES (CR0.PG)                                                   |
+r8|cr3 (PD phys)  : 10f000                                                         |
+r9|PD entries used: 17 / 1024                                                      |
+r10|self-map       : ffc00000 (PD[1023])                                            |
+r11|page faults    : 0 (recoverable)                                                |
+r12|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r13|winpp@kernel:~$ meminfo                                                         |
+r14|physical total : 65152 KB (16288 pages)                                         |
+r15|physical used  : 2336 pages, free: 13952 pages                                  |
+r16|kernel heap    : 8192 KB total, 0 KB used                                       |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 97]
+[key 108]
+[key 108]
+[key 111]
+[key 99]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-12 13:47:36 [up 06:50:51] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:~$ paging                                                          |
+r7|paging enabled : YES (CR0.PG)                                                   |
+r8|cr3 (PD phys)  : 10f000                                                         |
+r9|PD entries used: 17 / 1024                                                      |
+r10|self-map       : ffc00000 (PD[1023])                                            |
+r11|page faults    : 0 (recoverable)                                                |
+r12|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r13|winpp@kernel:~$ meminfo                                                         |
+r14|physical total : 65152 KB (16288 pages)                                         |
+r15|physical used  : 2336 pages, free: 13952 pages                                  |
+r16|kernel heap    : 8192 KB total, 0 KB used                                       |
+r17|winpp@kernel:~$ alloc                                                           |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[alloc] [0] 16B@800008ok
+[alloc] [1] 128B@800020ok
+[alloc] [2] 1024B@8000a8ok
+[alloc] [3] 7B@8004b0ok
+[alloc] [4] 4096B@8004c0ok
+[alloc] [5] 3B@8014c8ok
+[alloc] kfree pass
+[alloc] kfree(0)=800008 ...
+[alloc] kfree(0) done, used=5312
+[alloc] kfree(1)=800020 ...
+[alloc] kfree(1) done, used=5176
+[alloc] kfree(2)=8000a8 ...
+[alloc] kfree(2) done, used=4144
+[alloc] kfree(3)=8004b0 ...
+[alloc] kfree(3) done, used=4128
+[alloc] kfree(4)=8004c0 ...
+[alloc] kfree(4) done, used=24
+[alloc] kfree(5)=8014c8 ...
+[alloc] kfree(5) done, used=8
+[alloc] all freed used=8 leak=0
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-12 13:47:37 [up 06:50:52] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:~$ paging                                                          |
+r7|paging enabled : YES (CR0.PG)                                                   |
+r8|cr3 (PD phys)  : 10f000                                                         |
+r9|PD entries used: 17 / 1024                                                      |
+r10|self-map       : ffc00000 (PD[1023])                                            |
+r11|page faults    : 0 (recoverable)                                                |
+r12|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r13|winpp@kernel:~$ meminfo                                                         |
+r14|physical total : 65152 KB (16288 pages)                                         |
+r15|physical used  : 2336 pages, free: 13952 pages                                  |
+r16|kernel heap    : 8192 KB total, 0 KB used                                       |
+r17|winpp@kernel:~$ alloc                                                           |
+r18|kmalloc stress: heap used 8 -> [0] 16B@800008ok [1] 128B@800020ok [2] 1024B@8000|
+r19|a8ok [3] 7B@8004b0ok [4] 4096B@8004c0ok [5] 3B@8014c8ok                         |
+r20|all freed: heap used 8 -> 8 (leak=0)                                            |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 112]
+[key 102]
+[key 97]
+[key 117]
+[key 108]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-12 13:57:19 [up 07:00:34] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:~$ paging                                                          |
+r7|paging enabled : YES (CR0.PG)                                                   |
+r8|cr3 (PD phys)  : 10f000                                                         |
+r9|PD entries used: 17 / 1024                                                      |
+r10|self-map       : ffc00000 (PD[1023])                                            |
+r11|page faults    : 0 (recoverable)                                                |
+r12|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r13|winpp@kernel:~$ meminfo                                                         |
+r14|physical total : 65152 KB (16288 pages)                                         |
+r15|physical used  : 2336 pages, free: 13952 pages                                  |
+r16|kernel heap    : 8192 KB total, 0 KB used                                       |
+r17|winpp@kernel:~$ alloc                                                           |
+r18|kmalloc stress: heap used 8 -> [0] 16B@800008ok [1] 128B@800020ok [2] 1024B@8000|
+r19|a8ok [3] 7B@8004b0ok [4] 4096B@8004c0ok [5] 3B@8014c8ok                         |
+r20|all freed: heap used 8 -> 8 (leak=0)                                            |
+r21|winpp@kernel:~$ pfault                                                          |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+PAGE FAULT @0 err=2
+DEMAND MAP 0x0 -> 120000
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-12 13:57:19 [up 07:00:34] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|paging enabled : YES (CR0.PG)                                                   |
+r5|cr3 (PD phys)  : 10f000                                                         |
+r6|PD entries used: 17 / 1024                                                      |
+r7|self-map       : ffc00000 (PD[1023])                                            |
+r8|page faults    : 0 (recoverable)                                                |
+r9|4KB pages, identity map 1MB+; NULL unmapped                                     |
+r10|winpp@kernel:~$ meminfo                                                         |
+r11|physical total : 65152 KB (16288 pages)                                         |
+r12|physical used  : 2336 pages, free: 13952 pages                                  |
+r13|kernel heap    : 8192 KB total, 0 KB used                                       |
+r14|winpp@kernel:~$ alloc                                                           |
+r15|kmalloc stress: heap used 8 -> [0] 16B@800008ok [1] 128B@800020ok [2] 1024B@8000|
+r16|a8ok [3] 7B@8004b0ok [4] 4096B@8004c0ok [5] 3B@8014c8ok                         |
+r17|all freed: heap used 8 -> 8 (leak=0)                                            |
+r18|winpp@kernel:~$ pfault                                                          |
+r19|faults before: 0. writing 0x1234 to NULL...                                     |
+r20|page fault @0 (err=2: not-present+write+supervisor)                             |
+r21|demand-mapped page 120000 for 0x0, retrying                                     |
+r22|faults after : 1. value read back: 1234                                         |
+r23|demand paging OK                                                                |
+r24|                                                                                |
+
