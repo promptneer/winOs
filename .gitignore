@@ -1,0 +1,16 @@
+# WinPP - git ignore
+# 本地工具与安装包（不入库）
+/tools/
+
+# 页面自检产物（不入库）
+/_shots/
+
+# 开发调试日志（根目录散落文件，不入库）
+/*.txt
+/*.log
+/*.json
+
+# winpp-os 运行时产物
+/winpp-os/bochs.log
+/winpp-os/serial.out
+/winpp-os/test_printf.pdb

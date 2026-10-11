@@ -1,0 +1,12 @@
+megs: 64
+romimage: file=C:\Bochs-2.8\BIOS-bochs-latest
+vgaromimage: file=C:\Bochs-2.8\VGABIOS-lgpl-latest
+floppya: 1_44=D:\WinPP\winpp-os\floppy.img, status=inserted
+boot: a
+display_library: win32
+vga: extension=vbe
+keyboard: type=xt, serial_delay=200, paste_delay=200000
+cpu: count=1, ips=20000000
+clock: sync=none
+log: D:\WinPP\winpp-os\bochs.log
+com1: enabled=1, mode=file, dev=D:\WinPP\winpp-os\serial.out

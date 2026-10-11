@@ -1,0 +1,94 @@
+WinPP OS 真机部署说明
+=====================
+
+内核提供两种引导产物（已核对有效）：
+
+  1. winpp-kernel.elf  (24,304 B)  ->  Multiboot v1，由 GRUB 加载（真机推荐）
+     * 已验证 Multiboot 头：magic=0x1BADB002, flags=0x3 (ALIGN_MODULES|MEMINFO)
+     * GRUB 会传入真实内存信息，比软盘路径的 CMOS 读取更准
+  2. floppy.img  (1,474,560 B)      ->  512B 引导扇区 + 41 扇区内核，软盘/软盘模拟直启（老机器）
+
+--------------------------------------------------------------------------------
+路径 A（推荐）：GRUB2 Legacy 启动盘（USB）
+--------------------------------------------------------------------------------
+前提：需要一台 Linux（或含 grub-pc-bin 的机器 / Ubuntu LiveCD）来执行 grub-install。
+      Windows 本机没有原生 grub-install。
+
+在 Linux 上操作（U 盘假设为 /dev/sdb，务必先用 lsblk 确认，别写错盘！）：
+
+  # 1. 分区格式化（FAT32）
+  sudo mkfs.vfat -F 32 /dev/sdb1          # 若 U 盘无分区先 fdisk 建一个
+
+  # 2. 装 GRUB 引导代码到 U 盘 MBR
+  sudo mount /dev/sdb1 /mnt/usb
+  sudo grub-install --target=i386-pc --boot-directory=/mnt/usb/boot /dev/sdb
+
+  # 3. 拷内核 + 菜单
+  sudo cp winpp-kernel.elf /mnt/usb/boot/
+  sudo cp grub.cfg /mnt/usb/boot/grub/grub.cfg
+  sudo umount /mnt/usb
+
+  # 4. 目标机器 BIOS：关 Secure Boot，开 CSM / Legacy 模式，USB 优先启动
+      出现 GRUB 菜单选 "WinPP OS" -> 直接进 Shell
+
+--------------------------------------------------------------------------------
+路径 B（老机器）：floppy.img 直写
+--------------------------------------------------------------------------------
+B1. 真软驱（最原汁原味，1990s-2000s 机器）：
+    Linux:  sudo dd if=floppy.img of=/dev/fd0 bs=512
+    Windows: WinImage / RAWRITE 写 1.44MB 软盘，BIOS 软盘启动
+
+B2. USB 直写（成功率依赖 BIOS）：
+    Windows: Rufus 选"DD 镜像模式"写入 floppy.img 到 U 盘
+    BIOS 启动项必须提供 USB-FDD / USB-ZIP（软盘模拟）类型
+    * 2015 年前主板常见，之后多数主板只有 USB-HDD，此路不通
+    * USB 被当硬盘时，引导扇区的 CHS 软盘读取会失败 -> 无法启动
+
+--------------------------------------------------------------------------------
+路径 C（真机动手前的验证）：Bochs 2.8（已完成）
+--------------------------------------------------------------------------------
+双击 D:\WinPP\start-winpp.bat，先确认全部功能（help/time/uptime/demo）正常，
+再上真机。真机若起不来，问题几乎都出在硬件前提，而不是内核逻辑。
+
+--------------------------------------------------------------------------------
+真机硬件前提（务必逐条核对）
+--------------------------------------------------------------------------------
+[1] Legacy BIOS / CSM
+    现代 UEFI 主板必须在 BIOS 里开启 CSM (Compatibility Support Module)，
+    并关闭 Secure Boot。2020 年后的部分新平台已移除 CSM -> 无法启动本内核。
+
+[2] 键盘（最容易踩坑）
+    内核键盘驱动是 PS/2 8042 扫描码驱动。
+    - PS/2 圆口键盘：100% 可用。
+    - USB 键盘：必须依赖 BIOS 的 "Legacy USB Keyboard Support / USB Keyboard"
+      选项把它模拟成 PS/2，否则按键完全无响应。多数 BIOS 默认开启，需确认。
+
+[3] 显示
+    VGA 文本模式 80x25。现代显卡在传统 BIOS 引导下会初始化文本模式，一般可用。
+
+[4] 内存
+    - GRUB 路径：内核通过 Multiboot info 拿到真实内存（已开 MEMINFO flag）。
+    - floppy 路径：走 CMOS 扩展内存读取，显示上限 64MB。
+
+[5] 串口 COM1
+    真机若没有可用 COM1（或未在 BIOS 开启 Onboard Serial Port），
+    串口取证日志不可见，不影响系统运行。
+
+--------------------------------------------------------------------------------
+内核能力边界（真机跑起来是什么样）
+--------------------------------------------------------------------------------
+- 开机 -> 状态栏（时钟/运行时间/内存）-> Shell 提示符 winpp@kernel:~$
+- 17 条命令：help / about / echo / clear / time / uptime / sysinfo /
+  calc / color / ls / demo / beep / reboot / poweroff 等
+- demo：三个重叠窗口（Terminal/Files/Settings），Tab 切焦点、方向键移动、Esc 返回
+- 没有硬盘/文件系统/网络/分页/多任务驱动——这是一个"能开机、能交互"的
+  教学级内核演示，不是可日常使用的操作系统。reboot 走 8042，真机可用；
+  poweroff 走 ACPI，多数真机可关（Bochs/QEMU 已验证关机路径）。
+
+--------------------------------------------------------------------------------
+部署包内容
+--------------------------------------------------------------------------------
+  D:\WinPP\deploy\
+    winpp-kernel.elf    GRUB 加载的内核（路径 A 用）
+    floppy.img          软盘镜像（路径 B 用）
+    grub.cfg            GRUB 菜单模板（路径 A 用）

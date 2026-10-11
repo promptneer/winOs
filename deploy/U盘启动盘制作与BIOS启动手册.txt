@@ -1,0 +1,135 @@
+WinPP OS 真机启动手册 —— U 盘启动盘制作 + BIOS 启动完整步骤
+================================================================
+
+一、这个内核支持什么 CPU 架构
+----------------------------------------------------------------
+指令集        i386（Intel 80386 指令集，32 位 x86）
+运行模式      32 位保护模式（Protected Mode），平坦内存模型（GDT 基址0/限长4GB）
+兼容范围      386 之后所有 x86 系 CPU 都能跑，因为它们都保留 32 位保护模式：
+              - Intel: 486 / Pentium 全系 / Core 全系（含现代酷睿）
+              - AMD:   K6 / Athlon / Opteron / Ryzen 全系
+              - 其他:  VIA、兆芯（x86 授权）等
+不支持        - ARM（骁龙/麒麟/苹果 M 系列）、RISC-V —— 指令集不同，无法运行
+              - 需要 64 位长模式的场景（本内核不进入 x86-64 Long Mode）
+              - 纯 UEFI 且无 CSM 的平台（见"BIOS 设置"一节）
+配套硬件      Legacy BIOS、8259 PIC、PIT 定时器、CMOS RTC、8042 PS/2 键盘、
+              VGA 文本模式、可选 COM1 串口
+
+内核两种引导产物（D:\WinPP\deploy\）：
+  winpp-kernel.elf    Multiboot v1，GRUB 加载（真机推荐，已验证 magic=0x1BADB002）
+  floppy.img          512B 引导扇区 + 内核，软盘/软盘模拟直启（老机器）
+
+二、你要准备的东西
+----------------------------------------------------------------
+1. U 盘 2 个（流程 A）：一个做 Ubuntu Live 启动盘，一个做 WinPP 启动盘
+   或 U 盘 1 个（流程 B 老机器直写）
+2. 下载 Rufus（Windows 下写盘工具）：https://rufus.ie/   选"便携版"即可
+3. 下载 Ubuntu Desktop ISO（做 Live 环境）：https://ubuntu.com/download/desktop
+   国内镜像：https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/ 或
+            https://mirrors.ustc.edu.cn/ubuntu-releases/
+4. 一台能 Legacy BIOS/CSM 启动的目标机器
+
+三、流程 A：GRUB 真机 U 盘（推荐，现代机器都走这条）
+----------------------------------------------------------------
+原理：GRUB 负责读盘（支持 USB/各种文件系统），再按 Multiboot 协议把内核
+     放进内存并进入保护模式。你不需要自己写引导扇区。
+
+A1. 做 Ubuntu Live U 盘（在 Windows 上）
+  1) 插入 U 盘A，打开 Rufus
+  2) 设备选 U 盘A；引导类型选刚下载的 ubuntu-*.iso
+  3) 分区类型选 "MBR"，目标系统选 "BIOS or UEFI-CSM"
+  4) 点"开始" -> 选"以 DD 镜像模式写入"（Rufus 会提示，选 DD）-> 等待完成
+     （Ubuntu ISO 建议 ISO 模式即可，两种都行；写好后 U 盘A就是 Live 系统）
+
+A2. 从 U 盘A 启动 Live 环境
+  1) 目标机器插入 U 盘A，开机
+  2) 启动时狂按"临时启动菜单键"选 U 盘A：
+       联想/ThinkPad: F12      戴尔: F12      惠普: F9
+       华硕: F8       微星: F11      技嘉: F12      宏碁: F12
+  3) 选 "Try Ubuntu"（试用模式），进入 Ubuntu 桌面
+     （如果没出现启动菜单：进 BIOS 手动把 USB 排到第一位，见第五节）
+
+A3. 制作 WinPP 启动盘（在 Live 环境里）
+  1) 插入 U 盘B（WinPP 启动盘），在 Ubuntu 里打开终端（Ctrl+Alt+T）
+  2) 先看盘符，确认哪个是 U 盘B：
+       lsblk
+     认准大小和挂载点（如 /dev/sdb 是 8GB U 盘）。看清楚再继续！
+  3) 把 deploy 目录拷进 Live 环境（或用 U 盘直接访问 Windows 分区）：
+       # 若 Windows 分区可读，直接 cd 到挂载点；否则用文件管理器拖入，
+       # 或挂载 Windows 分区：
+       sudo mkdir -p /media/win && sudo mount /dev/sda2 /media/win 2>/dev/null || true
+       cd /media/win/WinPP/deploy   # 路径按实际调整
+  4) 一键制作（sdX 换成你的 U 盘B 盘符）：
+       sudo bash make_grub_usb.sh /dev/sdX
+     脚本会自动：分区 -> FAT32 -> 装 GRUB(i386-pc) -> 拷内核 -> 写菜单
+  5) 看到 "完成！启动盘已做好" 即可拔出 U 盘B
+
+A4. 没有 Ubuntu 环境的替代做法
+  - 有另一台 Linux 电脑/虚拟机：把 deploy 目录拷过去，直接
+       sudo bash make_grub_usb.sh /dev/sdX
+  - 只有 Windows：就按 A1-A3 用 Live U 盘做，不需要装任何 Linux
+
+四、流程 B：老机器直写 floppy.img（2015 年前主板 / 真软驱）
+----------------------------------------------------------------
+原理：直接把软盘镜像写进存储介质，BIOS 按软盘/软盘模拟引导。
+      USB 被识别为"硬盘"时引导扇区的 CHS 软盘读取会失败，所以只适合
+      带 USB-FDD/USB-ZIP 或真软驱的机器。
+
+B1. 真软驱（2000s 老机器）
+    Linux:  sudo dd if=floppy.img of=/dev/fd0 bs=512
+    Windows: WinImage 或 RAWRITE 写 1.44MB 软盘，BIOS 软盘启动
+
+B2. USB 直写
+    1) Rufus：设备选 U 盘，引导类型选"镜像文件"-> 选 floppy.img
+    2) 弹窗问"DD 镜像模式" -> 选 DD，开始写入
+    3) BIOS 启动项里必须有 "USB-FDD" 或 "USB-ZIP"（软盘模拟），
+       没有此项则此路不通，改用流程 A
+
+五、真机 BIOS 启动设置（关键！）
+----------------------------------------------------------------
+1) 开机进 BIOS
+       台式机/通用: Del 键
+       联想 ThinkPad: Enter 后 F1      戴尔: F2      惠普: Esc/F10
+       华硕: Del/F2       微星: Del      技嘉: Del      宏碁: F2
+2) 关 Secure Boot（UEFI 机型必做，否则 GRUB/内核被拦）
+       Boot -> Secure Boot / Security Boot Control -> Disabled
+3) 开 CSM（UEFI 机型必做，让机器支持 Legacy BIOS 引导）
+       Boot -> CSM (Compatibility Support Module) -> Enabled
+       若 CSM 下有子项，Boot Mode 选 "Legacy" / "Legacy+UEFI"
+       （2020 年后部分新平台 BIOS 里已无 CSM 选项 -> 无法用本内核启动）
+4) 确认 USB 键盘模拟（防止进系统后按键无响应）
+       Advanced / USB Configuration -> Legacy USB Support -> Enabled
+       或 "USB Keyboard Support -> Enabled"
+       有 PS/2 圆口键盘则无视此项（圆口 100% 可用）
+5) 启动顺序：U 盘第一
+       Boot -> Boot Priority / Boot Order -> 把 USB 盘调到第一位
+       （或用第五节开头说的临时启动菜单键，一劳永逸用启动顺序）
+6) 保存退出：F10 -> 确认 Save & Exit
+
+六、启动后你会看到
+----------------------------------------------------------------
+GRUB 菜单（5 秒倒计时）-> 选 "WinPP OS (i386 multiboot)"
+-> 黑屏数毫秒 -> 内核启动日志 -> 状态栏 + 提示符：
+
+    WinPP OS v0.1 | 2026-10-12 03:03:57 [up 00:00:16] [mem 65152 KB]
+    WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel
+    winppkernel:~$ help
+
+敲 help / time / uptime / sysinfo / demo / reboot / poweroff 试试。
+demo = 三个重叠窗口（Terminal/Files/Settings），Tab 切焦点、方向键移动、Esc 返回。
+
+七、故障排查表
+----------------------------------------------------------------
+现象                         原因                         处理
+开机直接进 Windows           启动顺序没生效/CSM 没开     进 BIOS：U 盘第一 + CSM Enabled
+GRUB 菜单出现但选完黑屏      CSM 未开/内核文件缺失       BIOS 开 CSM；确认 boot/ 下有 winpp-kernel.elf
+卡在 GRUB 命令行 grub>       菜单没找到                  手输: multiboot /boot/winpp-kernel.elf + boot
+进入 Shell 但键盘没反应      USB 键盘未被模拟成 PS/2      BIOS 开 Legacy USB Support；换 PS/2 键盘
+能进 Shell 但内存显示不对    floppy 路径走 CMOS 上限     换 GRUB 路径（自动传真实内存）
+USB 直写镜像后无任何反应     BIOS 无 USB-FDD/被当硬盘    改用流程 A（GRUB）
+日期/时间不对                CMOS 电池/时区               不影响运行，time 命令显示的是 RTC 原始值
+
+八、边界提醒
+----------------------------------------------------------------
+这是一个"能开机、能交互"的教学级内核：无硬盘/文件系统/网络/分页/多任务驱动。
+真机跑起来就是 Shell + demo 窗口演示。别期待它替代 Windows/Linux。
