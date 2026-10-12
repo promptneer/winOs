@@ -336,6 +336,24 @@ static void cmd_fork(int argc, char **argv)
     }
 }
 
+/* S4-3：启动 exec 演示进程（user5：打印后 exec 变身成 user2） */
+static void cmd_exec(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user5", 0x620000, 0x741000,
+                         _user5_code, USER5_LEN);
+    if (p > 0) {
+        vga_printf("created exec-demo proc: pid %d\n", p);
+        serial_printf("[exec] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: exec demo (0.1s quantum)\n");
+        serial_printf("[exec] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create exec-demo process\n");
+    }
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -363,6 +381,7 @@ static const cmd_t cmds[] = {
     { "pfault",   "page fault + demand map",    cmd_pfault },
     { "run",      "start 3 user procs",         cmd_run },
     { "fork",     "fork demo (user4)",          cmd_fork },
+    { "exec",     "exec demo (user5->user2)",   cmd_exec },
     { "ps",       "list processes",             cmd_ps },
     { "kill",     "kill <pid>",                 cmd_kill },
     { "stop",     "stop scheduler",             cmd_stop },

@@ -5,6 +5,7 @@
 #include "paging.h"
 #include "tss.h"
 #include "gdt.h"
+#include "users_inc.h"
 
 /* 用户代码/栈映射标志：P + W + U（用户态可访问；内核页无 U 位 → 用户访问 #PF） */
 #define USER_PAGE_FLAGS 0x7
@@ -68,6 +69,55 @@ static void k_strcpy(char *d, const char *s)
 {
     while (*s) *d++ = *s++;
     *d = 0;
+}
+
+/* S4-3 exec：进程"变身"——同一进程换程序。
+ * 释放旧代码页/栈页映射，载入目标程序（内嵌 userN.bin），重设入口与栈。
+ * 调用方必须是用户进程（shell 不允许）。返回 0 成功 / -1 失败。 */
+typedef struct {
+    const char *name;
+    u32  entry;
+    u32  stack_vaddr;
+    const u8 *code;
+    u32  len;
+} prog_t;
+
+static const prog_t progtab[] = {
+    { "user1", 0x400000, 0x701000, _user1_code, USER1_LEN },
+    { "user2", 0x500000, 0x711000, _user2_code, USER2_LEN },
+    { "user3", 0x600000, 0x721000, _user3_code, USER3_LEN },
+    { "user4", 0x610000, 0x731000, _user4_code, USER4_LEN },
+};
+#define NPROGS ((int)(sizeof(progtab) / sizeof(progtab[0])))
+
+int sched_exec(pcb_t *p, regs_t *r, int idx)
+{
+    if (idx < 0 || idx >= NPROGS) return -1;
+    const prog_t *g = &progtab[idx];
+    if (!p->code_page || !p->pt1_page) return -1;   /* shell 无地址空间 */
+
+    volatile u32 *pt1v = (volatile u32 *)p->pt1_page;
+    /* 1) 解除旧用户代码页 + 旧栈页映射（物理直写本进程 PT1） */
+    pt1v[PT_INDEX(p->code_vaddr)]  = 0;
+    pt1v[PT_INDEX(p->stack_vaddr)] = 0;
+    /* 2) 载入新程序：拷代码、清空栈页 */
+    for (u32 i = 0; i < PAGE_SIZE; i++) ((volatile u8 *)p->code_page)[i] = 0;
+    for (u32 i = 0; i < g->len; i++)
+        ((volatile u8 *)p->code_page)[i] = g->code[i];
+    for (u32 i = 0; i < PAGE_SIZE; i++) ((volatile u8 *)p->stack_page)[i] = 0;
+    /* 3) 新入口 + 新栈地址映射 */
+    p->code_vaddr  = g->entry;
+    p->stack_vaddr = g->stack_vaddr & ~0xFFFu;
+    pt1v[PT_INDEX(p->code_vaddr)]  = p->code_page  | USER_PAGE_FLAGS;
+    pt1v[PT_INDEX(p->stack_vaddr)] = p->stack_page | USER_PAGE_FLAGS;
+    /* 4) 用户现场：入口 = 新程序，eax=0 表示成功，用户栈 = 新栈顶 */
+    r->eip = g->entry;
+    r->eax = 0;
+    r->user_esp = g->stack_vaddr;
+    k_strcpy(p->name, g->name);
+    serial_printf("[exec] pid%d -> program %s (entry=%x pd=%x)\r\n",
+                  p->pid, g->name, g->entry, p->pd_page);
+    return 0;
 }
 
 /* ---------------- 初始化 ---------------- */
@@ -399,6 +449,12 @@ void syscall_handler(regs_t *r)
             r->eax = (u32)sched_fork(sched_current, r);
         else
             r->eax = 0xFFFFFFFFu;   /* shell 不允许 fork */
+    }
+    else if (nr == 4) {             /* exec(idx)：进程变身（S4-3） */
+        if (sched_current && sched_current->pid != 0)
+            r->eax = (u32)sched_exec(sched_current, r, (int)r->ebx);
+        else
+            r->eax = 0xFFFFFFFFu;   /* shell 不允许 exec */
     }
     else {
         r->eax = -1;

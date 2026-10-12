@@ -1,13 +1,16 @@
-total 1199
+total 1370
 FAULT 0
---- fork lines ---
-[fork] demo proc pid 1
-[fork] scheduler s[sched] pid0 -> pid1 (pd=124000 esp0=122000)
-[fork] pid 1 -> child pid 2 (pd=129000 esp0=127000)
---- first pidN 6 ---
-[pid1] fork: parent 000000
-[pid2] fork: child  000000
-[pid2] fork: child  000001
-[pid1] fork: parent 000001
-[pid2] fork: child  000002
-[pid1] fork: parent 000002
+--- exec lines ---
+[exec] demo proc pid 1
+[exec] schedul[sched] pid0 -> pid1 (pd=124000 esp0=122000)
+[pid1] user5: before exec...
+[exec] pid1 -> program user2 (entry=500000 pd=124000)
+--- first pidN 8 ---
+[pid1] user5: before exec...
+[pid1] user2: 000000
+[pid1] user2: 000010
+[pid1] user2: 000020
+[pid1] user2: 000030
+[pid1] user2: 000040
+[pid1] user2: 000050
+[pid1] user2: 000060
