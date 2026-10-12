@@ -21,6 +21,7 @@ extern void kernel_poweroff(void);
 #include "users_inc.h"
 #include "fs.h"
 #include "device.h"
+#include "user.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -36,6 +37,14 @@ static int k_atoi(const char *s)
     if (*s == '-') { neg = 1; s++; }
     while (*s >= '0' && *s <= '9') { v = v * 10 + (*s - '0'); s++; }
     return neg ? -v : v;
+}
+
+/* S8: 八进制解析（chmod 用，如 644/400/755） */
+static int k_octal(const char *s)
+{
+    int v = 0;
+    while (*s >= '0' && *s <= '7') { v = v * 8 + (*s - '0'); s++; }
+    return v;
 }
 
 /* ---------------- 命令实现 ---------------- */
@@ -57,6 +66,10 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  mkdir <path>  create directory\n");
     vga_printf("  cd <path>  change current directory\n");
     vga_printf("  pwd        print working directory\n");
+    vga_printf("  login <user>  switch identity (root/guest)\n");
+    vga_printf("  whoami     print current user\n");
+    vga_printf("  id         print uid/gid\n");
+    vga_printf("  chmod <oct> <path>  change file mode\n");
     vga_printf("  demo      window UI demo\n");
     vga_printf("  beep      PC speaker beep\n");
     vga_printf("  paging    page table / fault stats\n");
@@ -193,6 +206,67 @@ static void cmd_pwd(int argc, char **argv)
 {
     (void)argc; (void)argv;
     vga_printf("%s\n", fs_cwd);
+}
+
+/* ---------------- S8：用户与权限命令 ---------------- */
+
+/* S8: login <user> —— 切换当前身份（root/guest，无密码演示版） */
+static void cmd_login(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: login <root|guest>\n"); return; }
+    if (user_login(argv[1]) == 0) {
+        vga_printf("logged in as %s (uid=%u)\n", user_name_of(user_current_uid()), user_current_uid());
+        serial_printf("[login] ok -> %s uid=%u\r\n", user_name_of(user_current_uid()), user_current_uid());
+    } else {
+        vga_printf("login: no such user: %s\n", argv[1]);
+        serial_printf("[login] denied '%s'\r\n", argv[1]);
+    }
+}
+
+/* S8: whoami —— 当前用户名 */
+static void cmd_whoami(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    vga_printf("%s\n", user_name_of(user_current_uid()));
+    serial_printf("[whoami] %s (uid=%u)\r\n", user_name_of(user_current_uid()), user_current_uid());
+}
+
+/* S8: id —— 打印 uid/gid（gid=uid，简化版） */
+static void cmd_id(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    u32 uid = user_current_uid();
+    vga_printf("uid=%u(%s) gid=%u(%s)\n", uid, user_name_of(uid), uid, user_name_of(uid));
+    serial_printf("[id] uid=%u gid=%u user=%s\r\n", uid, uid, user_name_of(uid));
+}
+
+/* S8: chmod <oct> <path> —— 改权限（八进制，如 400/644/755） */
+static void cmd_chmod(int argc, char **argv)
+{
+    if (argc != 3) { vga_printf("usage: chmod <oct> <path>\n"); return; }
+    int m = k_octal(argv[1]);
+    if (m < 0 || m > 0x1FF) { vga_printf("chmod: bad mode (octal 000-777)\n"); return; }
+    int r = fs_chmod(argv[2], (u32)m);
+    if (r == 0) vga_printf("chmod ok: %s mode=%s\n", argv[2], argv[1]);
+    else vga_printf("chmod failed: %s (EACCES or no such file)\n", argv[2]);
+}
+
+/* S8: fs11 —— 权限演示进程（user11：getuid + 公开/私有文件读写） */
+static void cmd_fs11(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user11", 0x680000, 0x7A1000,
+                         _user11_code, USER11_LEN);
+    if (p > 0) {
+        vga_printf("created perm-demo proc: pid %d (uid=%u)\n", p, user_current_uid());
+        serial_printf("[fs11] demo proc pid %d uid=%u\r\n", p, user_current_uid());
+        sched_start();
+        vga_printf("scheduler started: permission demo (0.1s quantum)\n");
+        serial_printf("[fs11] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create perm-demo process\n");
+    }
 }
 
 static void cmd_demo(int argc, char **argv)
@@ -549,6 +623,10 @@ static const cmd_t cmds[] = {
     { "mkdir",    "create directory",           cmd_mkdir },
     { "cd",       "change directory",           cmd_cd },
     { "pwd",      "print working directory",    cmd_pwd },
+    { "login",    "switch identity",            cmd_login },
+    { "whoami",   "print current user",         cmd_whoami },
+    { "id",       "print uid/gid",              cmd_id },
+    { "chmod",    "change file mode",           cmd_chmod },
     { "demo",     "window UI demo",             cmd_demo },
     { "beep",     "PC speaker beep",            cmd_beep },
     { "paging",   "page table / fault stats",   cmd_paging },
@@ -563,6 +641,7 @@ static const cmd_t cmds[] = {
     { "exec",     "exec demo (user5->user2)",   cmd_exec },
     { "fs",       "fs demo (user6)",            cmd_fs },
     { "fs2",      "dir/path demo (user10)",     cmd_fs2 },
+    { "fs11",     "permission demo (user11)",   cmd_fs11 },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
@@ -643,7 +722,10 @@ void shell_run(void)
     char line[128];
     for (;;) {
         vga_set_attr(0x0A);
-        vga_printf("winpp@kernel:%s$ ", fs_cwd);
+        /* S8: 提示符显示当前用户名 + #(root)/$(普通用户) */
+        vga_printf("%s@kernel:%s%c ",
+                   user_name_of(user_current_uid()), fs_cwd,
+                   user_current_uid() == 0 ? '#' : '$');
         vga_set_attr(0x07);
         shell_readline(line, sizeof(line));
         shell_dispatch(line);

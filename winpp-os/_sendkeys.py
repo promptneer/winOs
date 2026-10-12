@@ -5,7 +5,7 @@ import ctypes, time, sys
 u = ctypes.windll.user32
 k32 = ctypes.windll.kernel32
 
-H = 1967302  # Bochs for Windows - Display
+H = 3213426  # Bochs for Windows - Display
 
 def get_fg():
     return u.GetForegroundWindow()
@@ -69,7 +69,8 @@ def type_seq(chars):
          '0': (0x30, 0x0B), '1': (0x31, 0x02), '2': (0x32, 0x03),
          '3': (0x33, 0x04), '4': (0x34, 0x05), '5': (0x35, 0x06),
          '6': (0x36, 0x07), '7': (0x37, 0x08), '8': (0x38, 0x09),
-         '9': (0x39, 0x0A), ' ': (0x20, 0x39), '\n': (0x0D, 0x1C)}
+         '9': (0x39, 0x0A), ' ': (0x20, 0x39), '\n': (0x0D, 0x1C),
+         '/': (0xBF, 0x35), '.': (0xBE, 0x34)}
     for ch in chars:
         if ch not in m:
             print('skip', repr(ch))

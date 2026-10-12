@@ -51478,3 +51478,2179 @@ r21|1  ready   user10     76  670000                                            
 r22|winpp@kernel:/docs$ stop                                                        |
 r23|scheduler stopped, all user procs terminated                                    |
 r24|                                                                                |
+
+
+===== 2026-10-12 S8 用户与权限全量实测 =====
+
+=== WinPP kernel boot ===
+kmain magic=0 mb=0
+[1] gdt ...
+[2] idt ...
+[3] pic ...
+[3b] device table ...
+[dev] registered 3 devices:
+[dev]   kbd major=1 type=1 irq=1 r=1 w=0 io=0
+[dev]   timer major=2 type=2 irq=0 r=0 w=0 io=1
+[dev]   com1 major=3 type=1 irq=4 r=0 w=1 io=0
+[4] timer ...
+[timer] init divisor=11931 expect 100Hz
+[5] kbd ...
+[6] cpu ...
+[7] pmm ...
+[pmm] total=16288 pages (65152 KB) kernel_end=134000 used=308
+[8] paging ...
+[pg] step1 pd alloc
+[pg] step2 identity map
+[pg] step3 vga pt
+[pg] step4 selfmap
+[pg] step5 cr3
+[pg] step6 cr0
+[pg] step7 after cr0
+[paging] ON cr3=134000 identity=1MB..65152KB vga+selfmap ok
+[9] kheap ...
+[kheap] base=800000 size=8192 KB
+[10] sched ...
+[10] sched ...
+[10b] user ...
+[user] init: root(uid=0) guest(uid=1), current=root
+[11] fs ...
+[fs] seed /secret.txt (0600 root)
+[fs] seed /public.txt (0644 root)
+[fs] seed /rootonly (0700 root dir)
+[fs] init: ramdisk 16 files x 4KB ready, cwd=/
+[11b] ipc ...
+[ipc] init: pipes + fifos + mq ready
+[12] all init ok, drawing UI ...
+[key 99]
+[key 104]
+[key 109]
+[key 111]
+[key 100]
+[key 32]
+[key 54]
+[key 52]
+[key 52]
+[key 32]
+[key 47]
+[key 115]
+[key 101]
+[key 99]
+[key 114]
+[key 101]
+[key 116]
+[key 46]
+[key 116]
+[key 120]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 00:23:41 [up 00:00:27] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|                                                                                |
+r8|                                                                                |
+r9|                                                                                |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[fs] chmod '/secret.txt' mode=1a4 uid=0
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 00:23:41 [up 00:00:27] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|                                                                                |
+r9|                                                                                |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 108]
+[key 111]
+[key 103]
+[key 105]
+[key 110]
+[key 32]
+[key 103]
+[key 117]
+[key 101]
+[key 115]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 00:50:07 [up 00:00:34] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|                                                                                |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[user] login guest -> uid=1
+[login] ok -> guest uid=1
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 00:50:07 [up 00:00:34] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 102]
+[key 115]
+[key 49]
+[key 49]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 01:09:01 [up 00:00:39] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[dbg] src=10e3a9 code=bc0107a031edb8
+[dbg] addrspace pd=148000 pt1=149000 code 680000->146000 stack 7a1000->147000
+[fs11] demo proc pid 1 uid=1
+[fs11] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 01:09:01 [up 00:00:39] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                    [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[pid1] user11 uid=[pid1] 001
+[fs] open '/public.txt' fd=1 (exist)
+[pid1] hello public!
+ [pid1]  pub-read-OK
+ [fs] open '/secret.txt' fd=0 (exist)
+[pid1] TOP SECRET!
+
+ [pid1]  sec-read-OK
+ [fs] open created '/guest.txt' fd=3 uid=1
+[pid1]  guest-write-OK
+ [fs] open '/guest.txt' fd=3 (exist)
+[pid1] perm!
+R[sched] pid1 -> pid0 (pd=134000 esp0=0)
+                            |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 116]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 111]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 01:13:56 [up 00:00:46] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|                     [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+                                                           |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 01:14:31 [up 00:00:47] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 108]
+[key 111]
+[key 103]
+[key 105]
+[key 110]
+[key 32]
+[key 114]
+[key 111]
+[key 111]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 01:41:12 [up 00:00:54] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[user] login root -> uid=0
+[login] ok -> root uid=0
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 01:41:12 [up 00:00:54] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 99]
+[key 104]
+[key 109]
+[key 111]
+[key 100]
+[key 32]
+[key 54]
+[key 48]
+[key 48]
+[key 32]
+[key 47]
+[key 115]
+[key 101]
+[key 99]
+[key 114]
+[key 101]
+[key 116]
+[key 46]
+[key 116]
+[key 120]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 02:19:04 [up 00:01:04] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# chmod 600 /secret.txt                                            |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[fs] chmod '/secret.txt' mode=180 uid=0
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 02:19:04 [up 00:01:04] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# chmod 600 /secret.txt                                            |
+r18|chmod ok: /secret.txt mode=600                                                  |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 108]
+[key 111]
+[key 103]
+[key 105]
+[key 110]
+[key 32]
+[key 103]
+[key 117]
+[key 101]
+[key 115]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 02:49:26 [up 00:01:12] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# chmod 600 /secret.txt                                            |
+r18|chmod ok: /secret.txt mode=600                                                  |
+r19|root@kernel:/# login guest                                                      |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[user] login guest -> uid=1
+[login] ok -> guest uid=1
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 02:49:26 [up 00:01:12] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# chmod 600 /secret.txt                                            |
+r18|chmod ok: /secret.txt mode=600                                                  |
+r19|root@kernel:/# login guest                                                      |
+r20|logged in as guest (uid=1)                                                      |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 102]
+[key 115]
+[key 49]
+[key 49]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:04:29 [up 00:01:16] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# chmod 600 /secret.txt                                            |
+r18|chmod ok: /secret.txt mode=600                                                  |
+r19|root@kernel:/# login guest                                                      |
+r20|logged in as guest (uid=1)                                                      |
+r21|guest@kernel:/$ fs11                                                            |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[dbg] src=10e3a9 code=bc0107a031edb8
+[dbg] addrspace pd=148000 pt1=149000 code 680000->146000 stack 7a1000->147000
+[fs11] demo proc pid 1 uid=1
+[fs11] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:04:29 [up 00:01:16] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# chmod 644 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=644                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                    [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[pid1] user11 uid=[pid1] 001
+[fs] open '/public.txt' fd=1 (exist)
+[pid1] hello public!
+ [pid1]  pub-read-OK
+ [fs] open '/secret.txt' EACCES uid=1
+[pid1]  sec-read-DENIED
+ [fs] open '/guest.txt' fd=3 (exist)
+[pid1]  guest-write-OK
+ [fs] open '/guest.txt' fd=3 (exist)
+[pid1] perm!
+u[sched] pid1 -> pid0 (pd=134000 esp0=0)
+                                        |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# chmod 600 /secret.txt                                            |
+r18|chmod ok: /secret.txt mode=600                                                  |
+r19|root@kernel:/# login guest                                                      |
+r20|logged in as guest (uid=1)                                                      |
+r21|guest@kernel:/$ fs11                                                            |
+r22|created perm-demo proc: pid 1 (uid=1)                                           |
+r23|scheduler started: permission demo (0.1s quantum)                               |
+r24|                                                                                |
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 116]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 111]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:11:31 [up 00:01:24] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|                                                                                |
+r5|root@kernel:/# chmod 644 /secret.txt                                            |
+r6|chmod ok: /secret.txt mode=644                                                  |
+r7|root@k[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+ernel:/# login guest                                                      |
+r8|logged in as guest (uid=1)                                                      |
+r9|guest@kernel:/$ fs11                                                            |
+r10|created perm-demo proc: pid 1 (uid=1)                                           |
+r11|scheduler started: permission demo (0.1s quantum)                               |
+r12|guest@kernel:/$ stop                                                            |
+r13|scheduler stopped, all user procs terminated                                    |
+r14|guest@kernel:/$ login root                                                      |
+r15|logged in as root (uid=0)                                                       |
+r16|root@kernel:/# chmod 600 /secret.txt                                            |
+r17|chmod ok: /secret.txt mode=600                                                  |
+r18|root@kernel:/# login guest                                                      |
+r19|logged in as guest (uid=1)                                                      |
+r20|guest@kernel:/$ fs11                                                            |
+r21|created perm-demo proc: pid 1 (uid=1)                                           |
+r22|scheduler started: permission demo (0.1s quantum)                               |
+r23|guest@kernel:/$ stop                                                            |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:11:31 [up 00:01:24] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|root@kernel:/# chmod 644 /secret.txt                                            |
+r5|chmod ok: /secret.txt mode=644                                                  |
+r6|root@kernel:/# login guest                                                      |
+r7|logged in as guest (uid=1)                                                      |
+r8|guest@kernel:/$ fs11                                                            |
+r9|created perm-demo proc: pid 1 (uid=1)                                           |
+r10|scheduler started: permission demo (0.1s quantum)                               |
+r11|guest@kernel:/$ stop                                                            |
+r12|scheduler stopped, all user procs terminated                                    |
+r13|guest@kernel:/$ login root                                                      |
+r14|logged in as root (uid=0)                                                       |
+r15|root@kernel:/# chmod 600 /secret.txt                                            |
+r16|chmod ok: /secret.txt mode=600                                                  |
+r17|root@kernel:/# login guest                                                      |
+r18|logged in as guest (uid=1)                                                      |
+r19|guest@kernel:/$ fs11                                                            |
+r20|created perm-demo proc: pid 1 (uid=1)                                           |
+r21|scheduler started: permission demo (0.1s quantum)                               |
+r22|guest@kernel:/$ stop                                                            |
+r23|scheduler stopped, all user procs terminated                                    |
+r24|                                                                                |
+[key 108]
+[key 111]
+[key 103]
+[key 105]
+[key 110]
+[key 32]
+[key 114]
+[key 111]
+[key 111]
+[key 116]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 05:28:01 [up 00:02:00] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|chmod ok: /secret.txt mode=644                                                  |
+r5|root@kernel:/# login guest                                                      |
+r6|logged in as guest (uid=1)                                                      |
+r7|guest@kernel:/$ fs11                                                            |
+r8|created perm-demo proc: pid 1 (uid=1)                                           |
+r9|scheduler started: permission demo (0.1s quantum)                               |
+r10|guest@kernel:/$ stop                                                            |
+r11|scheduler stopped, all user procs terminated                                    |
+r12|guest@kernel:/$ login root                                                      |
+r13|logged in as root (uid=0)                                                       |
+r14|root@kernel:/# chmod 600 /secret.txt                                            |
+r15|chmod ok: /secret.txt mode=600                                                  |
+r16|root@kernel:/# login guest                                                      |
+r17|logged in as guest (uid=1)                                                      |
+r18|guest@kernel:/$ fs11                                                            |
+r19|created perm-demo proc: pid 1 (uid=1)                                           |
+r20|scheduler started: permission demo (0.1s quantum)                               |
+r21|guest@kernel:/$ stop                                                            |
+r22|scheduler stopped, all user procs terminated                                    |
+r23|guest@kernel:/$ login root                                                      |
+r24|                                                                                |
+[user] login root -> uid=0
+[login] ok -> root uid=0
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 05:28:01 [up 00:02:00] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|root@kernel:/# login guest                                                      |
+r5|logged in as guest (uid=1)                                                      |
+r6|guest@kernel:/$ fs11                                                            |
+r7|created perm-demo proc: pid 1 (uid=1)                                           |
+r8|scheduler started: permission demo (0.1s quantum)                               |
+r9|guest@kernel:/$ stop                                                            |
+r10|scheduler stopped, all user procs terminated                                    |
+r11|guest@kernel:/$ login root                                                      |
+r12|logged in as root (uid=0)                                                       |
+r13|root@kernel:/# chmod 600 /secret.txt                                            |
+r14|chmod ok: /secret.txt mode=600                                                  |
+r15|root@kernel:/# login guest                                                      |
+r16|logged in as guest (uid=1)                                                      |
+r17|guest@kernel:/$ fs11                                                            |
+r18|created perm-demo proc: pid 1 (uid=1)                                           |
+r19|scheduler started: permission demo (0.1s quantum)                               |
+r20|guest@kernel:/$ stop                                                            |
+r21|scheduler stopped, all user procs terminated                                    |
+r22|guest@kernel:/$ login root                                                      |
+r23|logged in as root (uid=0)                                                       |
+r24|                                                                                |
+[key 108]
+[key 115]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 05:43:00 [up 00:02:04] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|logged in as guest (uid=1)                                                      |
+r5|guest@kernel:/$ fs11                                                            |
+r6|created perm-demo proc: pid 1 (uid=1)                                           |
+r7|scheduler started: permission demo (0.1s quantum)                               |
+r8|guest@kernel:/$ stop                                                            |
+r9|scheduler stopped, all user procs terminated                                    |
+r10|guest@kernel:/$ login root                                                      |
+r11|logged in as root (uid=0)                                                       |
+r12|root@kernel:/# chmod 600 /secret.txt                                            |
+r13|chmod ok: /secret.txt mode=600                                                  |
+r14|root@kernel:/# login guest                                                      |
+r15|logged in as guest (uid=1)                                                      |
+r16|guest@kernel:/$ fs11                                                            |
+r17|created perm-demo proc: pid 1 (uid=1)                                           |
+r18|scheduler started: permission demo (0.1s quantum)                               |
+r19|guest@kernel:/$ stop                                                            |
+r20|scheduler stopped, all user procs terminated                                    |
+r21|guest@kernel:/$ login root                                                      |
+r22|logged in as root (uid=0)                                                       |
+r23|root@kernel:/# ls                                                               |
+r24|                                                                                |
+[ls] /:
+  secret.txt ------ root 13
+  public.txt rw-r-- root 15
+  rootonly/ rwx--- root
+  guest.txt rw-r-- guest 7
+[ls] 4 entries
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 05:43:00 [up 00:02:04] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|guest@kernel:/$ login root                                                      |
+r5|logged in as root (uid=0)                                                       |
+r6|root@kernel:/# chmod 600 /secret.txt                                            |
+r7|chmod ok: /secret.txt mode=600                                                  |
+r8|root@kernel:/# login guest                                                      |
+r9|logged in as guest (uid=1)                                                      |
+r10|guest@kernel:/$ fs11                                                            |
+r11|created perm-demo proc: pid 1 (uid=1)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|guest@kernel:/$ stop                                                            |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|guest@kernel:/$ login root                                                      |
+r16|logged in as root (uid=0)                                                       |
+r17|root@kernel:/# ls                                                               |
+r18|/:                                                                              |
+r19|  secret.txt   ------ root 13                                                   |
+r20|  public.txt   rw-r-- root 15                                                   |
+r21|  rootonly    / rwx--- root                                                     |
+r22|  guest.txt    rw-r-- guest 7                                                   |
+r23|4 entries                                                                       |
+r24|                                                                                |
+[key 102]
+[key 115]
+[key 49]
+[key 49]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 06:36:02 [up 00:02:18] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|logged in as root (uid=0)                                                       |
+r5|root@kernel:/# chmod 600 /secret.txt                                            |
+r6|chmod ok: /secret.txt mode=600                                                  |
+r7|root@kernel:/# login guest                                                      |
+r8|logged in as guest (uid=1)                                                      |
+r9|guest@kernel:/$ fs11                                                            |
+r10|created perm-demo proc: pid 1 (uid=1)                                           |
+r11|scheduler started: permission demo (0.1s quantum)                               |
+r12|guest@kernel:/$ stop                                                            |
+r13|scheduler stopped, all user procs terminated                                    |
+r14|guest@kernel:/$ login root                                                      |
+r15|logged in as root (uid=0)                                                       |
+r16|root@kernel:/# ls                                                               |
+r17|/:                                                                              |
+r18|  secret.txt   ------ root 13                                                   |
+r19|  public.txt   rw-r-- root 15                                                   |
+r20|  rootonly    / rwx--- root                                                     |
+r21|  guest.txt    rw-r-- guest 7                                                   |
+r22|4 entries                                                                       |
+r23|root@kernel:/# fs11                                                             |
+r24|                                                                                |
+[dbg] src=10e3a9 code=bc0107a031edb8
+[dbg] addrspace pd=148000 pt1=149000 code 680000->146000 stack 7a1000->147000
+[fs11] demo proc pid 1 uid=0
+[fs11] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 06:36:02 [up 00:02:18] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|chmod ok: /secret.txt mode=600                                                  |
+r5|root@kernel:/# login guest                                                      |
+r6|logged in as guest (uid=1)                                                      |
+r7|guest@kernel:/$ fs11                                                            |
+r8|created perm-demo proc: pid 1 (uid=1)                                           |
+r9|scheduler started: permission demo [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[pid1] user11 uid=[pid1] 000
+[fs] open '/public.txt' fd=1 (exist)
+[pid1] hello public!
+ [pid1]  pub-read-OK
+ [fs] open '/secret.txt' fd=0 (exist)
+[pid1] TOP SECRET!
+
+ [pid1]  sec-read-OK
+ [fs] open '/guest.txt' fd=3 (exist)
+[pid1]  guest-write-OK
+ [fs] open '/guest.txt' fd=3 (exist)
+[pid1] perm!
+R[sched] pid1 -> pid0 (pd=134000 esp0=0)
+(0.1s quantum)                               |
+r10|guest@kernel:/$ stop                                                            |
+r11|scheduler stopped, all user procs terminated                                    |
+r12|guest@kernel:/$ login root                                                      |
+r13|logged in as root (uid=0)                                                       |
+r14|root@kernel:/# ls                                                               |
+r15|/:                                                                              |
+r16|  secret.txt   ------ root 13                                                   |
+r17|  public.txt   rw-r-- root 15                                                   |
+r18|  rootonly    / rwx--- root                                                     |
+r19|  guest.txt    rw-r-- guest 7                                                   |
+r20|4 entries                                                                       |
+r21|root@kernel:/# fs11                                                             |
+r22|created perm-demo proc: pid 1 (uid=0)                                           |
+r23|scheduler started: permission demo (0.1s quantum)                               |
+r24|                                                                          [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+      |
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 116]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 111]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 06:41:58 [up 00:02:26] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|root@kernel:/# login guest                                                      |
+r5|logged in as guest (uid=1)                                                      |
+r6|guest@kernel:/$ fs11                                                            |
+r7|created perm-demo proc: pid 1 (uid=1)                                           |
+r8|scheduler started: permission demo (0.1s quantum)                               |
+r9|guest@kernel:/$ stop                                                            |
+r10|scheduler stopped, all user procs terminated                                    |
+r11|guest@kernel:/$ login root                                                      |
+r12|logged i[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+n as root (uid=0)                                                       |
+r13|root@kernel:/# ls                                                               |
+r14|/:                                                                              |
+r15|  secret.txt   ------ root 13                                                   |
+r16|  public.txt   rw-r-- root 15                                                   |
+r17|  rootonly    / rwx--- root                                                     |
+r18|  guest.txt    rw-r-- guest 7                                                   |
+r19|4 entries                                                                       |
+r20|root@kernel:/# fs11                                                             |
+r21|created perm-demo proc: pid 1 (uid=0)                                           |
+r22|scheduler started: permission demo (0.1s quantum)                               |
+r23|root@kernel:/# s[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+top                                                             |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 06:41:58 [up 00:02:26] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|logged in as guest (uid=1)                                                      |
+r5|guest@kernel:/$ fs11                                                            |
+r6|created perm-demo proc: pid 1 (uid=1)                                           |
+r7|scheduler started: permission demo (0.1s quantum)                               |
+r8|guest@kernel:/$ stop                                                            |
+r9|scheduler stopped, all user procs terminated                                    |
+r10|guest@kernel:/$ login root                                                      |
+r11|logged in as root (uid=0)                                                       |
+r12|root@kernel:/# ls                                                               |
+r13|/:                                                                              |
+r14|  secret.txt   ------ root 13                                                   |
+r15|  public.txt   rw-r-- root 15                                                   |
+r16|  rootonly    / rwx--- root                                                     |
+r17|  guest.txt    rw-r-- guest 7                                                   |
+r18|4 entries                                                                       |
+r19|root@kernel:/# fs11                                                             |
+r20|created perm-demo proc: pid 1 (uid=0)                                           |
+r21|scheduler started: permission demo (0.1s quantum)                               |
+r22|root@kernel:/# stop                                                             |
+r23|scheduler stopped, all user procs terminated                                    |
+r24|                                                                                |
+[key 109]
+[key 107]
+[key 100]
+[key 105]
+[key 114]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 07:36:59 [up 00:02:41] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|guest@kernel:/$ fs11                                                            |
+r5|created perm-demo proc: pid 1 (uid=1)                                           |
+r6|scheduler started: permission demo (0.1s quantum)                               |
+r7|guest@kernel:/$ stop                                                            |
+r8|scheduler stopped, all user procs terminated                                    |
+r9|guest@kernel:/$ login root                                                      |
+r10|logged in as root (uid=0)                                                       |
+r11|root@kernel:/# ls                                                               |
+r12|/:                                                                              |
+r13|  secret.txt   ------ root 13                                                   |
+r14|  public.txt   rw-r-- root 15                                                   |
+r15|  rootonly    / rwx--- root                                                     |
+r16|  guest.txt    rw-r-- guest 7                                                   |
+r17|4 entries                                                                       |
+r18|root@kernel:/# fs11                                                             |
+r19|created perm-demo proc: pid 1 (uid=0)                                           |
+r20|scheduler started: permission demo (0.1s quantum)                               |
+r21|root@kernel:/# stop                                                             |
+r22|scheduler stopped, all user procs terminated                                    |
+r23|root@kernel:/# mkdir                                                            |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 07:36:59 [up 00:02:41] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|created perm-demo proc: pid 1 (uid=1)                                           |
+r5|scheduler started: permission demo (0.1s quantum)                               |
+r6|guest@kernel:/$ stop                                                            |
+r7|scheduler stopped, all user procs terminated                                    |
+r8|guest@kernel:/$ login root                                                      |
+r9|logged in as root (uid=0)                                                       |
+r10|root@kernel:/# ls                                                               |
+r11|/:                                                                              |
+r12|  secret.txt   ------ root 13                                                   |
+r13|  public.txt   rw-r-- root 15                                                   |
+r14|  rootonly    / rwx--- root                                                     |
+r15|  guest.txt    rw-r-- guest 7                                                   |
+r16|4 entries                                                                       |
+r17|root@kernel:/# fs11                                                             |
+r18|created perm-demo proc: pid 1 (uid=0)                                           |
+r19|scheduler started: permission demo (0.1s quantum)                               |
+r20|root@kernel:/# stop                                                             |
+r21|scheduler stopped, all user procs terminated                                    |
+r22|root@kernel:/# mkdir                                                            |
+r23|usage: mkdir <path>                                                             |
+r24|                                                                                |
+[key 32]
+[key 47]
+[key 100]
+[key 111]
+[key 99]
+[key 115]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 07:52:02 [up 00:02:45] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|scheduler started: permission demo (0.1s quantum)                               |
+r5|guest@kernel:/$ stop                                                            |
+r6|scheduler stopped, all user procs terminated                                    |
+r7|guest@kernel:/$ login root                                                      |
+r8|logged in as root (uid=0)                                                       |
+r9|root@kernel:/# ls                                                               |
+r10|/:                                                                              |
+r11|  secret.txt   ------ root 13                                                   |
+r12|  public.txt   rw-r-- root 15                                                   |
+r13|  rootonly    / rwx--- root                                                     |
+r14|  guest.txt    rw-r-- guest 7                                                   |
+r15|4 entries                                                                       |
+r16|root@kernel:/# fs11                                                             |
+r17|created perm-demo proc: pid 1 (uid=0)                                           |
+r18|scheduler started: permission demo (0.1s quantum)                               |
+r19|root@kernel:/# stop                                                             |
+r20|scheduler stopped, all user procs terminated                                    |
+r21|root@kernel:/# mkdir                                                            |
+r22|usage: mkdir <path>                                                             |
+r23|root@kernel:/#  /docs                                                           |
+r24|                                                                                |
+=== screen dump (after-unknown) ===
+r0| WinPP OS v0.1. 2026-10-13 07:52:02 [up 00:02:45] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|guest@kernel:/$ stop                                                            |
+r5|scheduler stopped, all user procs terminated                                    |
+r6|guest@kernel:/$ login root                                                      |
+r7|logged in as root (uid=0)                                                       |
+r8|root@kernel:/# ls                                                               |
+r9|/:                                                                              |
+r10|  secret.txt   ------ root 13                                                   |
+r11|  public.txt   rw-r-- root 15                                                   |
+r12|  rootonly    / rwx--- root                                                     |
+r13|  guest.txt    rw-r-- guest 7                                                   |
+r14|4 entries                                                                       |
+r15|root@kernel:/# fs11                                                             |
+r16|created perm-demo proc: pid 1 (uid=0)                                           |
+r17|scheduler started: permission demo (0.1s quantum)                               |
+r18|root@kernel:/# stop                                                             |
+r19|scheduler stopped, all user procs terminated                                    |
+r20|root@kernel:/# mkdir                                                            |
+r21|usage: mkdir <path>                                                             |
+r22|root@kernel:/#  /docs                                                           |
+r23|sh: command not found: /docs                                                    |
+r24|                                                                                |
+[key 102]
+[key 115]
+[key 50]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 08:07:00 [up 00:02:49] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|scheduler stopped, all user procs terminated                                    |
+r5|guest@kernel:/$ login root                                                      |
+r6|logged in as root (uid=0)                                                       |
+r7|root@kernel:/# ls                                                               |
+r8|/:                                                                              |
+r9|  secret.txt   ------ root 13                                                   |
+r10|  public.txt   rw-r-- root 15                                                   |
+r11|  rootonly    / rwx--- root                                                     |
+r12|  guest.txt    rw-r-- guest 7                                                   |
+r13|4 entries                                                                       |
+r14|root@kernel:/# fs11                                                             |
+r15|created perm-demo proc: pid 1 (uid=0)                                           |
+r16|scheduler started: permission demo (0.1s quantum)                               |
+r17|root@kernel:/# stop                                                             |
+r18|scheduler stopped, all user procs terminated                                    |
+r19|root@kernel:/# mkdir                                                            |
+r20|usage: mkdir <path>                                                             |
+r21|root@kernel:/#  /docs                                                           |
+r22|sh: command not found: /docs                                                    |
+r23|root@kernel:/# fs2                                                              |
+r24|                                                                                |
+[dbg] src=10e28e code=bc01079031edb8
+[dbg] addrspace pd=148000 pt1=149000 code 670000->146000 stack 791000->147000
+[fs2] demo proc pid 1
+[fs2] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 08:07:00 [up 00:02:49] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|logged in as root (uid=0)                                                       |
+r5|root@kernel:/# ls                                                               |
+r6|/:                                                                              |
+r7|  secret.txt   ------ root 13                                                   |
+r8|  public.txt   rw-r-- root 15                                                   |
+r9|  rootonly    / rwx--- root                                                     |
+r10|  guest.txt    rw-r-- guest 7                                               [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] mkdir '/docs' fd=4 uid=0
+[fs] open created '/docs/a.txt' fd=5 uid=0
+[fs] chdir '/docs'
+[fs] open created '/docs/b.txt' fd=6 uid=0
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+    |
+r11|4 entries                                                                       |
+r12|root@kernel:/# fs11                                                             |
+r13|created perm-demo proc: pid 1 (uid=0)                                           |
+r14|scheduler started: permission demo (0.1s quantum)                               |
+r15|root@kernel:/# stop                                                             |
+r16|scheduler stopped, all user procs terminated                                    |
+r17|root@kernel:/# mkdir                                                            |
+r18|usage: mkdir <path>                                                             |
+r19|root@kernel:/#  /docs                                                           |
+r20|sh: command not found: /docs                                                    |
+r21|root@kernel:/# fs2                                                              |
+r22|created dir-demo proc: pid 1                                                    |
+r23|scheduler started: dir demo (0.1s quantum)                                      |
+r24|                                                                                |
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 116]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 111]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=6 (exist)
+[fs] open '/docs/b.txt' fd=6 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 08:12:08 [up 00:02:56] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|root@kernel:/# ls                                                               |
+r5|/:                                                                              |
+r6|  secret.txt   ------ root 13                                                   |
+r7|  public.txt   rw-r-- root 15                                                   |
+r8|  rootonly    / rwx--- root                                                     |
+r9|  guest.txt    rw-r-- guest 7                                                   |
+r10|4 entries                                                                       |
+r11|root@kernel:/# fs11                                                             |
+r12|created perm-demo proc: pid 1 (uid=0)                                           |
+r13|scheduler started: permission demo (0.1s quantum)                               |
+r14|root@kernel:/# stop                                                             |
+r15|scheduler stopped, all user procs terminated                                    |
+r16|root@kernel:/# mkdir                                                            |
+r17|usage: mkdir <path>                                                             |
+r18|root@kernel:/#  /docs                                                           |
+r19|sh: command not found: /docs                                                    |
+r20|root@kernel:/# fs2                                                              |
+r21|created dir-demo proc: pid 1                                                    |
+r22|scheduler started: dir demo (0.1s quantum)                                      |
+r23|root@kernel:/docs# stop                                                         |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 08:12:08 [up 00:02:56] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|/:                                                                              |
+r5|  secret.txt   ------ root 13                                                   |
+r6|  public.txt   rw-r-- root 15                                                   |
+r7|  rootonly    / rwx--- root                                                     |
+r8|  guest.txt    rw-r-- guest 7                                                   |
+r9|4 entries                                                                       |
+r10|root@kernel:/# fs11                                                             |
+r11|created perm-demo proc: pid 1 (uid=0)                                           |
+r12|scheduler started: permission demo (0.1s quantum)                               |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# mkdir                                                            |
+r16|usage: mkdir <path>                                                             |
+r17|root@kernel:/#  /docs                                                           |
+r18|sh: command not found: /docs                                                    |
+r19|root@kernel:/# fs2                                                              |
+r20|created dir-demo proc: pid 1                                                    |
+r21|scheduler started: dir demo (0.1s quantum)                                      |
+r22|root@kernel:/docs# stop                                                         |
+r23|scheduler stopped, all user procs terminated                                    |
+r24|                                                                                |

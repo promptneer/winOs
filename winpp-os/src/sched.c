@@ -7,6 +7,7 @@
 #include "gdt.h"
 #include "fs.h"
 #include "ipc.h"
+#include "user.h"
 #include "users_inc.h"
 
 /* 用户代码/栈映射标志：P + W + U（用户态可访问；内核页无 U 位 → 用户访问 #PF） */
@@ -134,6 +135,7 @@ void sched_init(void)
         procs[i].code_page = procs[i].stack_page = procs[i].kstack_page = 0;
         procs[i].pd_page = procs[i].pt1_page = 0;
         procs[i].ticks_run = 0;
+        procs[i].uid = 0;
     }
     procs[0].pid = 0;
     procs[0].state = PROC_RUNNING;    /* shell 初始即运行 */
@@ -142,6 +144,7 @@ void sched_init(void)
     procs[0].stack_vaddr = 0;
     procs[0].pd_page = read_cr3();    /* shell 沿用 boot PD */
     procs[0].pt1_page = 0;
+    procs[0].uid = user_current_uid();   /* S8: shell 初始身份（root） */
     k_strcpy(procs[0].name, "shell");
     sched_current = &procs[0];
     sched_on = 0;
@@ -216,6 +219,7 @@ int sched_create(const char *name, u32 entry, u32 stack_vaddr,
     p->pt1_page = pt1;
     p->ticks_run = 0;
     p->reaped = 0;
+    p->uid = user_current_uid();       /* S8: 进程继承创建者身份 */
     k_strcpy(p->name, name);
     proc_init_frame(p, entry, stack_vaddr);
 
@@ -268,6 +272,7 @@ int sched_fork(pcb_t *parent, const regs_t *r)
     c->pt1_page = pt1;
     c->ticks_run = 0;
     c->reaped = 0;
+    c->uid = parent->uid;              /* S8: fork 继承父身份 */
     k_strcpy(c->name, parent->name);
     c->name[0] = 'f';              /* "user1" -> "fuser1"（同 pid 前缀） */
 
@@ -404,12 +409,12 @@ void sched_tick(regs_t *r)
 void sched_ps(void)
 {
     static const char *st[4] = { "empty", "ready", "run", "zombie" };
-    vga_printf("PID  STATE   NAME       TICKS  CODE\n");
+    vga_printf("PID  STATE   NAME       UID  TICKS  CODE\n");
     for (u32 i = 0; i < nprocs; i++) {
         if (procs[i].state == PROC_EMPTY) continue;
-        vga_printf("%3u  %-7s %-10s %5u  %x\n",
+        vga_printf("%3u  %-7s %-10s %3u %5u  %x\n",
                    procs[i].pid, st[procs[i].state], procs[i].name,
-                   procs[i].ticks_run, procs[i].code_vaddr);
+                   procs[i].uid, procs[i].ticks_run, procs[i].code_vaddr);
     }
 }
 
@@ -497,6 +502,13 @@ void syscall_handler(regs_t *r)
     }
     else if (nr == 14) {            /* chdir(path)：S6-2 切换当前目录 */
         r->eax = (u32)fs_chdir((const char *)r->ebx);
+    }
+    else if (nr == 15) {            /* getuid()：S8 返回当前进程 UID */
+        r->eax = (sched_current && sched_current->pid != 0)
+                 ? sched_current->uid : user_current_uid();
+    }
+    else if (nr == 16) {            /* chmod(path, mode)：S8 改文件权限 */
+        r->eax = (u32)fs_chmod((const char *)r->ebx, r->ecx);
     }
     else {
         r->eax = -1;

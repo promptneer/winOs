@@ -43,7 +43,8 @@ $users = @(
   @{ name="user7"; ld="user7.ld" },
   @{ name="user8"; ld="user8.ld" },
   @{ name="user9"; ld="user9.ld" },
-  @{ name="user10"; ld="user10.ld" }
+  @{ name="user10"; ld="user10.ld" },
+  @{ name="user11"; ld="user11.ld" }
 )
 foreach ($u in $users) {
   $uargs = @(
@@ -70,7 +71,7 @@ foreach ($u in $users) {
 
 # 生成 users_inc.c/.h（C 数组内嵌用户程序；zig cc 的 lld 不支持 .incbin，改用数组最稳）
 python -c "
-names=['user1','user2','user3','user4','user5','user6','user7','user8','user9','user10']
+names=['user1','user2','user3','user4','user5','user6','user7','user8','user9','user10','user11']
 lines_c=[]; lines_h=['#pragma once']
 for n in names:
     d=open(r'$root\src\%s.bin' % n,'rb').read()

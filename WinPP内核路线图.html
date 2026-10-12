@@ -57,7 +57,7 @@
 <div class="wrap">
   <div class="crumb">WINPP OS / ROADMAP / S1 → S11</div>
   <h1>WinPP 内核开发<span class="grad">路线图</span></h1>
-  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S6 已实机取证并推 GitHub</b>，<b>S7 是当前战场</b>，S8–S11 为规划（可裁剪、可调序）。</p>
+  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S8 已实机取证并推 GitHub</b>，<b>S9 是当前战场</b>，S10–S11 为规划（可裁剪、可调序）。</p>
 
   <div class="legend">
     <span><span class="sw" style="background:var(--green)"></span>已完成</span>
@@ -110,25 +110,25 @@
         <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node now">
-        <div class="sn">S7 · 现在</div>
+      <div class="node done">
+        <div class="sn">S7</div>
         <div class="nm">设备驱动</div>
         <div class="ds">键盘 · 定时器 · 串口正式驱动化 · 中断处理完善</div>
-        <div class="st">下一步 · 我们在这里</div>
+        <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node plan">
+      <div class="node done">
         <div class="sn">S8</div>
         <div class="nm">用户与权限</div>
         <div class="ds">root/UID · 文件属主 · rwx 权限位 · 提示符 #/$</div>
-        <div class="st">规划 · 新插入</div>
+        <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node plan">
-        <div class="sn">S9</div>
+      <div class="node now">
+        <div class="sn">S9 · 现在</div>
         <div class="nm">信号与同步</div>
         <div class="ds">sleep 睡眠 · wait 等待 · 信号量 · 互斥锁</div>
-        <div class="st">规划</div>
+        <div class="st">下一步 · 我们在这里</div>
       </div>
       <div class="arrow">→</div>
       <div class="node plan">
@@ -155,7 +155,7 @@
   </div>
 
   <div class="note">
-    <b>当前位置：</b>S1–S6 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径），推送 GitHub。下一战场 <b>S7 设备驱动</b>。应需求，<b>S8 用户与权限已插入</b>（root/UID/文件权限），原"信号与同步"顺延为 S9、GUI 为 S10、网络为 S11。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
+    <b>当前位置：</b>S1–S8 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径 → 设备驱动 → 用户与权限），推送 GitHub。下一战场 <b>S9 信号与同步</b>（sleep/wait/信号量/互斥锁）。GUI 为 S10、网络为 S11。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
   </div>
 
   <div class="card">
@@ -164,8 +164,7 @@
       把键盘、定时器、串口这些"外设"从散落的代码整理成正式的设备驱动层（device table + 统一接口），中断处理按设备分发。
     </div>
     <div class="it">
-      <h4>S8 · 用户与权限</h4>
-      新增 root 用户（UID 0）、普通用户、文件属主与 rwx 权限位；root 提示符 #、普通用户 $。为 S10 GUI 登录打地基。
+      <h4>S8 · 用户与权限</h4>      新增 root 用户（UID 0）、普通用户、文件属主与 rwx 权限位；root 提示符 #、普通用户 $。为 S10 GUI 登录打地基。
     </div>
     <div class="it">
       <h4>S9 · 信号与同步</h4>

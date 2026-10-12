@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第八阶段进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ctext x='16' y='23' font-size='18' font-family='monospace' fill='%2334d399' text-anchor='middle'%3E%E2%98%B0%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --text:#d7dee8; --dim:#7d8a9c; --green:#34d399; --cyan:#38bdf8;
+    --amber:#fbbf24; --red:#f87171; --mono:'Consolas','Courier New',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.65;padding:34px 18px 90px}
+  .wrap{max-width:1120px;margin:0 auto}
+  .term{font-family:var(--mono);font-size:13px}
+  .hero{border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#0f1720,#10202b 70%);padding:34px 38px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 14px;border-radius:99px;letter-spacing:.08em;margin-bottom:16px}
+  h1{font-size:30px;font-weight:800;line-height:1.3}
+  h1 .grad{background:linear-gradient(90deg,#34d399,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:12px;font-size:14.5px;color:var(--dim);max-width:980px}
+  .sub b{color:var(--green)}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+  .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;font-family:var(--mono);font-size:13px;min-width:130px}
+  .stat .v{font-size:22px;font-weight:700;color:var(--green)}
+  .stat .k{color:var(--dim);font-size:11.5px;margin-top:2px}
+  .sec{margin-top:38px}
+  .sec h2{font-size:20px;font-weight:800;border-left:4px solid var(--green);padding-left:14px;margin-bottom:6px}
+  .sec .hsub{font-size:13px;color:var(--dim);margin-bottom:18px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:20px 22px}
+  .card .num{font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.35);padding:2px 10px;border-radius:6px;display:inline-block}
+  .card h3{font-size:16.5px;font-weight:700;margin:10px 0 6px}
+  .card .plain{font-size:13.5px;color:var(--dim);margin-bottom:10px}
+  .card .plain b{color:var(--text)}
+  .card ul{list-style:none;font-size:13px;color:var(--text)}
+  .card ul li{padding:3px 0 3px 18px;position:relative}
+  .card ul li:before{content:'▸';position:absolute;left:0;color:var(--green)}
+  .card .ok{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 12px;border-radius:99px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;table-layout:fixed}
+  th{background:var(--panel2);color:var(--cyan);font-family:var(--mono);font-weight:700;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-word}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--green)}
+  td .mono{font-family:var(--mono);font-size:12.5px;color:var(--amber)}
+  .ev{border:1px solid var(--line);border-radius:12px;background:#0a0d12;padding:16px 18px;margin-bottom:16px}
+  .ev .eh{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;margin-bottom:10px;color:var(--dim)}
+  .ev .eh .tag3{color:var(--green)}
+  .ev pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#9fd8b8;white-space:pre-wrap;word-break:break-all}
+  .ev pre .c{color:#566173}
+  .ev pre .r{color:#f87171}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .shot img{width:100%;display:block;background:#000}
+  .shot .cap{font-family:var(--mono);font-size:12px;color:var(--dim);padding:10px 14px}
+  .bug{border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.06);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .bug h4{font-size:14px;color:var(--red);margin-bottom:6px}
+  .bug p{font-size:13px;color:var(--text)}
+  .bug .fx{color:var(--green)}
+  .tl{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .tl .node{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 14px;font-size:12.5px;min-width:92px;text-align:center}
+  .tl .node b{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:2px}
+  .tl .node.done{border-color:rgba(52,211,153,.45)}
+  .tl .node.done span{color:var(--green)}
+  .tl .node.now{border-color:var(--amber);background:rgba(251,191,36,.08)}
+  .tl .node.now b{color:var(--amber)}
+  .tl .node.now span{color:var(--amber)}
+  .tl .arrow{align-self:center;color:var(--dim);font-family:var(--mono)}
+  .foot{margin-top:34px;font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center}
+  @media (max-width:760px){
+    h1{font-size:23px}
+    .stats .stat{min-width:calc(50% - 8px)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">WINPP OS · STAGE 8 · USERS &amp; PERMISSIONS</span>
+    <h1>第八阶段：<span class="grad">用户与权限（root / UID / 文件 rwx）</span></h1>
+    <p class="sub">一句话意义：这台系统第一次有了<b>"主人"和"客人"</b>——root 是管理员（uid=0，想干什么干什么），guest 是普通用户；每个文件/目录都标了<b>谁拥有它、谁能读、谁能写</b>。guest 想读 root 的私密文件？<b>被拒绝（EACCES）</b>。全部 Bochs 实机 + 串口 + 截图验证通过。</p>
+    <div class="stats">
+      <div class="stat"><div class="v">2</div><div class="k">账户（root/guest）</div></div>
+      <div class="stat"><div class="v">17</div><div class="k">系统调用（新增 getuid/chmod）</div></div>
+      <div class="stat"><div class="v">6</div><div class="k">新增 shell 命令</div></div>
+      <div class="stat"><div class="v">0</div><div class="k">PAGE_FAULT（全程）</div></div>
+      <div class="stat"><div class="v">#/$</div><div class="k">提示符随身份切换</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>三大件：是什么、怎么用</h2>
+    <div class="hsub">大白话对照 —— 系统从"所有人都能碰所有文件"变成"各人有各人的天地"。</div>
+    <div class="cards">
+      <div class="card">
+        <span class="num">S8-1 用户与身份</span>
+        <h3>用户表 + UID + 提示符</h3>
+        <div class="plain">user.c 维护账户表：<b>root(uid=0)</b> 管理员、<b>guest(uid=1)</b> 普通用户。shell 当前身份用 <span class="term">user_current_uid()</span>，提示符显示 <b>用户名 + #(root)/$(普通)</b>。</div>
+        <ul>
+          <li>login &lt;user&gt; 切换身份、whoami、id</li>
+          <li>每个进程携带 uid（创建时继承）</li>
+          <li>syscall 15 <span class="term">getuid()</span>：进程查自己身份</li>
+        </ul>
+        <span class="ok">实测通过 · root/guest 切换正常</span>
+      </div>
+      <div class="card">
+        <span class="num">S8-2 文件权限 rwx</span>
+        <h3>owner + mode + 检查</h3>
+        <div class="plain">每个文件/目录记 <b>属主 UID</b> 和 <b>mode</b>（owner rwx + other rwx 六位）。读写、建目录、进目录都<b>先查权限</b>；uid=0 恒放行。</div>
+        <ul>
+          <li>预置：/secret.txt 0600（仅 root）、/public.txt 0644（人人可读）、/rootonly 0700（仅 root 可进）</li>
+          <li>创建者即属主，新文件默认 0644</li>
+          <li>syscall 16 <span class="term">chmod()</span> 动态改权限</li>
+        </ul>
+        <span class="ok">实测通过 · 拒绝/放行闭环</span>
+      </div>
+      <div class="card">
+        <span class="num">S8-3 权限演示进程</span>
+        <h3>user11 权限闭环</h3>
+        <div class="plain">user11 用 <span class="term">getuid</span> 报身份，然后实测三件事：读公开文件（应 OK）、读私有文件（root OK / guest 拒）、写自己的文件（OK）。</div>
+        <ul>
+          <li>同一份代码，root 与 guest 各跑一轮对比</li>
+          <li>串口铁证：sec-read-OK vs sec-read-DENIED</li>
+          <li>chmod 644→guest 可读；chmod 600→guest 被拒（实时生效）</li>
+        </ul>
+        <span class="ok">实测通过 · 权限闭环完整</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>新增命令与系统调用</h2>
+    <div class="hsub">终端输入这些命令，体验"身份与权限"。</div>
+    <table>
+      <colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+      <tr><th>命令 / 调用</th><th>作用</th></tr>
+      <tr><td><b>login &lt;user&gt;</b></td><td>切换身份（root 或 guest），提示符随之变 # 或 $</td></tr>
+      <tr><td><b>whoami</b></td><td>显示当前用户名</td></tr>
+      <tr><td><b>id</b></td><td>显示 uid / gid</td></tr>
+      <tr><td><b>chmod &lt;oct&gt; &lt;path&gt;</b></td><td>改文件权限（八进制，如 644/600/755），root/属主可改</td></tr>
+      <tr><td><b>fs11</b></td><td>启动权限演示进程 user11（getuid + 读公开/私有 + 写文件）</td></tr>
+      <tr><td><b>syscall 15 getuid()</b></td><td>用户进程查询自己的 UID</td></tr>
+      <tr><td><b>syscall 16 chmod()</b></td><td>用户进程改文件权限</td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <h2>串口铁证（COM1）</h2>
+    <div class="hsub">Bochs 2.8 实机，全程 0 页错误。同一份 user11，两种身份，结果相反。</div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">guest 身份（uid=1）跑 user11</span><span>PAGE_FAULT = 0</span></div>
+      <pre>[user] login guest -> uid=1
+[fs11] demo proc pid 1 uid=1
+[pid1] user11 uid=001          <span class="c"># getuid = 1（guest）</span>
+[pid1]  pub-read-OK            <span class="c"># 公开文件 0644：人人可读 ✓</span>
+[fs] open '/secret.txt' EACCES uid=1
+[pid1]  sec-read-DENIED        <span class="r"># 私有文件 0600：guest 被拒 ✓✓</span>
+[fs] open created '/guest.txt' fd=3 uid=1   <span class="c"># guest 建自己的文件，属主=1</span>
+[pid1]  guest-write-OK</pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">root 身份（uid=0）跑 user11</span><span>PAGE_FAULT = 0</span></div>
+      <pre>[user] login root -> uid=0
+[fs11] demo proc pid 1 uid=0
+[pid1] user11 uid=000          <span class="c"># getuid = 0（root）</span>
+[pid1]  pub-read-OK
+[fs] open '/secret.txt' fd=0 (exist)
+[pid1]  sec-read-OK            <span class="c"># root 读私有文件：放行 ✓</span>
+[pid1]  guest-write-OK</pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">chmod 动态改权限 + cd 目录权限</span><span>实时生效</span></div>
+      <pre>[fs] chmod '/secret.txt' mode=1a4 uid=0    <span class="c"># root: chmod 644（放权）</span>
+[fs] open '/secret.txt' fd=0 (exist)  [pid1] sec-read-OK     <span class="c"># guest 立刻能读了 ✓</span>
+[fs] chmod '/secret.txt' mode=180 uid=0    <span class="c"># root: chmod 600（收紧）</span>
+[fs] open '/secret.txt' EACCES uid=1  [pid1] sec-read-DENIED <span class="r"># guest 立刻被拒 ✓</span>
+[fs] chdir '/rootonly' EACCES (no x)       <span class="c"># guest 进 root 私有目录被拒</span>
+[fs] chdir '/rootonly'                     <span class="c"># root 进入成功</span></pre>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>实测截图</h2>
+    <div class="shots">
+      <div class="shot"><img src="assets/s8-01-perms.png" alt="权限列表"><div class="cap">ls 权限列表：mode + 属主 + 提示符 root@kernel:/ #</div></div>
+      <div class="shot"><img src="assets/s8-02-user11.png" alt="user11 运行"><div class="cap">user11 权限演示进程运行（uid + 读公开/私有文件）</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>设计修正</h2>
+    <div class="bug">
+      <h4>修正 1：chmod 模式用十进制解析，与 Linux 八进制语义不符</h4>
+      <p>最初 k_atoi("644")=644 十进制，与 Linux 的 <span class="term">chmod 644</span>（八进制）含义完全不同。修正：<span class="fx">新增 k_octal 八进制解析，"644" → 0o644。</span></p>
+    </div>
+    <div class="bug">
+      <h4>修正 2（测试工具）：注入脚本缺 '/' '.' 键映射</h4>
+      <p>Bochs 注入脚本字符表没有 <span class="term">/</span> 和 <span class="term">.</span>，导致 <span class="term">/secret.txt</span> 实际敲成 <span class="term">secrettxt</span>。修正：<span class="fx">_sendkeys.py 补 VK 0xBF(/) 与 0xBE(.) 映射。</span></p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>开发时间线</h2>
+    <div class="tl">
+      <div class="node done"><b>S1</b><span>软盘引导</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S2</b><span>分页内存</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S3</b><span>用户态+任务切换</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S4</b><span>地址空间/fork/exec/fs</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S5</b><span>进程间通信 IPC</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S6</b><span>文件系统目录/路径</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S7</b><span>设备驱动</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S8</b><span>用户与权限</span></div><span class="arrow">→</span>
+      <div class="node now"><b>S9</b><span>信号与同步（下一步）</span></div><span class="arrow">→</span>
+      <div class="node"><b>S10</b><span>GUI 窗口</span></div><span class="arrow">→</span>
+      <div class="node"><b>S11</b><span>网络</span></div>
+    </div>
+  </div>
+
+  <div class="foot">WinPP OS · 第八阶段进度报告 · 2026-10-12 · 全部 Bochs 实测取证</div>
+</div>
+</body>
+</html>

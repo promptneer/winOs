@@ -34,6 +34,7 @@ typedef struct {
     u32  pd_page;        /* 进程独立页目录（S4：0=沿用 boot PD，仅 shell） */
     u32  pt1_page;       /* 进程独立 PT1（4-8MB 用户区页表，含内核栈恒等项） */
     u32  reaped;         /* 资源已回收 */
+    u32  uid;            /* S8: 进程属主 UID（创建时继承当前身份） */
 } pcb_t;
 
 /* 调度器 */

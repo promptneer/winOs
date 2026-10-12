@@ -204,6 +204,7 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
     <a href="#s5">第五阶段</a>
     <a href="#s6">第六阶段</a>
     <a href="#s7">第七阶段</a>
+    <a href="#s8">第八阶段</a>
     <a href="#proof">实测证据</a>
   </div>
 </nav>
@@ -878,6 +879,62 @@ zig objcopy -O binary
       <tr><td>BUG-S7-01</td><td>serial_printf 不支持 %- 左对齐 → 设备表打印错乱（major 变指针值）。修复：格式化跳过 '-' 标记</td></tr>
       <tr><td>BUG-S7-02</td><td>serial_printf 不支持 %c → 读键显示假象 'c'（实际读到 'z'）。修复：增加 %c 分支</td></tr>
       <tr><td>环境</td><td>Bochs sync=none 虚拟时钟加速 ~326 倍（PIT 32.6kHz、uptime 失真）。修复：sync=realtime，PIT 恢复 100Hz（串口核验 29s/2910 ticks）</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 第八阶段：用户与权限（root/UID/文件 rwx） ================= -->
+<section class="sec" id="s8">
+  <div class="wrap">
+    <h2>第八阶段：用户与权限（root / UID / 文件 rwx）</h2>
+    <p class="sub">一句话意义：系统第一次有"主人和客人"——root(uid=0) 管理员、guest(uid=1) 普通用户；每个文件标了属主和 rwx 权限，读写/建目录/进目录都先查权限。guest 读 root 私有文件被 EACCES 拒绝。</p>
+
+    <h3>用户表（user.c / user.h）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:12%"><col style="width:16%"><col style="width:72%"></colgroup>
+      <tr><th>UID</th><th>用户名</th><th>权限语义</th></tr>
+      <tr><td>0</td><td><b>root</b></td><td>管理员：绕过一切权限检查（Linux root 惯例）</td></tr>
+      <tr><td>1</td><td><b>guest</b></td><td>普通用户：按文件 mode 的 owner/other 位判断</td></tr>
+    </table>
+
+    <h3>文件权限模型（fs.c）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:24%"><col style="width:76%"></colgroup>
+      <tr><th>元素</th><th>说明</th></tr>
+      <tr><td>owner_uid</td><td>每槽属主（创建者即属主）</td></tr>
+      <tr><td>mode（6 位）</td><td>bit5-3 = 属主 rwx；bit2-0 = 他人 rwx。0644=属主读写+他人读；0600=仅属主；0700=仅属主全权</td></tr>
+      <tr><td>fs_can(uid,owner,mode,want)</td><td>want:4=读/2=写/1=可进入；uid==owner 看 owner 位，否则看 other 位；uid==0 恒通过</td></tr>
+      <tr><td>检查点</td><td>fs_open（读/写模式）、fs_write、fs_read、fs_mkdir（父目录写）、fs_chdir（目录 x 位）</td></tr>
+      <tr><td>预置演示文件</td><td>/secret.txt 0600、/public.txt 0644、/rootonly 0700 目录</td></tr>
+    </table>
+
+    <h3>子任务与实测（全部 Bochs 实机 + 串口 + 截图）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:16%"><col style="width:44%"><col style="width:40%"></colgroup>
+      <tr><th>子任务</th><th>做了什么</th><th>实测铁证</th></tr>
+      <tr><td>S8-1 用户与身份</td><td>user.c 账户表；login/whoami/id；pcb.uid；syscall15 getuid；提示符 user@kernel:path #/$</td><td>login guest → whoami guest(uid=1)；提示符 guest@kernel:/ $</td></tr>
+      <tr><td>S8-2 文件权限</td><td>fs_ent 加 owner/mode；fs_can 检查；chmod；ls 显示 mode+属主；预置三文件</td><td>guest 读 /secret.txt EACCES；root 放行</td></tr>
+      <tr><td>S8-3 演示进程</td><td>user11.S：getuid + 读公开/私有 + 写文件；fs11 命令</td><td>guest：sec-read-DENIED；root：sec-read-OK；chmod 644→guest 可读、600→被拒</td></tr>
+    </table>
+
+    <h3>新增/修改文件</h3>
+    <table class="tbl">
+      <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+      <tr><th>文件</th><th>职责</th></tr>
+      <tr><td>src/user.c + user.h（新）</td><td>用户表、user_init/user_login/user_name_of/user_current_uid</td></tr>
+      <tr><td>src/fs.h + fs.c</td><td>owner_uid+mode 字段、fs_can 检查、chmod、预置演示文件、ls 权限列</td></tr>
+      <tr><td>src/sched.h + sched.c</td><td>pcb.uid、创建/fork 继承身份、syscall15 getuid、syscall16 chmod、ps 加 UID 列</td></tr>
+      <tr><td>src/shell.c</td><td>login/whoami/id/chmod/fs11 命令、提示符用户名 + #/$</td></tr>
+      <tr><td>src/user11.S + user11.ld（新）</td><td>权限演示进程（入口 0x680000，栈 0x7A1000）</td></tr>
+      <tr><td>src/kernel.c</td><td>kmain 加 [10b] user_init</td></tr>
+    </table>
+
+    <h3>设计修正</h3>
+    <table class="tbl">
+      <colgroup><col style="width:22%"><col style="width:78%"></colgroup>
+      <tr><th>编号</th><th>问题与修复</th></tr>
+      <tr><td>修正 1</td><td>chmod 初版用十进制解析（644=六百四十四），与 Linux 八进制不符。修复：k_octal 八进制解析</td></tr>
+      <tr><td>修正 2</td><td>测试工具 _sendkeys.py 缺 '/' '.' 键映射，路径参数被敲成 "secrettxt"。修复：补 VK 0xBF/0xBE</td></tr>
     </table>
   </div>
 </section>

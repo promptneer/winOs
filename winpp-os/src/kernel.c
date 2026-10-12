@@ -14,6 +14,7 @@
 #include "fs.h"
 #include "ipc.h"
 #include "device.h"
+#include "user.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -243,6 +244,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[10] sched ...\r\n");
     vga_printf("[10] sched ...\n");
     sched_init();
+    serial_puts("[10b] user ...\r\n");
+    vga_printf("[10b] user ...\n");
+    user_init();
     serial_puts("[11] fs ...\r\n");
     vga_printf("[11] fs ...\n");
     fs_init();
