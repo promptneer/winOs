@@ -60,6 +60,9 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  alloc     kmalloc/kfree stress test\n");
     vga_printf("  pfault    trigger page fault + demand map\n");
     vga_printf("  run       start 3 user procs (round-robin)\n");
+    vga_printf("  pipe      pipe demo (user7)\n");
+    vga_printf("  fifo      named-pipe demo (user8)\n");
+    vga_printf("  mq        message-queue demo (user9)\n");
     vga_printf("  ps        list process table\n");
     vga_printf("  kill <pid>  terminate a user process\n");
     vga_printf("  stop      stop scheduler, back to shell\n");
@@ -380,6 +383,62 @@ static void cmd_fslist(int argc, char **argv)
     fs_list();
 }
 
+/* ---------------- S5：进程间通信演示命令 ---------------- */
+
+/* S5-1：管道演示（user7：pipe() 创建匿名管道，写读回） */
+static void cmd_pipe(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user7", 0x640000, 0x761000,
+                         _user7_code, USER7_LEN);
+    if (p > 0) {
+        vga_printf("created pipe-demo proc: pid %d\n", p);
+        serial_printf("[pipe] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: pipe demo (0.1s quantum)\n");
+        serial_printf("[pipe] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create pipe-demo process\n");
+    }
+}
+
+/* S5-2：命名管道演示（user8：fifo_create("fifo0") 写读回） */
+static void cmd_fifo(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user8", 0x650000, 0x771000,
+                         _user8_code, USER8_LEN);
+    if (p > 0) {
+        vga_printf("created fifo-demo proc: pid %d\n", p);
+        serial_printf("[fifo] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: fifo demo (0.1s quantum)\n");
+        serial_printf("[fifo] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create fifo-demo process\n");
+    }
+}
+
+/* S5-3：消息队列演示（user9：msgsend 3 条 + msgrecv 3 条） */
+static void cmd_mq(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user9", 0x660000, 0x781000,
+                         _user9_code, USER9_LEN);
+    if (p > 0) {
+        vga_printf("created mq-demo proc: pid %d\n", p);
+        serial_printf("[mq] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: mq demo (0.1s quantum)\n");
+        serial_printf("[mq] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create mq-demo process\n");
+    }
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -406,6 +465,9 @@ static const cmd_t cmds[] = {
     { "alloc",    "kmalloc/kfree stress",       cmd_alloc },
     { "pfault",   "page fault + demand map",    cmd_pfault },
     { "run",      "start 3 user procs",         cmd_run },
+    { "pipe",     "pipe demo (user7)",          cmd_pipe },
+    { "fifo",     "named-pipe demo (user8)",    cmd_fifo },
+    { "mq",       "message-queue demo (user9)", cmd_mq },
     { "fork",     "fork demo (user4)",          cmd_fork },
     { "exec",     "exec demo (user5->user2)",   cmd_exec },
     { "fs",       "fs demo (user6)",            cmd_fs },

@@ -12,6 +12,7 @@
 #include "tss.h"
 #include "sched.h"
 #include "fs.h"
+#include "ipc.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -238,6 +239,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[11] fs ...\r\n");
     vga_printf("[11] fs ...\n");
     fs_init();
+    serial_puts("[11b] ipc ...\r\n");
+    vga_printf("[11b] ipc ...\n");
+    ipc_init();
     serial_puts("[12] all init ok, drawing UI ...\r\n");
     vga_printf("[12] all init ok, drawing UI ...\n");
 

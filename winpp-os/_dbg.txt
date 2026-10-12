@@ -1,42 +1,36 @@
-=== 全量统计 ===
-total 24420
+=== S5 复测统计 ===
+total 11825
 PAGE_FAULT 0
-addrspace 6
-sched 9389
-fork-child 1
-fork-p 233
-fork-c 234
-exec-line 3
-fs-open 992
-hello 496
-kill 1
-stop 4
-user5 1
-user2aft 639
---- addrspace ---
-[dbg] addrspace pd=136000 pt1=137000 code 400000->134000 stack 701000->135000
-[dbg] addrspace pd=13b000 pt1=13c000 code 500000->139000 stack 711000->13a000
-[dbg] addrspace pd=140000 pt1=141000 code 600000->13e000 stack 721000->13f000
---- fork 首行 ---
-[fork] pid 1 -> child pid 2 (pd=13b000 esp0=139000)
---- fork parent/child 交替 4 ---
-[pid1] fork: parent 000000
-[pid2] fork: child  000000
-[pid2] fork: child  000001
-[pid1] fork: parent 000001
---- exec ---
-[exec] demo proc pid 1
---- user5 ---
-[pid1] user5: before exec...
---- user2 变身后 2 ---
-[pid2] user2: 000000
-[pid2] user2: 000010
---- fs open 2 ---
-[fs] open created 'hello.txt' fd=0
-[fs] open 'hello.txt' fd=0 (exist)
---- kill/stop 全部 ---
+pipe-create 1
+fifo-create 1
+mq-send 1127
+mq-recv 1125
+hello-pipe 461
+hello-fifo 470
+AB 375
+msg12 375
+msg-789 375
+--- pipe 段首 3 ---
+[ipc] pipe created: read-fd=0 write-fd=1
+[pid1] Hello Pipe!
+[pid1] Hello Pipe!
+--- fifo 段首 3 ---
+[ipc] fifo 'fifo0' created: read-fd=2 write-fd=3
+[pid1] Hello FIFO!
+[pid1] Hello FIFO!
+--- mq 段首 8 ---
+[mq] demo proc pid 1
+[mq] scheduler started
+[mq] send len=2 total=1
+[mq] send len=5 total=2
+[mq] send len=7 total=3
+[mq] recv len=2 total=2
+[pid1] AB[mq] recv len=5 total=1
+[pid1] msg12[mq] recv len=7 total=0
+--- demo/stop ---
+[pipe] demo proc pid 1
+[fifo] demo proc pid 1
+[mq] demo proc pid 1
 [stop] scheduler stopped
 [stop] scheduler stopped
-[stop] scheduler stopped
-[kill] pid 1 terminated
 [stop] scheduler stopped

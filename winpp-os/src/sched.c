@@ -6,6 +6,7 @@
 #include "tss.h"
 #include "gdt.h"
 #include "fs.h"
+#include "ipc.h"
 #include "users_inc.h"
 
 /* 用户代码/栈映射标志：P + W + U（用户态可访问；内核页无 U 位 → 用户访问 #PF） */
@@ -478,6 +479,18 @@ void syscall_handler(regs_t *r)
     }
     else if (nr == 8) {             /* close(fd) */
         r->eax = (u32)fs_close((int)r->ebx);
+    }
+    else if (nr == 9) {             /* pipe()：S5-1 匿名管道，返回读端 fd（写端=fd+1） */
+        r->eax = (u32)ipc_pipe_create();
+    }
+    else if (nr == 10) {            /* fifo_create(name)：S5-2 命名管道 */
+        r->eax = (u32)ipc_fifo_create((const char *)r->ebx);
+    }
+    else if (nr == 11) {            /* msgsend(src, len)：S5-3 消息队列 */
+        r->eax = (u32)mq_send((const char *)r->ebx, (int)r->ecx);
+    }
+    else if (nr == 12) {            /* msgrecv(dst)：返回本消息长度 */
+        r->eax = (u32)mq_recv((char *)r->edx);
     }
     else {
         r->eax = -1;

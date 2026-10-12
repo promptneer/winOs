@@ -1,4 +1,5 @@
 #include "fs.h"
+#include "ipc.h"
 #include "serial.h"
 #include "vga.h"
 
@@ -6,19 +7,12 @@
  * 布局：16 个文件槽 x 4KB 数据区（静态数组，BSS 段）+ 每槽元数据表。
  * 语义：open(创建/读) -> write/read 从槽内 offset 推进 -> close 重置 offset。
  * 数据区位于内核内存（1MB+），用户程序只能经 int 0x80 系统调用访问，
- * 用户态无法直接触碰文件内容 —— 这正是"内核替用户管理数据"的隔离体现。 */
+ * 用户态无法直接触碰文件内容 —— 这正是"内核替用户管理数据"的隔离体现。
+ * S5：槽的 type!=0 时 obj 指向 IPC 环形缓冲，read/write 分发到管道/FIFO。 */
 
-#define FS_MAX_FILES 16
 #define FS_FILE_SIZE 4096
 
-typedef struct {
-    char name[16];
-    u32  size;            /* 已写入字节数 */
-    u32  offset;          /* 当前读写偏移 */
-    int  used;
-} fs_ent_t;
-
-static fs_ent_t fstab[FS_MAX_FILES];
+fs_ent_t fstab[FS_MAX_FILES];
 static u8 fsdata[FS_MAX_FILES][FS_FILE_SIZE];
 
 static void f_memset(void *d, int v, u32 n)
@@ -46,6 +40,8 @@ void fs_init(void)
         fstab[i].size = 0;
         fstab[i].offset = 0;
         fstab[i].name[0] = 0;
+        fstab[i].type = 0;
+        fstab[i].obj = 0;
     }
     for (u32 i = 0; i < FS_MAX_FILES; i++)
         f_memset(fsdata[i], 0, FS_FILE_SIZE);
@@ -70,6 +66,8 @@ int fs_open(const char *name, int flags)
         fstab[i].size = 0;
         fstab[i].offset = 0;
         fstab[i].used = 1;
+        fstab[i].type = 0;                   /* S5: 文件槽 */
+        fstab[i].obj = 0;
         serial_printf("[fs] open created '%s' fd=%u\r\n", name, i);
         return (int)i;
     }
@@ -79,6 +77,11 @@ int fs_open(const char *name, int flags)
 int fs_write(int fd, const char *buf, int len)
 {
     if (fd < 0 || fd >= FS_MAX_FILES || !fstab[fd].used || !buf) return -1;
+    /* S5: 管道/FIFO 写端（type 2/4）-> 环形缓冲 */
+    if (fstab[fd].type == 2 || fstab[fd].type == 4) {
+        if (!fstab[fd].obj) return -1;
+        return ipc_write((ipc_buf_t *)fstab[fd].obj, buf, len);
+    }
     if (len < 0) len = 0;
     if (fstab[fd].offset + (u32)len > FS_FILE_SIZE)
         len = FS_FILE_SIZE - (int)fstab[fd].offset;
@@ -94,6 +97,11 @@ int fs_write(int fd, const char *buf, int len)
 int fs_read(int fd, char *buf, int len)
 {
     if (fd < 0 || fd >= FS_MAX_FILES || !fstab[fd].used || !buf) return -1;
+    /* S5: 管道/FIFO 读端（type 1/3）-> 环形缓冲 */
+    if (fstab[fd].type == 1 || fstab[fd].type == 3) {
+        if (!fstab[fd].obj) return -1;
+        return ipc_read((ipc_buf_t *)fstab[fd].obj, buf, len);
+    }
     if (len < 0) len = 0;
     if (fstab[fd].offset + (u32)len > fstab[fd].size)
         len = (int)(fstab[fd].size - fstab[fd].offset);
