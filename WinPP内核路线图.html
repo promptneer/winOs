@@ -23,7 +23,7 @@
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
   .flow-scroll{overflow-x:auto;padding-bottom:8px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
-  .flow{display:flex;align-items:stretch;gap:6px;min-width:1520px;padding:18px 16px}
+  .flow{display:flex;align-items:stretch;gap:6px;min-width:1760px;padding:18px 16px}
   .node{flex:0 0 122px;border:1px solid var(--line);border-top:3px solid var(--gray);border-radius:10px;background:#10151b;padding:10px 11px;display:flex;flex-direction:column;gap:6px;min-height:132px}
   .node .sn{font-family:Consolas,'Courier New',monospace;font-size:10.5px;font-weight:700;letter-spacing:.06em}
   .node .nm{font-size:13.5px;font-weight:700;line-height:1.4}
@@ -55,13 +55,13 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="crumb">WINPP OS / ROADMAP / S1 → S10</div>
+  <div class="crumb">WINPP OS / ROADMAP / S1 → S11</div>
   <h1>WinPP 内核开发<span class="grad">路线图</span></h1>
-  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>前 3 阶段已实机取证并推 GitHub</b>，<b>阶段 4 是当前战场</b>，阶段 5–10 为规划（可裁剪、可调序）。</p>
+  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S6 已实机取证并推 GitHub</b>，<b>S7 是当前战场</b>，S8–S11 为规划（可裁剪、可调序）。</p>
 
   <div class="legend">
     <span><span class="sw" style="background:var(--green)"></span>已完成</span>
-    <span><span class="sw" style="background:var(--yellow)"></span>当前 · 准备中</span>
+    <span><span class="sw" style="background:var(--yellow)"></span>当前 · 下一步</span>
     <span><span class="sw" style="background:var(--gray)"></span>规划</span>
     <span><span class="sw" style="background:var(--purple)"></span>里程碑</span>
   </div>
@@ -89,52 +89,59 @@
         <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node now">
-        <div class="sn">S4 · 现在</div>
+      <div class="node done">
+        <div class="sn">S4</div>
         <div class="nm">独立地址空间 + fork/exec + 文件系统</div>
         <div class="ds">每人一间房 · 分身 · 换角色 · 读写数据</div>
-        <div class="st">准备中 · 我们在这里</div>
+        <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node plan">
+      <div class="node done">
         <div class="sn">S5</div>
         <div class="nm">进程间通信 IPC</div>
-        <div class="ds">管道 pipe · 信号 · 同步原语</div>
-        <div class="st">规划</div>
+        <div class="ds">管道 pipe · 命名管道 FIFO · 消息队列 mq</div>
+        <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node plan">
+      <div class="node done">
         <div class="sn">S6</div>
-        <div class="nm">磁盘 + 持久化文件系统</div>
-        <div class="ds">ATA 硬盘驱动 · 断电不丢数据</div>
-        <div class="st">规划</div>
+        <div class="nm">文件系统目录 / 路径</div>
+        <div class="ds">mkdir · cd/ls/pwd · dir/file.txt 路径解析</div>
+        <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node plan">
-        <div class="sn">S7</div>
-        <div class="nm">系统调用完备 + 用户 C 库</div>
-        <div class="ds">open/read/write/close · libc 子集</div>
-        <div class="st">规划</div>
+      <div class="node now">
+        <div class="sn">S7 · 现在</div>
+        <div class="nm">设备驱动</div>
+        <div class="ds">键盘 · 定时器 · 串口正式驱动化 · 中断处理完善</div>
+        <div class="st">下一步 · 我们在这里</div>
       </div>
       <div class="arrow">→</div>
       <div class="node plan">
         <div class="sn">S8</div>
-        <div class="nm">调度完善</div>
-        <div class="ds">sleep 睡眠 · wait 等待 · 优先级</div>
-        <div class="st">规划</div>
+        <div class="nm">用户与权限</div>
+        <div class="ds">root/UID · 文件属主 · rwx 权限位 · 提示符 #/$</div>
+        <div class="st">规划 · 新插入</div>
       </div>
       <div class="arrow">→</div>
       <div class="node plan">
         <div class="sn">S9</div>
-        <div class="nm">网络协议栈</div>
-        <div class="ds">以太网 · IP · UDP · 进阶可选</div>
+        <div class="nm">信号与同步</div>
+        <div class="ds">sleep 睡眠 · wait 等待 · 信号量 · 互斥锁</div>
         <div class="st">规划</div>
       </div>
       <div class="arrow">→</div>
       <div class="node plan">
         <div class="sn">S10</div>
         <div class="nm">图形界面窗口系统</div>
-        <div class="ds">呼应最初"干净窗口"的愿望</div>
+        <div class="ds">呼应最初"干净窗口"的愿望 · GUI 登录</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S11</div>
+        <div class="nm">网络协议栈</div>
+        <div class="ds">以太网 · IP · UDP · 进阶可选</div>
         <div class="st">规划</div>
       </div>
       <div class="arrow">→</div>
@@ -148,21 +155,21 @@
   </div>
 
   <div class="note">
-    <b>当前位置：</b>阶段 4 准备中（S1–S3 已实机取证并推送 GitHub）。阶段 4 按 <span class="k">独立地址空间 → fork/exec → 用户态文件系统</span> 推进，每块完成后机器实测（Bochs 串口 + 截图双通道）。S5–S10 为规划建议，可随时调整或裁剪。
+    <b>当前位置：</b>S1–S6 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径），推送 GitHub。下一战场 <b>S7 设备驱动</b>。应需求，<b>S8 用户与权限已插入</b>（root/UID/文件权限），原"信号与同步"顺延为 S9、GUI 为 S10、网络为 S11。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
   </div>
 
   <div class="card">
     <div class="it">
-      <h4>S4 · 独立地址空间</h4>
-      每个用户进程换独立页目录（CR3），程序崩了只毁自己，不连累系统；用户态再也碰不到内核内存。
+      <h4>S7 · 设备驱动</h4>
+      把键盘、定时器、串口这些"外设"从散落的代码整理成正式的设备驱动层（device table + 统一接口），中断处理按设备分发。
     </div>
     <div class="it">
-      <h4>S4 · fork / exec</h4>
-      fork 分身出一个一模一样的进程；exec 把进程整体换成另一个程序。两者配合 = 真正的"启动新程序"。
+      <h4>S8 · 用户与权限</h4>
+      新增 root 用户（UID 0）、普通用户、文件属主与 rwx 权限位；root 提示符 #、普通用户 $。为 S10 GUI 登录打地基。
     </div>
     <div class="it">
-      <h4>S4 · 用户态文件系统</h4>
-      给用户程序 open / read / write / close 系统调用，程序能读写数据，从"打印数字"进化到"处理数据"。
+      <h4>S9 · 信号与同步</h4>
+      sleep / wait / 信号量 / 互斥锁，让多个进程学会"排队等资源"，不再抢作一团。
     </div>
   </div>
 </div>
