@@ -1,5 +1,4 @@
-total 53
-FAULT 0
---- fs/open lines ---
-[fs] init: ramdisk 16 files x 4KB ready
---- first pidN 8 ---
+consoleErrors: None
+resourceErrors: None
+horizontalOverflow: None
+overlappingText count: 0

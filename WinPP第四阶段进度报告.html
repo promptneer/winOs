@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第四阶段进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ctext x='16' y='23' font-size='18' font-family='monospace' fill='%2334d399' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --text:#d7dee8; --dim:#7d8a9c; --green:#34d399; --cyan:#38bdf8;
+    --amber:#fbbf24; --red:#f87171; --mono:'Consolas','Courier New',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6;padding:36px 20px 80px}
+  .wrap{max-width:1080px;margin:0 auto}
+  .term{font-family:var(--mono);font-size:13px}
+  /* ---- hero ---- */
+  .hero{border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#0f1720,#111b2e 70%);padding:34px 36px;position:relative;overflow:hidden}
+  .hero::after{content:'';position:absolute;right:-80px;top:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,.12),transparent 70%)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 12px;border-radius:99px;letter-spacing:.08em;margin-bottom:16px}
+  h1{font-size:30px;font-weight:800;letter-spacing:.02em}
+  h1 .grad{background:linear-gradient(90deg,#34d399,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .slogan{margin-top:12px;font-size:15px;color:var(--dim);max-width:860px}
+  .slogan b{color:var(--green);font-weight:600}
+  .meta{margin-top:18px;font-family:var(--mono);font-size:12.5px;color:var(--dim);display:flex;flex-wrap:wrap;gap:8px 22px}
+  /* ---- section ---- */
+  section{margin-top:40px}
+  h2{font-size:20px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  h2 .no{font-family:var(--mono);font-size:13px;color:var(--cyan);border:1px solid rgba(56,189,248,.35);padding:2px 9px;border-radius:6px}
+  .sub{color:var(--dim);font-size:14px;margin:-8px 0 16px}
+  /* ---- cards ---- */
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card .icon{font-family:var(--mono);font-size:22px;color:var(--green);margin-bottom:8px}
+  .card h3{font-size:15px;margin-bottom:6px}
+  .card p{font-size:13px;color:var(--dim)}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 9px;border-radius:99px;margin-top:10px}
+  .badge.ok{color:var(--green);border:1px solid rgba(52,211,153,.45);background:rgba(52,211,153,.08)}
+  /* ---- table ---- */
+  table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  colgroup col:nth-child(1){width:9%}
+  colgroup col:nth-child(2){width:26%}
+  colgroup col:nth-child(3){width:28%}
+  colgroup col:nth-child(4){width:37%}
+  th{background:var(--panel2);color:var(--cyan);font-family:var(--mono);font-size:12px;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);letter-spacing:.05em}
+  td{padding:9px 14px;font-size:13px;border-bottom:1px solid rgba(35,44,59,.5);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td .nr{font-family:var(--mono);color:var(--amber);font-weight:600}
+  td .fn{font-family:var(--mono);color:var(--green)}
+  /* ---- evidence ---- */
+  .ev{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:14px}
+  .ev h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .ev h3 .st{font-family:var(--mono);font-size:11px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:2px 8px;border-radius:99px}
+  .serial{background:#0a0d12;border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#9fd8b8;white-space:pre-wrap;overflow-x:auto;max-height:340px;overflow-y:auto}
+  .serial .cmt{color:#566173}
+  .shot{display:block;max-width:640px;margin:14px auto 0;border:1px solid var(--line);border-radius:8px}
+  .shotcap{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:6px}
+  /* ---- bug ---- */
+  .bug{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:10px;padding:14px 18px;margin-top:12px}
+  .bug h4{font-size:14px;color:var(--amber);margin-bottom:6px;font-family:var(--mono)}
+  .bug p{font-size:13.5px;color:var(--text)}
+  .bug .fix{color:var(--green)}
+  /* ---- timeline ---- */
+  .tl{display:grid;grid-template-columns:120px 40px 1fr;gap:0;margin-top:8px}
+  .tl .d{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right;padding:14px 12px 14px 0}
+  .tl .a{position:relative;display:flex;justify-content:center}
+  .tl .a::before{content:'';position:absolute;top:0;bottom:0;width:2px;background:var(--line)}
+  .tl .dot{position:relative;z-index:1;width:12px;height:12px;border-radius:50%;background:var(--green);margin-top:18px;box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+  .tl .dot.w{background:var(--amber)}
+  .tl .c{padding:10px 0 14px 14px}
+  .tl .c b{font-size:14px}
+  .tl .c p{font-size:12.5px;color:var(--dim);margin-top:2px}
+  @media (max-width:860px){
+    .grid4{grid-template-columns:repeat(2,1fr)}
+    .tl{grid-template-columns:80px 30px 1fr}
+    h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">WINPP OS · STAGE 4 · PROGRESS REPORT</span>
+    <h1>第四阶段进度报告<span class="grad">：从"会聊天"到"迷你 Linux"</span></h1>
+    <p class="slogan">第三阶段是"多个程序能同时跑"；第四阶段是<b>每个程序有自己的天地（独立地址空间），能繁衍（fork）、能变身（exec）、能读写数据（文件系统）</b>——到这一步，内核就真的像一个"迷你 Linux"了。</p>
+    <div class="meta">
+      <span>日期：2026-10-12</span>
+      <span>验证：Bochs 2.8 实机 + COM1 串口 + 截图双通道</span>
+      <span>状态：S4 四子任务全部实测通过</span>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="no">01</span> 第四阶段四件事，每件都实机跑通了</h2>
+    <p class="sub">四件大事全部在 Bochs 虚拟机里开机实测、串口取证、截图留证。</p>
+    <div class="grid4">
+      <div class="card">
+        <div class="icon">S4-1</div>
+        <h3>独立地址空间</h3>
+        <p>每个进程拥有自己的页目录（CR3）。程序只认自己的一亩三分地，碰不到别人、也碰不到内核。</p>
+        <span class="badge ok">已完成 · 实测通过</span>
+      </div>
+      <div class="card">
+        <div class="icon">S4-2</div>
+        <h3>fork 分身</h3>
+        <p>进程调用 fork()，内核复制出一个一模一样的进程，父子各自独立运行。</p>
+        <span class="badge ok">已完成 · 实测通过</span>
+      </div>
+      <div class="card">
+        <div class="icon">S4-3</div>
+        <h3>exec 变身</h3>
+        <p>进程调用 exec()，把自己换成另一个程序继续跑——同一个进程，不同的灵魂。</p>
+        <span class="badge ok">已完成 · 实测通过</span>
+      </div>
+      <div class="card">
+        <div class="icon">S4-4</div>
+        <h3>用户态文件系统</h3>
+        <p>内存盘 + open/read/write/close 系统调用。用户程序能创建文件、写数据、读回来。</p>
+        <span class="badge ok">已完成 · 实测通过</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">02</span> 系统调用表：内核现在对外开放 9 个接口</h2>
+    <p class="sub">用户程序通过 int 0x80 进入内核，eax 指定调用号。第四阶段新增 3-8 号。</p>
+    <table>
+      <colgroup><col><col><col><col></colgroup>
+      <tr><th>编号</th><th>系统调用</th><th>参数</th><th>作用（白话）</th></tr>
+      <tr><td><span class="nr">0</span></td><td><span class="fn">yield</span></td><td>—</td><td>主动让出 CPU 时间片</td></tr>
+      <tr><td><span class="nr">1</span></td><td><span class="fn">write</span></td><td>fd, buf, len</td><td>向屏幕(1)/串口(2)输出</td></tr>
+      <tr><td><span class="nr">2</span></td><td><span class="fn">exit</span></td><td>—</td><td>退出当前进程</td></tr>
+      <tr><td><span class="nr">3</span></td><td><span class="fn">fork</span></td><td>—</td><td><b>S4-2</b> 分身：复制出子进程，父得子 pid、子得 0</td></tr>
+      <tr><td><span class="nr">4</span></td><td><span class="fn">exec</span></td><td>prog_idx</td><td><b>S4-3</b> 变身：同一进程换成另一个程序</td></tr>
+      <tr><td><span class="nr">5</span></td><td><span class="fn">open</span></td><td>name, flags</td><td><b>S4-4</b> 打开/创建文件，返回 fd</td></tr>
+      <tr><td><span class="nr">6</span></td><td><span class="fn">write</span></td><td>fd, buf, len</td><td><b>S4-4</b> 向文件写数据（写入内核内存盘）</td></tr>
+      <tr><td><span class="nr">7</span></td><td><span class="fn">read</span></td><td>fd, buf, len</td><td><b>S4-4</b> 从文件读数据（内核拷回用户内存）</td></tr>
+      <tr><td><span class="nr">8</span></td><td><span class="fn">close</span></td><td>fd</td><td><b>S4-4</b> 关闭文件</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="no">03</span> 实测证据（串口 + 截图双通道）</h2>
+    <p class="sub">四段铁证：串口原文为 COM1 端口抓取，截图来自 Bochs 2.8 显示窗口 PrintWindow 抓屏。</p>
+
+    <div class="ev">
+      <h3><span class="st">S4-1</span> 独立地址空间：每进程独立页目录，调度切换换 CR3</h3>
+      <div class="serial"><span class="cmt"># 创建 3 个进程，各自独立 PD + PT1（页目录 / 页表）</span>
+[dbg] addrspace pd=124000 pt1=125000 code 400000->122000 stack 701000->123000
+[dbg] addrspace pd=129000 pt1=12a000 code 500000->127000 stack 711000->128000
+[dbg] addrspace pd=12e000 pt1=12f000 code 600000->12c000 stack 721000->12d000
+<span class="cmt"># 调度切换：CR3 随进程走（pid3 -> shell 回 boot PD=110000，pid0 -> pid1 换 124000）</span>
+[sched] pid1 -> pid2 (pd=129000 esp0=127000)
+[sched] pid2 -> pid3 (pd=12e000 esp0=12c000)
+[sched] pid3 -> pid0 (pd=110000 esp0=0)
+[sched] pid0 -> pid1 (pd=124000 esp0=122000)
+<span class="cmt"># 结果：294 条计数输出，0 个 PAGE FAULT，三个程序照常轮转</span></div>
+      <img class="shot" src="assets/18-s4-addrspace.png" alt="S4-1 独立地址空间运行画面">
+      <div class="shotcap">图 1 · S4-1：3 进程轮转，VGA 底部计数交替刷新（串口同证据）</div>
+    </div>
+
+    <div class="ev">
+      <h3><span class="st">S4-2</span> fork 分身：pid1 调用 fork()，内核造出 pid2</h3>
+      <div class="serial">[fork] demo proc pid 1
+[fork] pid 1 -> child pid 2 (pd=129000 esp0=127000)
+<span class="cmt"># 父(pid1)打印 parent、子(pid2)打印 child，各自独立计数 —— 两个进程同时活</span>
+[pid1] fork: parent 000000
+[pid2] fork: child  000000
+[pid2] fork: child  000001
+[pid1] fork: parent 000001
+[pid2] fork: child  000002
+[pid1] fork: parent 000002
+<span class="cmt"># 共 286 条输出，0 个 PAGE FAULT</span></div>
+      <img class="shot" src="assets/21-fork-ok.png" alt="S4-2 fork 运行画面">
+      <div class="shotcap">图 2 · S4-2：fork 演示进程启动，父子轮转</div>
+    </div>
+
+    <div class="ev">
+      <h3><span class="st">S4-3</span> exec 变身：同一个 pid1，从 user5 变成 user2</h3>
+      <div class="serial"><span class="cmt"># 变身前：pid1 是 user5，打印声明</span>
+[pid1] user5: before exec...
+<span class="cmt"># 内核执行 exec(1)：同一进程换程序（页目录 pd=124000 不变！）</span>
+[exec] pid1 -> program user2 (entry=500000 pd=124000)
+<span class="cmt"># 变身后：还是 pid1，跑的是 user2 的代码，计数从头开始</span>
+[pid1] user2: 000000
+[pid1] user2: 000010
+[pid1] user2: 000020
+[pid1] user2: 000030
+<span class="cmt"># 0 个 PAGE FAULT —— 进程没变、程序换了</span></div>
+      <img class="shot" src="assets/23-exec-ok.png" alt="S4-3 exec 运行画面">
+      <div class="shotcap">图 3 · S4-3：exec 演示进程运行，变身后 VGA 显示 user2 计数</div>
+    </div>
+
+    <div class="ev">
+      <h3><span class="st">S4-4</span> 用户态文件系统：创建 hello.txt，写入又读回</h3>
+      <div class="serial">[fs] demo proc pid 1
+[fs] open created 'hello.txt' fd=0        <span class="cmt"># 首次：创建文件</span>
+[fs] open 'hello.txt' fd=0 (exist)        <span class="cmt"># 之后每轮：文件已存在，直接打开</span>
+<span class="cmt"># 用户程序写入 "Hello WinPP FS!"（16B）-> 关闭 -> 重开读取 -> 串口打印读回内容</span>
+[pid1] Hello WinPP FS!
+[pid1] Hello WinPP FS!
+[pid1] Hello WinPP FS!
+<span class="cmt"># 共 418 条文件操作、208 条读回输出，0 个 PAGE FAULT。文件数据存在内核内存盘，用户态只能经系统调用访问。</span></div>
+      <img class="shot" src="assets/26-fs-ok.png" alt="S4-4 文件系统运行画面">
+      <div class="shotcap">图 4 · S4-4：fs 演示进程启动（文件表由 fslist 命令可查）</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">04</span> 本次踩过的 Bug（2 个，均已修复）</h2>
+    <div class="bug">
+      <h4>BUG-1 · fork 演示程序数字区偏移差 1 位（user4.S）</h4>
+      <p>数字转 ASCII 的起始指针指到空格位，把 "fork: parent 000000" 打成 "parent0000000"。<span class="fix">修复：leal 13 → 19（数字区末尾+1）。</span></p>
+    </div>
+    <div class="bug">
+      <h4>BUG-2 · 自动化注入字符表缺字母（_sendkeys.py）</h4>
+      <p>SendInput 的 PS/2 键位表只有部分字母，"fork" 的 f/e 被跳过成 "ork"，命令不识别。<span class="fix">修复：补全 a-z 全部键位。另修复偶发丢键：命令可重发。</span></p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">05</span> 开发时间线 &amp; 下一步</h2>
+    <p class="sub">第四阶段四步走完，第五阶段起进入规划区（可裁剪、可调序）。</p>
+    <div class="tl">
+      <div class="d">S1</div><div class="a"><span class="dot"></span></div><div class="c"><b>内核本体 + Shell</b><p>软盘引导、保护模式、22 条命令、窗口 UI —— 已完成</p></div>
+      <div class="d">S2</div><div class="a"><span class="dot"></span></div><div class="c"><b>分页内存管理</b><p>物理内存 pmm + 分页 paging + 内核堆 kheap + 缺页处理 —— 已完成</p></div>
+      <div class="d">S3</div><div class="a"><span class="dot"></span></div><div class="c"><b>用户态 + 任务切换</b><p>GDT 6 表、TSS、int 0x80、run/ps/kill/stop —— 已完成</p></div>
+      <div class="d">S4</div><div class="a"><span class="dot"></span></div><div class="c"><b>独立地址空间 + fork/exec + 文件系统</b><p>每人一房间、分身、变身、读写数据 —— <b>本次全部实测通过</b></p></div>
+      <div class="d">S5</div><div class="a"><span class="dot w"></span></div><div class="c"><b>进程间通信 IPC</b><p>管道 pipe、信号、同步原语 —— 规划中</p></div>
+      <div class="d">S6</div><div class="a"><span class="dot w"></span></div><div class="c"><b>磁盘 + 持久化文件系统</b><p>ATA 硬盘驱动，断电不丢数据 —— 规划中</p></div>
+      <div class="d">S7</div><div class="a"><span class="dot w"></span></div><div class="c"><b>系统调用完善 + 用户 C 库</b><p>open/read/write/close 全面化、libc 子集 —— 规划中</p></div>
+      <div class="d">S8</div><div class="a"><span class="dot w"></span></div><div class="c"><b>调度完善</b><p>sleep 睡眠、wait 等待、优先级 —— 规划中</p></div>
+      <div class="d">S9</div><div class="a"><span class="dot w"></span></div><div class="c"><b>网络协议栈</b><p>以太网 / IP / UDP —— 进阶可选</p></div>
+      <div class="d">S10</div><div class="a"><span class="dot w"></span></div><div class="c"><b>图形界面</b><p>窗口系统 —— 回应最初"干净窗口"的愿望</p></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

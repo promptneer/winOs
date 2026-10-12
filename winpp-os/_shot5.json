@@ -1,0 +1,233 @@
+﻿{
+  "src": "D:\\WinPP\\WinPP第四阶段进度报告.html",
+  "url": "file:///D:/WinPP/WinPP%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%E8%BF%9B%E5%BA%A6%E6%8A%A5%E5%91%8A.html",
+  "outdir": "D:\\WinPP\\_shots",
+  "include": [
+    "lint",
+    "screenshots",
+    "structure"
+  ],
+  "shots": {
+    "desktop": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第四阶段进度报告_desktop.jpg",
+      "screenshotBytes": 319579,
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 第四阶段进度报告",
+        "firstH1": "第四阶段进度报告：从\"会聊天\"到\"迷你 Linux\"",
+        "viewport": {
+          "w": 1424,
+          "h": 749
+        },
+        "fullpage": {
+          "w": 1424,
+          "h": 5643
+        },
+        "counts": {
+          "section": 5,
+          "h1": 1,
+          "h2": 5,
+          "img": 4,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "clippedText": [
+        {
+          "tag": "div",
+          "text": "WINPP OS · STAGE 4 · PROGRESS REPORT\n    第四阶段进度报告：从\"会聊天\"到\"迷你",
+          "rect": [
+            172,
+            36,
+            1080,
+            261
+          ],
+          "clippedX": 80,
+          "clippedY": 0
+        }
+      ],
+      "clippedTextHint": "含义：overflow:hidden|clip 的容器把内部文本裁掉了。clippedX/Y 是被吃掉多少 px。已自动排除 text-overflow:ellipsis 单行截断和 -webkit-line-clamp 多行截断（这两个是设计意图）。 | 修法：把容器 height 改成 min-height、或允许内容溢出、或缩短文案。 | 豁免：(1) 5-20px 小值可能是行高/边距计算的边界抖动、动画过程中的瞬时状态；(2) 故意的 marquee/scroll 容器（虽然 overflow:hidden 但依赖 JS 滚动）。",
+      "reportSource": "cdp"
+    },
+    "mobile": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第四阶段进度报告_mobile.jpg",
+      "screenshotBytes": 503221,
+      "slices": [
+        "D:\\WinPP\\_shots\\WinPP第四阶段进度报告_mobile_p1of3.jpg",
+        "D:\\WinPP\\_shots\\WinPP第四阶段进度报告_mobile_p2of3.jpg",
+        "D:\\WinPP\\_shots\\WinPP第四阶段进度报告_mobile_p3of3.jpg"
+      ],
+      "sliceHint": "主图过阈值（字节>800KB 或 高度>4000px），已按 3200px 切片。若主图 Read 失败，改读 slices 里各分片。",
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 第四阶段进度报告",
+        "firstH1": "第四阶段进度报告：从\"会聊天\"到\"迷你 Linux\"",
+        "viewport": {
+          "w": 500,
+          "h": 693
+        },
+        "fullpage": {
+          "w": 679,
+          "h": 6484
+        },
+        "counts": {
+          "section": 5,
+          "h1": 1,
+          "h2": 5,
+          "img": 4,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [
+        {
+          "tag": "img",
+          "cls": "shot",
+          "left": 39,
+          "right": 679,
+          "width": 640
+        },
+        {
+          "tag": "img",
+          "cls": "shot",
+          "left": 39,
+          "right": 679,
+          "width": 640
+        },
+        {
+          "tag": "img",
+          "cls": "shot",
+          "left": 39,
+          "right": 679,
+          "width": 640
+        },
+        {
+          "tag": "img",
+          "cls": "shot",
+          "left": 39,
+          "right": 679,
+          "width": 640
+        }
+      ],
+      "resourceErrors": [],
+      "clippedText": [
+        {
+          "tag": "div",
+          "text": "WINPP OS · STAGE 4 · PROGRESS REPORT\n    第四阶段进度报告：从\"会聊天\"到\"迷你",
+          "rect": [
+            20,
+            36,
+            460,
+            394
+          ],
+          "clippedX": 80,
+          "clippedY": 0
+        }
+      ],
+      "clippedTextHint": "含义：overflow:hidden|clip 的容器把内部文本裁掉了。clippedX/Y 是被吃掉多少 px。已自动排除 text-overflow:ellipsis 单行截断和 -webkit-line-clamp 多行截断（这两个是设计意图）。 | 修法：把容器 height 改成 min-height、或允许内容溢出、或缩短文案。 | 豁免：(1) 5-20px 小值可能是行高/边距计算的边界抖动、动画过程中的瞬时状态；(2) 故意的 marquee/scroll 容器（虽然 overflow:hidden 但依赖 JS 滚动）。",
+      "reportSource": "cdp"
+    }
+  },
+  "engine": "chrome_cli",
+  "chromiumExec": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "engineDegraded": true,
+  "engineDegradedReason": "playwright 未装",
+  "publishBrokenAssets": [
+    {
+      "file": "assets\\05-fixed-boot.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\06-help-time.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\07-uptime-sysinfo-ls.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\08-demo-ui.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\11-paging.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\12-meminfo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\13-pfault.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\14-help.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\15-ps-before.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\16-run.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\17-run-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\19-s4-ps.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    }
+  ],
+  "publishBrokenAssetsHint": "含义：发布链路靠静态扫描 HTML 源码决定上传哪些图片文件，**只认 `src` 属性和 CSS `url()` 两个位置**（线上实测）。写在别处的路径不会被上传，发布后 404 裂图。本地打开和自检截图都看不出来——文件真实存在，浏览器照样加载。 | severity=error 的逐条改，改法都是同一个：把路径挪到 `<img src=\"assets/x.png\">` 或 CSS `url('assets/x.png')`。reason=js-literal 路径写在 JS 字符串里（`const g=['assets/x.png']` 这种常量数组也算，照样裂）；reason=js-concat 路径由 JS 拼接（`'assets/img'+i+'.png'`）；reason=non-src-attr 路径写在 `data-src`、`srcset`、`poster` 等非 `src` 属性上——**这类即便静态写在 HTML 属性里也会裂**，懒加载写法要在 `src` 上放真实路径。 | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive +html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。自行判断，别的规则不受它影响。",
+  "elapsedSec": 8.31
+}
