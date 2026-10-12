@@ -1,0 +1,352 @@
+﻿{
+  "src": "D:\\WinPP\\WinPP第四阶段测试清单.html",
+  "url": "file:///D:/WinPP/WinPP%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%E6%B5%8B%E8%AF%95%E6%B8%85%E5%8D%95.html",
+  "outdir": "D:\\WinPP\\_shots",
+  "include": [
+    "lint",
+    "screenshots",
+    "structure"
+  ],
+  "shots": {
+    "desktop": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第四阶段测试清单_desktop.jpg",
+      "screenshotBytes": 259366,
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 第四阶段测试清单",
+        "firstH1": "第四阶段测试清单：一项一项测，不能漏",
+        "viewport": {
+          "w": 1424,
+          "h": 749
+        },
+        "fullpage": {
+          "w": 1424,
+          "h": 4856
+        },
+        "counts": {
+          "section": 0,
+          "h1": 1,
+          "h2": 6,
+          "img": 0,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 1
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "span",
+            "text": "判据",
+            "rect": [
+              211,
+              3207,
+              40,
+              22
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "PAGE_FAULT = 0",
+            "rect": [
+              211,
+              3208,
+              1039,
+              38
+            ]
+          },
+          "intersectPx": 824,
+          "coverRatio": 0.95
+        },
+        {
+          "a": {
+            "tag": "span",
+            "text": "[exec] pid1 -> program user2",
+            "rect": [
+              458,
+              3208,
+              155,
+              16
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "PAGE_FAULT = 0",
+            "rect": [
+              211,
+              3208,
+              1039,
+              38
+            ]
+          },
+          "intersectPx": 2484,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "span",
+            "text": "[pid1] user2:",
+            "rect": [
+              1000,
+              3208,
+              65,
+              16
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "PAGE_FAULT = 0",
+            "rect": [
+              211,
+              3208,
+              1039,
+              38
+            ]
+          },
+          "intersectPx": 1047,
+          "coverRatio": 1
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "reportSource": "cdp"
+    },
+    "mobile": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第四阶段测试清单_mobile.jpg",
+      "screenshotBytes": 402932,
+      "slices": [
+        "D:\\WinPP\\_shots\\WinPP第四阶段测试清单_mobile_p1of3.jpg",
+        "D:\\WinPP\\_shots\\WinPP第四阶段测试清单_mobile_p2of3.jpg",
+        "D:\\WinPP\\_shots\\WinPP第四阶段测试清单_mobile_p3of3.jpg"
+      ],
+      "sliceHint": "主图过阈值（字节>800KB 或 高度>4000px），已按 3200px 切片。若主图 Read 失败，改读 slices 里各分片。",
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 第四阶段测试清单",
+        "firstH1": "第四阶段测试清单：一项一项测，不能漏",
+        "viewport": {
+          "w": 500,
+          "h": 693
+        },
+        "fullpage": {
+          "w": 500,
+          "h": 6476
+        },
+        "counts": {
+          "section": 0,
+          "h1": 1,
+          "h2": 6,
+          "img": 0,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 1
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "b",
+            "text": "勾选框",
+            "rect": [
+              111,
+              197,
+              44,
+              20
+            ]
+          },
+          "b": {
+            "tag": "b",
+            "text": "每项都要求串口 PAGE_FAULT = 0",
+            "rect": [
+              53,
+              197,
+              392,
+              43
+            ]
+          },
+          "intersectPx": 870,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "span",
+            "text": "判据",
+            "rect": [
+              77,
+              4202,
+              40,
+              22
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "[exec] pid1 -> program user2",
+            "rect": [
+              77,
+              4203,
+              370,
+              38
+            ]
+          },
+          "intersectPx": 824,
+          "coverRatio": 0.95
+        },
+        {
+          "a": {
+            "tag": "span",
+            "text": "判据",
+            "rect": [
+              77,
+              6263,
+              40,
+              22
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "最后用全文搜索确认：整个测试过程 PAGE_FAULT 计数 = 0",
+            "rect": [
+              77,
+              6264,
+              353,
+              38
+            ]
+          },
+          "intersectPx": 824,
+          "coverRatio": 0.95
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "reportSource": "cdp"
+    }
+  },
+  "engine": "chrome_cli",
+  "chromiumExec": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "engineDegraded": true,
+  "engineDegradedReason": "playwright 未装",
+  "publishBrokenAssets": [
+    {
+      "file": "assets\\05-fixed-boot.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\06-help-time.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\07-uptime-sysinfo-ls.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\08-demo-ui.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\11-paging.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\12-meminfo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\13-pfault.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\14-help.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\15-ps-before.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\16-run.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\17-run-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\18-s4-addrspace.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\19-s4-ps.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\21-fork-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\23-exec-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\26-fs-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    }
+  ],
+  "publishBrokenAssetsHint": "含义：发布链路靠静态扫描 HTML 源码决定上传哪些图片文件，**只认 `src` 属性和 CSS `url()` 两个位置**（线上实测）。写在别处的路径不会被上传，发布后 404 裂图。本地打开和自检截图都看不出来——文件真实存在，浏览器照样加载。 | severity=error 的逐条改，改法都是同一个：把路径挪到 `<img src=\"assets/x.png\">` 或 CSS `url('assets/x.png')`。reason=js-literal 路径写在 JS 字符串里（`const g=['assets/x.png']` 这种常量数组也算，照样裂）；reason=js-concat 路径由 JS 拼接（`'assets/img'+i+'.png'`）；reason=non-src-attr 路径写在 `data-src`、`srcset`、`poster` 等非 `src` 属性上——**这类即便静态写在 HTML 属性里也会裂**，懒加载写法要在 `src` 上放真实路径。 | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive +html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。自行判断，别的规则不受它影响。",
+  "elapsedSec": 8.35
+}

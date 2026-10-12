@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第四阶段测试清单</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ctext x='16' y='23' font-size='18' font-family='monospace' fill='%2334d399' text-anchor='middle'%3E%E2%9C%94%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --text:#d7dee8; --dim:#7d8a9c; --green:#34d399; --cyan:#38bdf8;
+    --amber:#fbbf24; --red:#f87171; --mono:'Consolas','Courier New',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6;padding:32px 18px 90px}
+  .wrap{max-width:1120px;margin:0 auto}
+  .term{font-family:var(--mono);font-size:13px}
+  /* hero */
+  .hero{border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#0f1720,#111b2e 70%);padding:30px 34px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 12px;border-radius:99px;letter-spacing:.08em;margin-bottom:14px}
+  h1{font-size:27px;font-weight:800}
+  h1 .grad{background:linear-gradient(90deg,#34d399,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:10px;font-size:14.5px;color:var(--dim);max-width:900px}
+  .sub b{color:var(--green)}
+  /* progress */
+  .prog{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-top:18px;border-bottom:1px solid var(--line)}
+  .prog .bar{height:10px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .prog .fill{height:100%;width:0%;background:linear-gradient(90deg,#34d399,#38bdf8);transition:width .3s}
+  .prog .txt{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+  .btn{font-family:var(--mono);font-size:12px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 14px;cursor:pointer}
+  .btn:hover{color:var(--green);border-color:rgba(52,211,153,.4)}
+  /* groups */
+  .grp{margin-top:30px}
+  .grp h2{font-size:17px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+  .grp h2 .tag2{font-family:var(--mono);font-size:11.5px;color:var(--cyan);border:1px solid rgba(56,189,248,.35);padding:2px 10px;border-radius:6px;letter-spacing:.05em}
+  .grp .gsub{font-size:13px;color:var(--dim);margin-bottom:12px}
+  /* checklist */
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;transition:border-color .2s}
+  .item.done{border-color:rgba(52,211,153,.5)}
+  .item.done .idx{background:rgba(52,211,153,.15);color:var(--green)}
+  .cb{flex:0 0 26px;padding-top:2px}
+  .cb input{width:20px;height:20px;accent-color:var(--green);cursor:pointer}
+  .body{flex:1;min-width:0}
+  .idx{font-family:var(--mono);font-size:12px;color:var(--cyan);background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:2px 9px;margin-right:10px}
+  .t{font-size:15px;font-weight:700;margin:2px 0 8px}
+  .cmd{display:inline-block;font-family:var(--mono);font-size:13px;color:var(--amber);background:#0a0d12;border:1px solid var(--line);border-radius:6px;padding:3px 12px;margin:2px 4px 4px 0}
+  .exp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .exp .col{background:#0a0d12;border:1px solid var(--line);border-radius:8px;padding:10px 13px}
+  .exp .col .h{font-family:var(--mono);font-size:11px;letter-spacing:.06em;margin-bottom:6px}
+  .exp .col.vga .h{color:var(--cyan)}
+  .exp .col.ser .h{color:var(--green)}
+  .exp pre{font-family:var(--mono);font-size:12px;line-height:1.65;color:#9fd8b8;white-space:pre-wrap}
+  .exp pre .c{color:#566173}
+  .exp pre .y{color:var(--amber)}
+  .note{font-size:12px;color:var(--dim);margin-top:8px}
+  .note .badge{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:1px 8px;border-radius:99px;margin-right:6px}
+  .foot{margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center}
+  @media (max-width:760px){
+    .exp{grid-template-columns:1fr}
+    h1{font-size:21px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">WINPP OS · STAGE 4 · TEST CHECKLIST</span>
+    <h1>第四阶段测试清单<span class="grad">：一项一项测，不能漏</span></h1>
+    <p class="sub">共 <b>13 项</b>：覆盖启动、独立地址空间（S4-1）、fork（S4-2）、exec（S4-3）、文件系统（S4-4）和第三阶段回归。每一项都有<b>勾选框</b>，测完打勾，进度自动保存（刷新不丢）。<b>每项都要求串口 PAGE_FAULT = 0</b>，这是第四阶段的地基，漏测一项后面改起来代价翻倍。</p>
+  </div>
+
+  <div class="prog">
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="txt"><span id="cnt">已完成 0 / 13</span><button class="btn" id="reset">重置全部勾选</button></div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">A · 启动与命令表</span></h2>
+    <p class="gsub">先确认第四阶段内核正常引导、新命令都已注册。</p>
+
+    <div class="item" data-k="t01">
+      <div class="cb"><input type="checkbox" id="t01"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-01</span>冷启动：Bochs 引导 WinPP OS</div>
+        <span class="cmd">启动 bochs.exe -q -f bochsrc.txt</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel
+[12] all init ok, drawing UI ...
+winpp@kernel:~$ _</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[11] fs ...
+[fs] init: ramdisk 16 files x 4KB ready
+[12] all init ok, drawing UI ...</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>串口出现 fs init 行 = 第四阶段文件系统已装载；出现 [12] = 全部初始化完成。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t02">
+      <div class="cb"><input type="checkbox" id="t02"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-02</span>help：命令表里能看到 4 条新命令</div>
+        <span class="cmd">help</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>  run       start 3 user procs
+  fork      fork demo (user4)
+  exec      exec demo (user5-&gt;user2)
+  fs        fs demo (user6)
+  fslist    list ramdisk files
+  ps        list processes
+  kill      kill &lt;pid&gt;
+  stop      stop scheduler</pre></div>
+          <div class="col ser"><div class="h">串口（无新增输出）</div><pre><span class="c"># help 只刷屏，串口无要求</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>fork / exec / fs / fslist 4 条新命令都在列表里，缺一不可。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">B · S4-1 独立地址空间</span></h2>
+    <p class="gsub">核心判据：3 个进程各自独立的页目录（pd 各不相同），调度切换时 CR3 跟着换，全程 0 页错误。</p>
+
+    <div class="item" data-k="t03">
+      <div class="cb"><input type="checkbox" id="t03"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-03</span>run：启动 3 个用户进程，各占独立地址空间</div>
+        <span class="cmd">run</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created user procs: pid 1 2 3
+scheduler started: 3 procs round-robin (0.1s quantum)</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[dbg] addrspace pd=<span class="y">124000</span> pt1=125000 code 400000-&gt;122000 stack 701000-&gt;123000
+[dbg] addrspace pd=<span class="y">129000</span> pt1=12a000 code 500000-&gt;127000 stack 711000-&gt;128000
+[dbg] addrspace pd=<span class="y">12e000</span> pt1=12f000 code 600000-&gt;12c000 stack 721000-&gt;12d000
+[sched] pid1 -&gt; pid2 (pd=<span class="y">129000</span> esp0=...)
+[sched] pid2 -&gt; pid3 (pd=<span class="y">12e000</span> esp0=...)
+[sched] pid3 -&gt; pid0 (pd=<span class="y">110000</span> esp0=0)
+[sched] pid0 -&gt; pid1 (pd=<span class="y">124000</span> esp0=...)
+<span class="c"># 大量行：[pid1] user1: 000000 / [pid2] user2: ... / [pid3] user3: ... 计数递增</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① 3 行 addrspace 的 pd 各不同（124000/129000/12e000）；② sched 行 pd 随进程切换变化（回 shell 是 110000）；③ 串口全文 <span style="color:var(--amber)">PAGE_FAULT = 0</span>；④ user1/2/3 计数递增。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t04">
+      <div class="cb"><input type="checkbox" id="t04"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-04</span>ps（run 运行中）：进程表 4 行</div>
+        <span class="cmd">ps</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>PID  STATE   NAME       TICKS  CODE
+  0  run     shell      <span class="c">N</span>  0
+  1  ready   user1      <span class="c">N</span>  400000
+  2  ready   user2      <span class="c">N</span>  500000
+  3  ready   user3      <span class="c">N</span>  600000</pre></div>
+          <div class="col ser"><div class="h">串口（无新增输出）</div><pre><span class="c"># ps 只刷屏</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>4 行进程，NAME 是 shell/user1/user2/user3，CODE 列 = 0/400000/500000/600000，TICKS 是递增数字（不用固定值）。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">C · S4-2 fork 分身</span></h2>
+    <p class="gsub">先 stop 清场再 fork。核心判据：pid1 调用 fork() 后内核造出 pid2，父子各自独立计数。</p>
+
+    <div class="item" data-k="t05">
+      <div class="cb"><input type="checkbox" id="t05"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-05</span>stop 清场（每次换演示前先执行）</div>
+        <span class="cmd">stop</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>scheduler stopped, all user procs terminated</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[stop] scheduler stopped</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>回显上述两行。之后 ps 只显示 shell 一行。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t06">
+      <div class="cb"><input type="checkbox" id="t06"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-06</span>fork：user4 分身出子进程，父子同时跑</div>
+        <span class="cmd">fork</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created fork-demo proc: pid 1
+scheduler started: fork demo (0.1s quantum)</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[fork] demo proc pid 1
+[fork] pid 1 -&gt; child pid <span class="y">2</span> (pd=129000 esp0=...)
+<span class="c"># 之后交替出现（父打印 parent、子打印 child，各自独立计数）：</span>
+[pid1] fork: parent 000000
+[pid2] fork: child  000000
+[pid2] fork: child  000001
+[pid1] fork: parent 000001
+<span class="c"># ...计数递增，一直交替</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① 串口出现 <span style="color:var(--amber)">[fork] pid 1 -&gt; child pid 2</span>；② [pid1] 与 [pid2] 同时打印、计数各自独立（互不干扰）；③ <span style="color:var(--amber)">PAGE_FAULT = 0</span>。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t07">
+      <div class="cb"><input type="checkbox" id="t07"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-07</span>ps（fork 运行中）：能看到父子两个进程</div>
+        <span class="cmd">ps</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>PID  STATE   NAME       TICKS  CODE
+  0  run     shell      <span class="c">N</span>  0
+  1  ready   fuser4     <span class="c">N</span>  610000
+  2  ready   fuser4     <span class="c">N</span>  610000</pre></div>
+          <div class="col ser"><div class="h">串口（无新增输出）</div><pre><span class="c"># ps 只刷屏</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>pid 1 和 pid 2 都存在（父进程名被标成 fuser4 = fork 的 user4），CODE 都是 610000 —— 父子共用同一份程序、各自独立内存。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">D · S4-3 exec 变身</span></h2>
+    <p class="gsub">核心判据：同一个 pid，先打印 user5 的声明，exec 后变成 user2 程序继续跑（pid 不变、pd 不变）。</p>
+
+    <div class="item" data-k="t08">
+      <div class="cb"><input type="checkbox" id="t08"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-08</span>exec：user5 变身成 user2</div>
+        <span class="cmd">stop（先清场）</span><span class="cmd">exec</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created exec-demo proc: pid 1
+scheduler started: exec demo (0.1s quantum)</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[exec] demo proc pid 1
+<span class="c"># 变身前（还是 user5 程序）：</span>
+[pid1] user5: before exec...
+<span class="c"># 内核执行 exec(1)：</span>
+[exec] pid1 -&gt; program user2 (entry=500000 pd=<span class="y">124000</span>)
+<span class="c"># 变身后（还是 pid1，但跑的是 user2 的代码）：</span>
+[pid1] user2: 000000
+[pid1] user2: 000010
+[pid1] user2: 000020
+<span class="c"># ...user2 计数递增</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① 变身前出现 user5 声明行；② 出现 <span style="color:var(--amber)">[exec] pid1 -&gt; program user2</span>，且 pd=124000 与变身前一致（进程没换地址空间）；③ 之后输出全是 <span style="color:var(--amber)">[pid1] user2:</span>（同一个 pid！）；④ <span style="color:var(--amber)">PAGE_FAULT = 0</span>。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t09">
+      <div class="cb"><input type="checkbox" id="t09"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-09</span>ps（exec 后）：进程名字已变成 user2</div>
+        <span class="cmd">ps</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>PID  STATE   NAME       TICKS  CODE
+  0  run     shell      <span class="c">N</span>  0
+  1  ready   user2      <span class="c">N</span>  500000</pre></div>
+          <div class="col ser"><div class="h">串口（无新增输出）</div><pre><span class="c"># ps 只刷屏</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>NAME 从 fuser4/user5 变成 <span style="color:var(--amber)">user2</span>、CODE 变成 500000 —— 进程变身已反映到进程表。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">E · S4-4 用户态文件系统</h2>
+    <p class="gsub">核心判据：user6 通过系统调用创建 hello.txt、写入、读回、打印，数据存内核内存盘。</p>
+
+    <div class="item" data-k="t10">
+      <div class="cb"><input type="checkbox" id="t10"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-10</span>fs：文件系统演示（创建/写/读 hello.txt）</div>
+        <span class="cmd">stop（先清场）</span><span class="cmd">fs</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created fs-demo proc: pid 1
+scheduler started: fs demo (0.1s quantum)</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[fs] demo proc pid 1
+[fs] open created 'hello.txt' fd=0        <span class="c"># 首次创建</span>
+[fs] open 'hello.txt' fd=0 (exist)        <span class="c"># 之后每轮：文件已存在</span>
+<span class="c"># 写入 16 字节 -> 关闭 -> 重开读取 -> 串口打印读回内容：</span>
+[pid1] Hello WinPP FS!
+[pid1] Hello WinPP FS!
+[pid1] Hello WinPP FS!
+<span class="c"># ...循环持续</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① 首轮出现 <span style="color:var(--amber)">open created 'hello.txt' fd=0</span>；② 之后反复出现 <span style="color:var(--amber)">(exist)</span>（文件被保留在内存盘）；③ [pid1] 循环打印 <span style="color:var(--amber)">Hello WinPP FS!</span>（写入-读回闭环）；④ <span style="color:var(--amber)">PAGE_FAULT = 0</span>。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t11">
+      <div class="cb"><input type="checkbox" id="t11"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-11</span>fslist：文件表里有 hello.txt</div>
+        <span class="cmd">fslist</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>NAME            SIZE   FD
+hello.txt         16  0</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[fs] list: 1 files</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>文件表 1 行：hello.txt，SIZE=16（写入 16 字节），FD=0。SIZE 若不是 16 说明写/读有问题。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">F · 回归与收尾</span></h2>
+    <p class="gsub">第三阶段命令在第四阶段改完地址空间后必须仍工作（回归测试）。</p>
+
+    <div class="item" data-k="t12">
+      <div class="cb"><input type="checkbox" id="t12"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-12</span>kill 1：杀掉指定进程（独立地址空间下回收正确）</div>
+        <span class="cmd">run</span><span class="cmd">kill 1</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>killed pid 1</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[kill] pid 1 terminated</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>回显 killed；再 ps 应只剩 pid 2/3 和 shell。若执行后出现页错误/死机，说明该进程的 PD/PT1 释放有 bug。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t13">
+      <div class="cb"><input type="checkbox" id="t13"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-13</span>stop：全部清理，回 shell；最后逐项复查串口</div>
+        <span class="cmd">stop</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>scheduler stopped, all user procs terminated</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[stop] scheduler stopped</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① 回显上述两行；② <span style="color:var(--amber)">最后用全文搜索确认：整个测试过程 PAGE_FAULT 计数 = 0</span>（串口搜 "FAULT" 应 0 次命中）；③ ps 只剩 shell 一行。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">WinPP OS · 第四阶段测试清单 · 勾选进度自动保存在本浏览器 · 重开页面可续测</div>
+</div>
+
+<script>
+(function(){
+  var keys = ['t01','t02','t03','t04','t05','t06','t07','t08','t09','t10','t11','t12','t13'];
+  var fill = document.getElementById('fill');
+  var cnt = document.getElementById('cnt');
+  function save(){
+    var done = 0;
+    keys.forEach(function(k){
+      var el = document.getElementById(k);
+      var it = document.querySelector('.item[data-k="'+k+'"]');
+      if(el.checked){
+        done++;
+        it.classList.add('done');
+      } else {
+        it.classList.remove('done');
+      }
+    });
+    fill.style.width = (done / keys.length * 100) + '%';
+    cnt.textContent = '已完成 ' + done + ' / ' + keys.length;
+  }
+  keys.forEach(function(k){
+    var el = document.getElementById(k);
+    try { el.checked = localStorage.getItem('s4test_'+k) === '1'; } catch(e){}
+    el.addEventListener('change', function(){
+      try { localStorage.setItem('s4test_'+k, el.checked ? '1' : '0'); } catch(e){}
+      save();
+    });
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    if(!confirm('确定清除全部勾选进度？')) return;
+    keys.forEach(function(k){
+      var el = document.getElementById(k);
+      el.checked = false;
+      try { localStorage.removeItem('s4test_'+k); } catch(e){}
+    });
+    save();
+  });
+  save();
+})();
+</script>
+</body>
+</html>
