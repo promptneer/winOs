@@ -333,6 +333,16 @@ void sched_stop(void)
         sched_current = &procs[0];
         set_cr3(procs[0].pd_page);   /* S4：切回 shell 恢复 boot 页目录 */
     }
+    /* S4-fix: stop 后复位进程表，pid 从 1 重新分配（防槽位耗尽、演示 pid 漂移） */
+    for (u32 i = 1; i < PROC_MAX; i++) {
+        if (procs[i].state != PROC_EMPTY) proc_reap(&procs[i]);
+        procs[i].pid = 0;
+        procs[i].reaped = 0;
+        procs[i].ticks_run = 0;
+        procs[i].pd_page = procs[i].pt1_page = 0;
+        procs[i].code_page = procs[i].stack_page = procs[i].kstack_page = 0;
+    }
+    nprocs = 1;
 }
 
 void sched_start(void)

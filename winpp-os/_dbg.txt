@@ -1,4 +1,42 @@
-consoleErrors: None
-resourceErrors: None
-horizontalOverflow: None
-overlappingText count: 0
+=== 全量统计 ===
+total 24420
+PAGE_FAULT 0
+addrspace 6
+sched 9389
+fork-child 1
+fork-p 233
+fork-c 234
+exec-line 3
+fs-open 992
+hello 496
+kill 1
+stop 4
+user5 1
+user2aft 639
+--- addrspace ---
+[dbg] addrspace pd=136000 pt1=137000 code 400000->134000 stack 701000->135000
+[dbg] addrspace pd=13b000 pt1=13c000 code 500000->139000 stack 711000->13a000
+[dbg] addrspace pd=140000 pt1=141000 code 600000->13e000 stack 721000->13f000
+--- fork 首行 ---
+[fork] pid 1 -> child pid 2 (pd=13b000 esp0=139000)
+--- fork parent/child 交替 4 ---
+[pid1] fork: parent 000000
+[pid2] fork: child  000000
+[pid2] fork: child  000001
+[pid1] fork: parent 000001
+--- exec ---
+[exec] demo proc pid 1
+--- user5 ---
+[pid1] user5: before exec...
+--- user2 变身后 2 ---
+[pid2] user2: 000000
+[pid2] user2: 000010
+--- fs open 2 ---
+[fs] open created 'hello.txt' fd=0
+[fs] open 'hello.txt' fd=0 (exist)
+--- kill/stop 全部 ---
+[stop] scheduler stopped
+[stop] scheduler stopped
+[stop] scheduler stopped
+[kill] pid 1 terminated
+[stop] scheduler stopped

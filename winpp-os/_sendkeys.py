@@ -5,7 +5,7 @@ import ctypes, time, sys
 u = ctypes.windll.user32
 k32 = ctypes.windll.kernel32
 
-H = 787056  # Bochs for Windows - Display
+H = 1706236  # Bochs for Windows - Display
 
 def get_fg():
     return u.GetForegroundWindow()
