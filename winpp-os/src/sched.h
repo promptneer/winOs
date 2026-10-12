@@ -31,6 +31,8 @@ typedef struct {
     u32  code_vaddr;
     u32  stack_page;     /* 用户栈物理页 */
     u32  stack_vaddr;
+    u32  pd_page;        /* 进程独立页目录（S4：0=沿用 boot PD，仅 shell） */
+    u32  pt1_page;       /* 进程独立 PT1（4-8MB 用户区页表，含内核栈恒等项） */
     u32  reaped;         /* 资源已回收 */
 } pcb_t;
 
@@ -42,6 +44,7 @@ void   sched_start(void);        /* 启动多任务轮转（run） */
 void   sched_stop(void);         /* 停止调度并清理用户进程（stop） */
 int    sched_create(const char *name, u32 entry, u32 stack_vaddr,
                     const u8 *code, u32 code_len);
+int    sched_fork(pcb_t *parent, const regs_t *r);   /* S4-2：进程分身 */
 void   sched_need_resched(void);
 int    sched_should_switch(void);
 void   sched_tick(regs_t *r);    /* irq_handler 末尾调用；可能不返回 */

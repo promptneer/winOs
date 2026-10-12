@@ -32,11 +32,12 @@ Write-Host "zig: $zig"
 $srcC  = (Get-ChildItem "$root\src" -Filter *.c | Select-Object -ExpandProperty FullName)
 $srcAS = @("$root\src\boot.S", "$root\src\isr.S")
 
-# ---------- 0. 用户程序 user1/2/3.bin（第三阶段：用户态进程） ----------
+# ---------- 0. 用户程序 user1/2/3/4.bin（第三/四阶段：用户态进程） ----------
 $users = @(
   @{ name="user1"; ld="user1.ld" },
   @{ name="user2"; ld="user2.ld" },
-  @{ name="user3"; ld="user3.ld" }
+  @{ name="user3"; ld="user3.ld" },
+  @{ name="user4"; ld="user4.ld" }
 )
 foreach ($u in $users) {
   $uargs = @(
@@ -63,7 +64,7 @@ foreach ($u in $users) {
 
 # 生成 users_inc.c/.h（C 数组内嵌用户程序；zig cc 的 lld 不支持 .incbin，改用数组最稳）
 python -c "
-names=['user1','user2','user3']
+names=['user1','user2','user3','user4']
 lines_c=[]; lines_h=['#pragma once']
 for n in names:
     d=open(r'$root\src\%s.bin' % n,'rb').read()

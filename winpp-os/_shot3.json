@@ -1,0 +1,188 @@
+﻿{
+  "src": "D:\\WinPP\\WinPP内核路线图.html",
+  "url": "file:///D:/WinPP/WinPP%E5%86%85%E6%A0%B8%E8%B7%AF%E7%BA%BF%E5%9B%BE.html",
+  "outdir": "D:\\WinPP\\_shots",
+  "include": [
+    "lint",
+    "screenshots",
+    "structure"
+  ],
+  "shots": {
+    "desktop": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP内核路线图_desktop.jpg",
+      "screenshotBytes": 56602,
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 内核开发路线图",
+        "firstH1": "WinPP 内核开发路线图",
+        "viewport": {
+          "w": 1424,
+          "h": 749
+        },
+        "fullpage": {
+          "w": 1424,
+          "h": 749
+        },
+        "counts": {
+          "section": 0,
+          "h1": 1,
+          "h2": 0,
+          "img": 0,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "reportSource": "cdp"
+    },
+    "mobile": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP内核路线图_mobile.jpg",
+      "screenshotBytes": 66547,
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 内核开发路线图",
+        "firstH1": "WinPP 内核开发路线图",
+        "viewport": {
+          "w": 500,
+          "h": 693
+        },
+        "fullpage": {
+          "w": 500,
+          "h": 905
+        },
+        "counts": {
+          "section": 0,
+          "h1": 1,
+          "h2": 0,
+          "img": 0,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "b",
+            "text": "当前位置：",
+            "rect": [
+              14,
+              439,
+              63,
+              16
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "独立地址空间 → fork/exec → 用户态文件系统",
+            "rect": [
+              14,
+              439,
+              460,
+              39
+            ]
+          },
+          "intersectPx": 1000,
+          "coverRatio": 1
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "reportSource": "cdp"
+    }
+  },
+  "engine": "chrome_cli",
+  "chromiumExec": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "engineDegraded": true,
+  "engineDegradedReason": "playwright 未装",
+  "publishBrokenAssets": [
+    {
+      "file": "assets\\05-fixed-boot.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\06-help-time.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\07-uptime-sysinfo-ls.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\08-demo-ui.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\11-paging.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\12-meminfo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\13-pfault.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\14-help.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\15-ps-before.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\16-run.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\17-run-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    }
+  ],
+  "publishBrokenAssetsHint": "含义：发布链路靠静态扫描 HTML 源码决定上传哪些图片文件，**只认 `src` 属性和 CSS `url()` 两个位置**（线上实测）。写在别处的路径不会被上传，发布后 404 裂图。本地打开和自检截图都看不出来——文件真实存在，浏览器照样加载。 | severity=error 的逐条改，改法都是同一个：把路径挪到 `<img src=\"assets/x.png\">` 或 CSS `url('assets/x.png')`。reason=js-literal 路径写在 JS 字符串里（`const g=['assets/x.png']` 这种常量数组也算，照样裂）；reason=js-concat 路径由 JS 拼接（`'assets/img'+i+'.png'`）；reason=non-src-attr 路径写在 `data-src`、`srcset`、`poster` 等非 `src` 属性上——**这类即便静态写在 HTML 属性里也会裂**，懒加载写法要在 `src` 上放真实路径。 | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive +html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。自行判断，别的规则不受它影响。",
+  "elapsedSec": 7.21
+}

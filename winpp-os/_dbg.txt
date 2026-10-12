@@ -1,0 +1,13 @@
+total 1199
+FAULT 0
+--- fork lines ---
+[fork] demo proc pid 1
+[fork] scheduler s[sched] pid0 -> pid1 (pd=124000 esp0=122000)
+[fork] pid 1 -> child pid 2 (pd=129000 esp0=127000)
+--- first pidN 6 ---
+[pid1] fork: parent 000000
+[pid2] fork: child  000000
+[pid2] fork: child  000001
+[pid1] fork: parent 000001
+[pid2] fork: child  000002
+[pid1] fork: parent 000002

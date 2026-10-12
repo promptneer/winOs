@@ -9,6 +9,43 @@
 /* 用户代码/栈映射标志：P + W + U（用户态可访问；内核页无 U 位 → 用户访问 #PF） */
 #define USER_PAGE_FLAGS 0x7
 
+/* S4 独立地址空间：每个用户进程拥有自己的 PD + PT1。
+ * 新 PD 复制 src_pd（内核恒等 + 自映射骨架），PD[1] 指向自己的 PT1；
+ * 新 PT1 复制 src_pt1（内核栈/页表页/堆等恒等项，换 CR3 后内核仍可访问），
+ * 清掉旧用户残留项后写入本进程的代码页 + 栈页（P+W+U）。
+ * 创建进程时 src_pd=src_pt1=boot 的；fork 时传入父进程的 pd/pt1 继承布局。
+ * 返回 PD 物理页；失败返回 0。 */
+static u32 proc_make_addrspace(u32 entry, u32 stack_vaddr,
+                               u32 code_phys, u32 stack_phys,
+                               u32 src_pd, u32 src_pt1, u32 *out_pt1)
+{
+    u32 pd = pmm_alloc_page();
+    if (!pd) return 0;
+    u32 pt1 = pmm_alloc_page();
+    if (!pt1) { pmm_free_page(pd); return 0; }
+
+    volatile u32 *pdv  = (volatile u32 *)pd;
+    volatile u32 *pt1v = (volatile u32 *)pt1;
+    for (u32 i = 0; i < 1024; i++) pdv[i]  = ((volatile u32 *)src_pd)[i];
+    for (u32 i = 0; i < 1024; i++) pt1v[i] = ((volatile u32 *)src_pt1)[i];
+
+    /* 清旧共享用户项残留（第三阶段固定映射），防跨进程越权访问 */
+    static const u32 legacy[6] = { 0x400000, 0x500000, 0x600000,
+                                   0x700000, 0x710000, 0x720000 };
+    for (u32 k = 0; k < 6; k++) pt1v[PT_INDEX(legacy[k])] = 0;
+
+    /* 本进程用户代码页 + 用户栈页 */
+    pt1v[PT_INDEX(entry)]        = (code_phys  & 0xFFFFF000u) | USER_PAGE_FLAGS;
+    pt1v[PT_INDEX(stack_vaddr)]  = (stack_phys & 0xFFFFF000u) | USER_PAGE_FLAGS;
+
+    pdv[1] = pt1 | USER_PAGE_FLAGS;          /* 用户 PDE 也要 U 位 */
+    pdv[1023] = pd | 0x3;                    /* 自映射指向新 PD 自身 */
+    *out_pt1 = pt1;
+    return pd;
+}
+
+static void set_cr3(u32 pd) { asm volatile("mov %0, %%cr3" :: "r"(pd)); }
+
 static pcb_t procs[PROC_MAX];
 static u32   nprocs = 1;          /* pid0 = shell 常驻 */
 static int   sched_on = 0;
@@ -43,6 +80,7 @@ void sched_init(void)
         procs[i].ctx = 0;
         procs[i].reaped = 0;
         procs[i].code_page = procs[i].stack_page = procs[i].kstack_page = 0;
+        procs[i].pd_page = procs[i].pt1_page = 0;
         procs[i].ticks_run = 0;
     }
     procs[0].pid = 0;
@@ -50,6 +88,8 @@ void sched_init(void)
     procs[0].kstack_top = 0;          /* 内核态中断不换栈 */
     procs[0].code_vaddr = 0;
     procs[0].stack_vaddr = 0;
+    procs[0].pd_page = read_cr3();    /* shell 沿用 boot PD */
+    procs[0].pt1_page = 0;
     k_strcpy(procs[0].name, "shell");
     sched_current = &procs[0];
     sched_on = 0;
@@ -94,19 +134,22 @@ int sched_create(const char *name, u32 entry, u32 stack_vaddr,
     /* 恒等映射下物理地址可直接读写：拷代码到用户物理页 */
     k_memcpy((void *)cp, code, code_len);
 
-    /* 用户代码页 + 用户栈页（栈顶在页面顶部） */
-    map_page(entry, cp, USER_PAGE_FLAGS);
-    map_page(stack_vaddr & ~0xFFFu, sp, USER_PAGE_FLAGS);
+    /* S4：为进程建立独立地址空间（PD + PT1），映射代码页/栈页。
+     * 新进程继承 boot PD/PT1 的内核恒等布局。 */
+    u32 boot_pd  = read_cr3();
+    u32 boot_pt1 = ((volatile u32 *)boot_pd)[1] & 0xFFFFF000u;
+    u32 pt1 = 0;
+    u32 pd = proc_make_addrspace(entry, stack_vaddr & ~0xFFFu, cp, sp,
+                                 boot_pd, boot_pt1, &pt1);
+    if (!pd) {
+        pmm_free_page(kp); pmm_free_page(cp); pmm_free_page(sp);
+        return -1;
+    }
     serial_printf("[dbg] src=%x code=%x%x%x%x%x%x%x%x\r\n",
                   (u32)code, code[0], code[1], code[2], code[3],
                   code[4], code[5], code[6], code[7]);
-    serial_printf("[dbg] map code %x->%x pd=%x pte=%x | stack %x->%x pd=%x pte=%x\r\n",
-        entry, cp,
-        ((volatile u32 *)0xFFFFF000u)[entry >> 22],
-        ((volatile u32 *)(0xFFC00000u + (entry >> 22) * 0x1000))[(entry >> 12) & 0x3FF],
-        stack_vaddr & ~0xFFFu, sp,
-        ((volatile u32 *)0xFFFFF000u)[(stack_vaddr >> 22) & 0x3FF],
-        ((volatile u32 *)(0xFFC00000u + ((stack_vaddr >> 22) & 0x3FF) * 0x1000))[((stack_vaddr >> 12) & 0x3FF)]);
+    serial_printf("[dbg] addrspace pd=%x pt1=%x code %x->%x stack %x->%x\r\n",
+                  pd, pt1, entry, cp, stack_vaddr & ~0xFFFu, sp);
 
     pcb_t *p = &procs[nprocs];
     p->pid = nprocs;               /* 1.. */
@@ -117,6 +160,8 @@ int sched_create(const char *name, u32 entry, u32 stack_vaddr,
     p->code_vaddr = entry;
     p->stack_page = sp;
     p->stack_vaddr = stack_vaddr & ~0xFFFu;
+    p->pd_page = pd;
+    p->pt1_page = pt1;
     p->ticks_run = 0;
     p->reaped = 0;
     k_strcpy(p->name, name);
@@ -128,20 +173,81 @@ int sched_create(const char *name, u32 entry, u32 stack_vaddr,
 
 /* ---------------- 资源回收 ---------------- */
 
+/* S4-2 fork：复制当前进程为子进程。
+ * 子进程获得：新内核栈、新 PD/PT1（继承父布局）、用户代码页/栈页内容副本；
+ * 用户上下文帧复制父现场，仅 eax=0（父返回子 pid，子返回 0）。
+ * 返回子 pid；失败 -1。 */
+int sched_fork(pcb_t *parent, const regs_t *r)
+{
+    if (nprocs >= PROC_MAX) return -1;
+
+    u32 kp = pmm_alloc_page();
+    u32 cp = pmm_alloc_page();
+    u32 sp = pmm_alloc_page();
+    if (!kp || !cp || !sp) {
+        if (kp) pmm_free_page(kp);
+        if (cp) pmm_free_page(cp);
+        if (sp) pmm_free_page(sp);
+        return -1;
+    }
+    /* 复制父用户代码页 + 栈页（当前 CR3=父 PD，恒等区可直读写） */
+    k_memcpy((void *)cp, (void *)parent->code_page, PAGE_SIZE);
+    k_memcpy((void *)sp, (void *)parent->stack_page, PAGE_SIZE);
+
+    /* 子地址空间：继承父 PD/PT1 布局，改写 code/stack 项指向子页 */
+    u32 pt1 = 0;
+    u32 pd = proc_make_addrspace(parent->code_vaddr, parent->stack_vaddr,
+                                 cp, sp, parent->pd_page, parent->pt1_page, &pt1);
+    if (!pd) {
+        pmm_free_page(kp); pmm_free_page(cp); pmm_free_page(sp);
+        return -1;
+    }
+
+    pcb_t *c = &procs[nprocs];
+    c->pid = nprocs;
+    c->state = PROC_READY;
+    c->kstack_page = kp;
+    c->kstack_top = kp + 0x1000;
+    c->code_page = cp;
+    c->code_vaddr = parent->code_vaddr;
+    c->stack_page = sp;
+    c->stack_vaddr = parent->stack_vaddr;
+    c->pd_page = pd;
+    c->pt1_page = pt1;
+    c->ticks_run = 0;
+    c->reaped = 0;
+    k_strcpy(c->name, parent->name);
+    c->name[0] = 'f';              /* "user1" -> "fuser1"（同 pid 前缀） */
+
+    /* 复制父用户上下文帧到子内核栈；子进程 eax=0（fork 返回 0） */
+    regs_t *cf = (regs_t *)(c->kstack_top - sizeof(regs_t));
+    k_memcpy(cf, r, sizeof(regs_t));
+    cf->eax = 0;
+    c->ctx = (u32)cf;
+
+    nprocs++;
+    serial_printf("[fork] pid %d -> child pid %d (pd=%x esp0=%x)\r\n",
+                  parent->pid, c->pid, pd, c->kstack_top);
+    return (int)c->pid;
+}
+
 static void proc_reap(pcb_t *p)
 {
     if (p->reaped) return;
     p->reaped = 1;
-    if (p->code_page) {
-        unmap_page(p->code_vaddr);
-        pmm_free_page(p->code_page);
+    /* S4：进程有独立地址空间，直接物理写目标 PT1 清用户项
+     * （unmap_page 操作当前 CR3 的 PD，不能用于清理非当前进程） */
+    if (p->pt1_page) {
+        volatile u32 *pt1v = (volatile u32 *)p->pt1_page;
+        if (p->code_vaddr)  pt1v[PT_INDEX(p->code_vaddr)] = 0;
+        if (p->stack_vaddr) pt1v[PT_INDEX(p->stack_vaddr)] = 0;
     }
-    if (p->stack_page) {
-        unmap_page(p->stack_vaddr);
-        pmm_free_page(p->stack_page);
-    }
-    if (p->kstack_page)
-        pmm_free_page(p->kstack_page);
+    if (p->code_page)  pmm_free_page(p->code_page);
+    if (p->stack_page) pmm_free_page(p->stack_page);
+    if (p->kstack_page) pmm_free_page(p->kstack_page);
+    if (p->pt1_page) pmm_free_page(p->pt1_page);
+    if (p->pd_page && p->pd_page != procs[0].pd_page)
+        pmm_free_page(p->pd_page);
     p->state = PROC_EMPTY;
     p->ctx = 0;
 }
@@ -172,8 +278,10 @@ void sched_stop(void)
     }
     sched_on = 0;
     need_resched = 0;
-    if (sched_current->pid != 0)
+    if (sched_current->pid != 0) {
         sched_current = &procs[0];
+        set_cr3(procs[0].pd_page);   /* S4：切回 shell 恢复 boot 页目录 */
+    }
 }
 
 void sched_start(void)
@@ -222,8 +330,10 @@ void sched_tick(regs_t *r)
     next->state = PROC_RUNNING;
     next->ticks_run++;
     tss_set_esp0(next->kstack_top);
+    /* S4：切换 CR3 到目标进程的独立页目录（不同才换；shell 沿用 boot PD） */
+    if (next->pd_page != cur->pd_page) set_cr3(next->pd_page);
     sched_current = next;
-    serial_printf("[sched] pid%d -> pid%d (cr3=%x esp0=%x)\r\n",
+    serial_printf("[sched] pid%d -> pid%d (pd=%x esp0=%x)\r\n",
                   cur->pid, next->pid, read_cr3(), next->kstack_top);
     sched_do_switch(next->ctx);      /* 不返回：换栈 + iret 到 next 用户态 */
     for (;;) { }                     /* 编译器保险（实际不会执行） */
@@ -283,6 +393,12 @@ void syscall_handler(regs_t *r)
             sched_need_resched();
         }
         r->eax = 0;
+    }
+    else if (nr == 3) {             /* fork()：复制当前进程（S4-2） */
+        if (sched_current && sched_current->pid != 0)
+            r->eax = (u32)sched_fork(sched_current, r);
+        else
+            r->eax = 0xFFFFFFFFu;   /* shell 不允许 fork */
     }
     else {
         r->eax = -1;

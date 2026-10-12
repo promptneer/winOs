@@ -1,0 +1,570 @@
+﻿{
+  "src": "D:\\WinPP\\WinPP第三阶段进度报告.html",
+  "url": "file:///D:/WinPP/WinPP%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%E8%BF%9B%E5%BA%A6%E6%8A%A5%E5%91%8A.html",
+  "outdir": "D:\\WinPP\\_shots",
+  "include": [
+    "lint",
+    "screenshots",
+    "structure"
+  ],
+  "shots": {
+    "desktop": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第三阶段进度报告_desktop.jpg",
+      "screenshotBytes": 320629,
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 内核 · 第三阶段进度报告",
+        "firstH1": "第三阶段进度报告：用户态 + 任务切换",
+        "viewport": {
+          "w": 1424,
+          "h": 749
+        },
+        "fullpage": {
+          "w": 1424,
+          "h": 5060
+        },
+        "counts": {
+          "section": 7,
+          "h1": 1,
+          "h2": 7,
+          "img": 2,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "b",
+            "text": "结论：",
+            "rect": [
+              199,
+              3059,
+              39,
+              17
+            ]
+          },
+          "b": {
+            "tag": "b",
+            "text": "0 个 PAGE FAULT",
+            "rect": [
+              199,
+              3059,
+              994,
+              38
+            ]
+          },
+          "intersectPx": 663,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "b",
+            "text": "全部通过",
+            "rect": [
+              342,
+              3059,
+              52,
+              17
+            ]
+          },
+          "b": {
+            "tag": "b",
+            "text": "0 个 PAGE FAULT",
+            "rect": [
+              199,
+              3059,
+              994,
+              38
+            ]
+          },
+          "intersectPx": 884,
+          "coverRatio": 1
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "emojiUsageWarning": [
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← PDE/PTE 均含 USER 位 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 用户态进程 1 经 int 0x80 write 串口输出 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 计数器每轮递增 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← shell 常驻 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← user1 就绪态，入口 0x400000 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 进程 1 被终结 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 全场清场 ✓"
+        },
+        {
+          "tag": "td",
+          "chars": "✓",
+          "contextText": "内嵌，kernel.bin 检出 user1 机器码特征 ✓"
+        },
+        {
+          "tag": "div",
+          "chars": "✅",
+          "contextText": "已完成 ✅"
+        }
+      ],
+      "emojiUsageHint": "warning · 含义：页面正文里检出 emoji 字符（U+1F300–U+1FAFF 或 U+2600–U+27BF 平面）。SKILL.md 视觉设计段明确禁用 emoji——不作图标、不作装饰、不放进数据。 | 修法：换成内联 SVG 图标（<svg viewBox=\"0 0 24 24\">）建立风格连贯的图标语言。 | 豁免：(1) **用户品牌资产明确包含 emoji**（罕见，但如即时通讯、社交媒体主题的产物合理）；(2) 主题本身就是关于 emoji 的（emoji 历史 / 表情包研究 / Unicode 演进）；(3) 引用某条真实文本原文（如推文截图的文字版），emoji 是内容而非装饰——保留原文可接受，但仍应权衡；(4) 装饰性 dingbat（如 U+2713 勾选符 ✓、U+2192 箭头 →、U+2605 星 ★）落入 U+2600–U+27BF 平面被误报的，如确认是符号非 emoji 可忽略。",
+      "reportSource": "cdp"
+    },
+    "mobile": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第三阶段进度报告_mobile.jpg",
+      "screenshotBytes": 497953,
+      "slices": [
+        "D:\\WinPP\\_shots\\WinPP第三阶段进度报告_mobile_p1of3.jpg",
+        "D:\\WinPP\\_shots\\WinPP第三阶段进度报告_mobile_p2of3.jpg",
+        "D:\\WinPP\\_shots\\WinPP第三阶段进度报告_mobile_p3of3.jpg"
+      ],
+      "sliceHint": "主图过阈值（字节>800KB 或 高度>4000px），已按 3200px 切片。若主图 Read 失败，改读 slices 里各分片。",
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 内核 · 第三阶段进度报告",
+        "firstH1": "第三阶段进度报告：用户态 + 任务切换",
+        "viewport": {
+          "w": 500,
+          "h": 693
+        },
+        "fullpage": {
+          "w": 546,
+          "h": 7619
+        },
+        "counts": {
+          "section": 7,
+          "h1": 1,
+          "h2": 7,
+          "img": 2,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "td",
+            "text": "无头启动日志 [1] gdt 通过，ltr 加载无崩溃",
+            "rect": [
+              159,
+              1597,
+              200,
+              80
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已完成",
+            "rect": [
+              114,
+              1612,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "IDT 0x80 门 flags 0xEE（DPL=3）",
+            "rect": [
+              159,
+              1678,
+              200,
+              80
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已完成",
+            "rect": [
+              114,
+              1692,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "user1/2/3.bin 各 107 B，编译 + 内嵌链接通过",
+            "rect": [
+              159,
+              1758,
+              200,
+              64
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已完成",
+            "rect": [
+              114,
+              1773,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "串口 [sched] pid0->pid1->pid2->pid3 轮转日志",
+            "rect": [
+              159,
+              1822,
+              200,
+              64
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已取证",
+            "rect": [
+              114,
+              1836,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "截图 15-ps-before.png + screen dump：0 run shell 0 0",
+            "rect": [
+              159,
+              1886,
+              200,
+              107
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已取证",
+            "rect": [
+              114,
+              1900,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "截图 17-run-ok.png + 串口 [pid1] user1: 010710 滚动（0 页错误）",
+            "rect": [
+              159,
+              1993,
+              200,
+              171
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已取证",
+            "rect": [
+              114,
+              2007,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "串口 [kill] pid 1 terminated / [stop] scheduler stopped",
+            "rect": [
+              159,
+              2164,
+              200,
+              89
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已取证",
+            "rect": [
+              114,
+              2178,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "[kill] pid 1 terminated",
+            "rect": [
+              171,
+              2178,
+              120,
+              39
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "[stop] scheduler stopped",
+            "rect": [
+              171,
+              2201,
+              137,
+              39
+            ]
+          },
+          "intersectPx": 1919,
+          "coverRatio": 0.41
+        },
+        {
+          "a": {
+            "tag": "td",
+            "text": "串口：0 run shell · 1 ready user1 · 2 ready user2",
+            "rect": [
+              159,
+              2253,
+              200,
+              89
+            ]
+          },
+          "b": {
+            "tag": "span",
+            "text": "已取证",
+            "rect": [
+              114,
+              2268,
+              49,
+              17
+            ]
+          },
+          "intersectPx": 78,
+          "coverRatio": 0.09
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "squeezedTableColumns": [
+        {
+          "reason": "auto-layout-content-driven",
+          "cellWidth": 62,
+          "rowHeight": 214,
+          "lines": 9,
+          "charsPerLine": 4.6,
+          "textLength": 41,
+          "tableLayout": "fixed",
+          "colWidths": [
+            71,
+            62,
+            178,
+            133
+          ],
+          "declaredWidths": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "declaredPctSum": null,
+          "widthRatio": 2.87,
+          "text": "PAGE FAULT @0x400000 err=5（P 存"
+        },
+        {
+          "reason": "auto-layout-content-driven",
+          "cellWidth": 62,
+          "rowHeight": 235,
+          "lines": 10,
+          "charsPerLine": 3.5,
+          "textLength": 35,
+          "tableLayout": "fixed",
+          "colWidths": [
+            71,
+            62,
+            178,
+            133
+          ],
+          "declaredWidths": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "declaredPctSum": null,
+          "widthRatio": 2.87,
+          "text": "修 #1 后 fault @0 err=6/7（用户\"程序\""
+        }
+      ],
+      "squeezedTableColumnsHint": "含义：表格某列被挤到极窄（cellWidth），里面的中文逐字折行——charsPerLine 是每行平均字数，lines 是实际折行数。**表格行高是统一的**，所以这一个窄单元格把整行撑到 rowHeight 那么高，其余列跟着变成大片空白：表现就是一屏只看得到一两行、版面全是空档。 | reason=partial-width-declaration（最常见）：**部分列写了 width、有列漏写**。实测形态是前三列 `style=\"width:14%\"` / `24%` / `30%`，第四列没写——declaredWidths 里的 null 就是漏写的列。而 `table-layout: auto` 下声明的百分比只是「最小期望」，内容长的列会突破它，于是漏写的那列只拿到剩余的 88px。修法：**给所有列都写宽度、加起来正好 100%**，并给表格加 `table-layout: fixed` 让声明被严格执行。文字多的列给大比例，标签列给小比例。 | reason=width-sum-under-100：所有列都声明了但 declaredPctSum 不到 100，剩余空间的分配由内容决定，同样会挤出一个窄列。修法：把百分比补齐到 100%。 | reason=auto-layout-content-driven：一列都没声明，纯按内容长度分配。修法：用 `<colgroup><col style=\"width:25%\">` 显式给出各列宽度 + `table-layout: fixed`。 | 移动端修法不同：窄屏放不下多列表格，调列宽比例没用。两种做法——(a) 用媒体查询把表格改成卡片式（每行变一张卡，字段名和值上下排）；(b) 外面套 `<div style=\"overflow-x:auto\">` 并给 table 设 `min-width`（如 600px），让它横向滚动而不是压扁。**做 (b) 时要确认滚动条或渐变提示可见**，否则用户不知道右边还有内容——右侧列被静默裁掉比压扁更糟。 | 豁免：(1) `writing-mode` 非 horizontal-tb 的刻意竖排不报；(2) 单元格文本 < 12 字、或列宽 > 160px 的不报；(3) 折行数 < 4 行、或每行 > 5 字的不报——那是正常折行；(4) **行高 < 200px 的不报**——移动端窄屏放不下多列表格时列窄是必然的，只有行高被撑到明显异常（占近 1/4 屏）才算问题。所以本规则报出来的都是「一行吃掉大半屏」那种，不是普通的窄列。",
+      "emojiUsageWarning": [
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← PDE/PTE 均含 USER 位 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 用户态进程 1 经 int 0x80 write 串口输出 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 计数器每轮递增 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← shell 常驻 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← user1 就绪态，入口 0x400000 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 进程 1 被终结 ✓"
+        },
+        {
+          "tag": "span",
+          "chars": "✓",
+          "contextText": "← 全场清场 ✓"
+        },
+        {
+          "tag": "td",
+          "chars": "✓",
+          "contextText": "内嵌，kernel.bin 检出 user1 机器码特征 ✓"
+        },
+        {
+          "tag": "div",
+          "chars": "✅",
+          "contextText": "已完成 ✅"
+        }
+      ],
+      "emojiUsageHint": "warning · 含义：页面正文里检出 emoji 字符（U+1F300–U+1FAFF 或 U+2600–U+27BF 平面）。SKILL.md 视觉设计段明确禁用 emoji——不作图标、不作装饰、不放进数据。 | 修法：换成内联 SVG 图标（<svg viewBox=\"0 0 24 24\">）建立风格连贯的图标语言。 | 豁免：(1) **用户品牌资产明确包含 emoji**（罕见，但如即时通讯、社交媒体主题的产物合理）；(2) 主题本身就是关于 emoji 的（emoji 历史 / 表情包研究 / Unicode 演进）；(3) 引用某条真实文本原文（如推文截图的文字版），emoji 是内容而非装饰——保留原文可接受，但仍应权衡；(4) 装饰性 dingbat（如 U+2713 勾选符 ✓、U+2192 箭头 →、U+2605 星 ★）落入 U+2600–U+27BF 平面被误报的，如确认是符号非 emoji 可忽略。",
+      "reportSource": "cdp"
+    }
+  },
+  "engine": "chrome_cli",
+  "chromiumExec": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "engineDegraded": true,
+  "engineDegradedReason": "playwright 未装",
+  "publishBrokenAssets": [
+    {
+      "file": "assets\\05-fixed-boot.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\06-help-time.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\07-uptime-sysinfo-ls.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\08-demo-ui.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\11-paging.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\12-meminfo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\13-pfault.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\14-help.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\16-run.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    }
+  ],
+  "publishBrokenAssetsHint": "含义：发布链路靠静态扫描 HTML 源码决定上传哪些图片文件，**只认 `src` 属性和 CSS `url()` 两个位置**（线上实测）。写在别处的路径不会被上传，发布后 404 裂图。本地打开和自检截图都看不出来——文件真实存在，浏览器照样加载。 | severity=error 的逐条改，改法都是同一个：把路径挪到 `<img src=\"assets/x.png\">` 或 CSS `url('assets/x.png')`。reason=js-literal 路径写在 JS 字符串里（`const g=['assets/x.png']` 这种常量数组也算，照样裂）；reason=js-concat 路径由 JS 拼接（`'assets/img'+i+'.png'`）；reason=non-src-attr 路径写在 `data-src`、`srcset`、`poster` 等非 `src` 属性上——**这类即便静态写在 HTML 属性里也会裂**，懒加载写法要在 `src` 上放真实路径。 | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive +html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。自行判断，别的规则不受它影响。",
+  "elapsedSec": 8.36
+}

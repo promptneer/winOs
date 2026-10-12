@@ -318,6 +318,24 @@ static void cmd_stop(int argc, char **argv)
     serial_printf("[stop] scheduler stopped\r\n");
 }
 
+/* S4-2：启动 fork 演示进程（user4：fork 后父子各自独立运行） */
+static void cmd_fork(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user4", 0x610000, 0x731000,
+                         _user4_code, USER4_LEN);
+    if (p > 0) {
+        vga_printf("created fork-demo proc: pid %d\n", p);
+        serial_printf("[fork] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: fork demo (0.1s quantum)\n");
+        serial_printf("[fork] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create fork-demo process\n");
+    }
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -344,6 +362,7 @@ static const cmd_t cmds[] = {
     { "alloc",    "kmalloc/kfree stress",       cmd_alloc },
     { "pfault",   "page fault + demand map",    cmd_pfault },
     { "run",      "start 3 user procs",         cmd_run },
+    { "fork",     "fork demo (user4)",          cmd_fork },
     { "ps",       "list processes",             cmd_ps },
     { "kill",     "kill <pid>",                 cmd_kill },
     { "stop",     "stop scheduler",             cmd_stop },
