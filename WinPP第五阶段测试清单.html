@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第五阶段测试清单</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ctext x='16' y='23' font-size='18' font-family='monospace' fill='%2338bdf8' text-anchor='middle'%3E%E2%86%94%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --text:#d7dee8; --dim:#7d8a9c; --green:#34d399; --cyan:#38bdf8;
+    --amber:#fbbf24; --red:#f87171; --mono:'Consolas','Courier New',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6;padding:32px 18px 90px}
+  .wrap{max-width:1120px;margin:0 auto}
+  .term{font-family:var(--mono);font-size:13px}
+  .hero{border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#0f1720,#111b2e 70%);padding:30px 34px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--cyan);border:1px solid rgba(56,189,248,.4);padding:3px 12px;border-radius:99px;letter-spacing:.08em;margin-bottom:14px}
+  h1{font-size:27px;font-weight:800}
+  h1 .grad{background:linear-gradient(90deg,#38bdf8,#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:10px;font-size:14.5px;color:var(--dim);max-width:900px}
+  .sub b{color:var(--cyan)}
+  .prog{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-top:18px;border-bottom:1px solid var(--line)}
+  .prog .bar{height:10px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .prog .fill{height:100%;width:0%;background:linear-gradient(90deg,#38bdf8,#34d399);transition:width .3s}
+  .prog .txt{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+  .btn{font-family:var(--mono);font-size:12px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 14px;cursor:pointer}
+  .btn:hover{color:var(--green);border-color:rgba(52,211,153,.4)}
+  .grp{margin-top:30px}
+  .grp h2{font-size:17px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+  .grp h2 .tag2{font-family:var(--mono);font-size:11.5px;color:var(--cyan);border:1px solid rgba(56,189,248,.35);padding:2px 10px;border-radius:6px;letter-spacing:.05em}
+  .grp .gsub{font-size:13px;color:var(--dim);margin-bottom:12px}
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;transition:border-color .2s}
+  .item.done{border-color:rgba(52,211,153,.5)}
+  .item.done .idx{background:rgba(52,211,153,.15);color:var(--green)}
+  .cb{flex:0 0 26px;padding-top:2px}
+  .cb input{width:20px;height:20px;accent-color:var(--green);cursor:pointer}
+  .body{flex:1;min-width:0}
+  .idx{font-family:var(--mono);font-size:12px;color:var(--cyan);background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:2px 9px;margin-right:10px}
+  .t{font-size:15px;font-weight:700;margin:2px 0 8px}
+  .cmd{display:inline-block;font-family:var(--mono);font-size:13px;color:var(--amber);background:#0a0d12;border:1px solid var(--line);border-radius:6px;padding:3px 12px;margin:2px 4px 4px 0}
+  .exp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .exp .col{background:#0a0d12;border:1px solid var(--line);border-radius:8px;padding:10px 13px}
+  .exp .col .h{font-family:var(--mono);font-size:11px;letter-spacing:.06em;margin-bottom:6px}
+  .exp .col.vga .h{color:var(--cyan)}
+  .exp .col.ser .h{color:var(--green)}
+  .exp pre{font-family:var(--mono);font-size:12px;line-height:1.65;color:#9fd8b8;white-space:pre-wrap}
+  .exp pre .c{color:#566173}
+  .exp pre .y{color:var(--amber)}
+  .note{font-size:12px;color:var(--dim);margin-top:8px}
+  .note .badge{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:1px 8px;border-radius:99px;margin-right:6px}
+  .foot{margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center}
+  @media (max-width:760px){
+    .exp{grid-template-columns:1fr}
+    h1{font-size:21px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">WINPP OS · STAGE 5 · TEST CHECKLIST</span>
+    <h1>第五阶段测试清单<span class="grad">：管道 · 命名管道 · 消息队列</span></h1>
+    <p class="sub">共 <b>13 项</b>：覆盖启动、管道（S5-1）、命名管道（S5-2）、消息队列（S5-3）和前四阶段回归。每一项都有<b>勾选框</b>，测完打勾，进度自动保存（刷新不丢）。<b>每项都要求串口 PAGE_FAULT = 0</b>。先测完这份清单，确认 IPC 三大件全过，再进入第六阶段，否则后面的坑会翻倍。</p>
+  </div>
+
+  <div class="prog">
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="txt"><span id="cnt">已完成 0 / 13</span><button class="btn" id="reset">重置全部勾选</button></div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">A · 启动与命令表</span></h2>
+    <p class="gsub">先确认第五阶段内核正常引导、3 条 IPC 命令都已注册。</p>
+
+    <div class="item" data-k="t01">
+      <div class="cb"><input type="checkbox" id="t01"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-01</span>冷启动：Bochs 引导 WinPP OS，IPC 子系统装载</div>
+        <span class="cmd">启动 bochs.exe -q -f bochsrc.txt</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel
+[12] all init ok, drawing UI ...
+winpp@kernel:~$ _</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[11] ipc ...
+[ipc] init: pipes + fifos + mq ready
+[12] all init ok, drawing UI ...</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>串口出现 <span class="term">[ipc] init: pipes + fifos + mq ready</span> = IPC 三大件就绪；出现 [12] = 全部初始化完成。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t02">
+      <div class="cb"><input type="checkbox" id="t02"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-02</span>help：命令表里能看到 3 条新命令</div>
+        <span class="cmd">help</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>  pipe      pipe demo (user7)
+  fifo      fifo demo (user8)
+  mq        mq demo (user9)
+  fslist    list ramdisk files
+  ps        list processes
+  kill      kill &lt;pid&gt;
+  stop      stop scheduler</pre></div>
+          <div class="col ser"><div class="h">串口（无新增输出）</div><pre><span class="c"># help 只刷屏，串口无要求</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>pipe / fifo / mq 3 条新命令都在列表里，缺一不可；旧命令（fslist/ps/kill/stop）也还在。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">B · 管道 pipe（S5-1）</span></h2>
+    <p class="gsub">匿名管道：写端写、读端读，环形缓冲。user7 创建一次管道，循环写读回。</p>
+
+    <div class="item" data-k="t03">
+      <div class="cb"><input type="checkbox" id="t03"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-03</span>pipe：启动管道演示进程</div>
+        <span class="cmd">pipe</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created pipe-demo proc: pid 1</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[pipe] demo proc pid 1
+[ipc] pipe created: read-fd=0 write-fd=1</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>pipe created 必须<b>只出现 1 次</b>（管道是持久对象，只创建一次）；read-fd=0 write-fd=1（从 0 号槽开始）。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t04">
+      <div class="cb"><input type="checkbox" id="t04"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-04</span>ps + 闭环验证：user7 在表里，管道数据在循环跑</div>
+        <span class="cmd">ps</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>PID  STATE  NAME    CODE     TICKS
+ 1   ready  user7   640000   ...
+ 0   ready  shell   ...      ...</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应持续出现）</div><pre>[pid1] Hello Pipe!
+[pid1] Hello Pipe!
+<span class="c"># ... 每轮：写 "Hello Pipe!" 进管道 -> 从读端读回 -> 串口打印，循环不断</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① ps 表里有 user7，CODE=640000；② 串口持续刷 <span class="term">[pid1] Hello Pipe!</span>（等 3-5 秒应见到几十条）—— 写进管道的 13 字节被完整读回，管道闭环成立。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t05">
+      <div class="cb"><input type="checkbox" id="t05"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-05</span>stop：停止管道演示</div>
+        <span class="cmd">stop</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>scheduler stopped, all user procs terminated</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[stop] scheduler stopped</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>回显停止信息；串口出现 [stop]；之后 Hello Pipe! 不再新增。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">C · 命名管道 FIFO（S5-2）</span></h2>
+    <p class="gsub">给管道起名字 "fifo0"：任何程序知道名字就能用。user8 创建一次，循环写读回。</p>
+
+    <div class="item" data-k="t06">
+      <div class="cb"><input type="checkbox" id="t06"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-06</span>fifo：启动命名管道演示进程</div>
+        <span class="cmd">fifo</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created fifo-demo proc: pid 1</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[fifo] demo proc pid 1
+[ipc] fifo 'fifo0' created: read-fd=2 write-fd=3</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>名字是 <span class="term">fifo0</span>；read-fd=2 write-fd=3 —— <span style="color:var(--amber)">从 2 号槽开始</span>，证明与刚才管道的 0/1 槽不冲突（fd 分配正确）。同样只创建 1 次。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t07">
+      <div class="cb"><input type="checkbox" id="t07"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-07</span>ps + 闭环验证：user8 在表里，FIFO 数据在循环跑</div>
+        <span class="cmd">ps</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>PID  STATE  NAME    CODE     TICKS
+ 1   ready  user8   650000   ...
+ 0   ready  shell   ...      ...</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应持续出现）</div><pre>[pid1] Hello FIFO!
+[pid1] Hello FIFO!
+<span class="c"># ... 循环不断：写 "Hello FIFO!" -> 读回 -> 串口打印</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① ps 表里有 user8，CODE=650000；② 串口持续刷 <span class="term">[pid1] Hello FIFO!</span> —— 命名管道按名字读写闭环成立。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t08">
+      <div class="cb"><input type="checkbox" id="t08"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-08</span>stop：停止 FIFO 演示</div>
+        <span class="cmd">stop</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>scheduler stopped, all user procs terminated</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[stop] scheduler stopped</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>回显停止信息；Hello FIFO! 不再新增。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">D · 消息队列 mq（S5-3）</span></h2>
+    <p class="gsub">信箱传信：每条消息有长度边界。user9 循环投 3 条不同长度消息、收 3 条打印。</p>
+
+    <div class="item" data-k="t09">
+      <div class="cb"><input type="checkbox" id="t09"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-09</span>mq：启动消息队列演示进程</div>
+        <span class="cmd">mq</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created mq-demo proc: pid 1</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[mq] demo proc pid 1
+[mq] send len=2 total=1
+[mq] send len=5 total=2
+[mq] send len=7 total=3</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>连续投 3 条：2 字节（"AB"）、5 字节（"msg12"）、7 字节（"msg-789"），total 从 1 涨到 3 —— 三种不同长度的消息入队成功。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t10">
+      <div class="cb"><input type="checkbox" id="t10"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-10</span>ps + 闭环验证：user9 在表里，消息收发在循环</div>
+        <span class="cmd">ps</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>PID  STATE  NAME    CODE     TICKS
+ 1   ready  user9   660000   ...
+ 0   ready  shell   ...      ...</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应持续出现）</div><pre>[mq] recv len=2 total=2
+[pid1] AB
+[mq] recv len=5 total=1
+[pid1] msg12
+[mq] recv len=7 total=0
+[pid1] msg-789
+<span class="c"># ... 循环：投 3 条 -> 收 3 条打印，长度一一对应</span></pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① ps 表里有 user9，CODE=660000；② 串口循环：<span class="term">recv len=2 → AB</span>、<span class="term">recv len=5 → msg12</span>、<span class="term">recv len=7 → msg-789</span>，每条收完 total 递减 —— 收发一一对应，消息内容与长度都正确。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t11">
+      <div class="cb"><input type="checkbox" id="t11"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-11</span>stop：停止消息队列演示</div>
+        <span class="cmd">stop</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>scheduler stopped, all user procs terminated</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[stop] scheduler stopped</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>回显停止信息；收发包不再新增。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2><span class="tag2">E · 回归与收尾</span></h2>
+    <p class="gsub">前四阶段命令在 IPC 加入后必须仍工作；最后逐项复查。</p>
+
+    <div class="item" data-k="t12">
+      <div class="cb"><input type="checkbox" id="t12"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-12</span>回归：前四阶段命令仍正常（run / fs / kill / ps）</div>
+        <span class="cmd">run</span><span class="cmd">ps</span><span class="cmd">kill 2</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>created fork-demo proc: pid 2
+...
+killed pid 2</pre></div>
+          <div class="col ser"><div class="h">串口 COM1（应出现）</div><pre>[fork] demo proc pid 2
+[kill] pid 2 terminated</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>run 能起 fork 演示（fork 系统调用回归）；kill 能回收。若这里出页错误/死机，说明 IPC 改动污染了旧子系统。</div>
+      </div>
+    </div>
+
+    <div class="item" data-k="t13">
+      <div class="cb"><input type="checkbox" id="t13"></div>
+      <div class="body">
+        <div class="t"><span class="idx">T-13</span>收尾复查：全程 0 页错误、fd 槽不膨胀、ps 只剩 shell</div>
+        <span class="cmd">ps</span><span class="cmd">stop</span>
+        <div class="exp">
+          <div class="col vga"><div class="h">VGA 屏幕（应显示）</div><pre>scheduler stopped, all user procs terminated
+winpp@kernel:~$ _</pre></div>
+          <div class="col ser"><div class="h">串口（应满足 3 条）</div><pre># ① 全文搜索 "FAULT" = 0 次命中
+# ② pipe created / fifo created 各只有 1 次
+# ③ 最后出现 [stop] scheduler stopped</pre></div>
+        </div>
+        <div class="note"><span class="badge">判据</span>① <span style="color:var(--amber)">串口全文搜 "FAULT" 应为 0</span>（0 页错误）；② 两个 created 各只 1 次（fd 槽没被重复创建撑爆）；③ ps 只剩 shell 一行，回到干净状态。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">WinPP OS · 第五阶段测试清单 · 勾选进度自动保存在本浏览器 · 重开页面可续测</div>
+</div>
+
+<script>
+(function(){
+  var keys = ['t01','t02','t03','t04','t05','t06','t07','t08','t09','t10','t11','t12','t13'];
+  var fill = document.getElementById('fill');
+  var cnt = document.getElementById('cnt');
+  function save(){
+    var done = 0;
+    keys.forEach(function(k){
+      var el = document.getElementById(k);
+      var it = document.querySelector('.item[data-k="'+k+'"]');
+      if(el.checked){
+        done++;
+        it.classList.add('done');
+      } else {
+        it.classList.remove('done');
+      }
+    });
+    fill.style.width = (done / keys.length * 100) + '%';
+    cnt.textContent = '已完成 ' + done + ' / ' + keys.length;
+  }
+  keys.forEach(function(k){
+    var el = document.getElementById(k);
+    try { el.checked = localStorage.getItem('s5test_'+k) === '1'; } catch(e){}
+    el.addEventListener('change', function(){
+      try { localStorage.setItem('s5test_'+k, el.checked ? '1' : '0'); } catch(e){}
+      save();
+    });
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    if(!confirm('确定清除全部勾选进度？')) return;
+    keys.forEach(function(k){
+      var el = document.getElementById(k);
+      el.checked = false;
+      try { localStorage.removeItem('s5test_'+k); } catch(e){}
+    });
+    save();
+  });
+  save();
+})();
+</script>
+</body>
+</html>
