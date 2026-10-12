@@ -52,7 +52,10 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  sysinfo   CPU / memory / ticks\n");
     vga_printf("  calc a o b  integer math (+ - * / %%)\n");
     vga_printf("  color     show VGA palette\n");
-    vga_printf("  ls        list virtual filesystem\n");
+    vga_printf("  ls <path>  list directory contents\n");
+    vga_printf("  mkdir <path>  create directory\n");
+    vga_printf("  cd <path>  change current directory\n");
+    vga_printf("  pwd        print working directory\n");
     vga_printf("  demo      window UI demo\n");
     vga_printf("  beep      PC speaker beep\n");
     vga_printf("  paging    page table / fault stats\n");
@@ -163,10 +166,32 @@ static void cmd_color(int argc, char **argv)
 
 static void cmd_ls(int argc, char **argv)
 {
+    fs_ls((argc >= 2) ? argv[1] : 0);
+}
+
+/* S6-1：mkdir <path> —— 创建目录 */
+static void cmd_mkdir(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: mkdir <path>\n"); return; }
+    int r = fs_mkdir(argv[1]);
+    if (r == 0) vga_printf("mkdir ok: %s\n", argv[1]);
+    else vga_printf("mkdir failed: %s\n", argv[1]);
+}
+
+/* S6-2：cd <path> —— 切换当前目录 */
+static void cmd_cd(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: cd <path>\n"); return; }
+    int r = fs_chdir(argv[1]);
+    if (r == 0) vga_printf("cd ok: %s\n", fs_cwd);
+    else vga_printf("cd failed: %s\n", argv[1]);
+}
+
+/* S6-2：pwd —— 显示当前目录 */
+static void cmd_pwd(int argc, char **argv)
+{
     (void)argc; (void)argv;
-    vga_printf("virtual root:\n");
-    vga_printf("  bin/  dev/  etc/  proc/  usr/\n");
-    vga_printf("  (no storage driver yet -- this is a demo vfs)\n");
+    vga_printf("%s\n", fs_cwd);
 }
 
 static void cmd_demo(int argc, char **argv)
@@ -383,6 +408,24 @@ static void cmd_fslist(int argc, char **argv)
     fs_list();
 }
 
+/* S6：启动目录/路径演示进程（user10：mkdir /docs + 绝对/相对路径写读） */
+static void cmd_fs2(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user10", 0x670000, 0x791000,
+                         _user10_code, USER10_LEN);
+    if (p > 0) {
+        vga_printf("created dir-demo proc: pid %d\n", p);
+        serial_printf("[fs2] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: dir demo (0.1s quantum)\n");
+        serial_printf("[fs2] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create dir-demo process\n");
+    }
+}
+
 /* ---------------- S5：进程间通信演示命令 ---------------- */
 
 /* S5-1：管道演示（user7：pipe() 创建匿名管道，写读回） */
@@ -457,7 +500,10 @@ static const cmd_t cmds[] = {
     { "sysinfo",  "CPU/memory/ticks",           cmd_sysinfo },
     { "calc",     "integer math",               cmd_calc },
     { "color",    "show VGA palette",           cmd_color },
-    { "ls",       "list virtual fs",            cmd_ls },
+    { "ls",       "list directory contents",   cmd_ls },
+    { "mkdir",    "create directory",           cmd_mkdir },
+    { "cd",       "change directory",           cmd_cd },
+    { "pwd",      "print working directory",    cmd_pwd },
     { "demo",     "window UI demo",             cmd_demo },
     { "beep",     "PC speaker beep",            cmd_beep },
     { "paging",   "page table / fault stats",   cmd_paging },
@@ -471,6 +517,7 @@ static const cmd_t cmds[] = {
     { "fork",     "fork demo (user4)",          cmd_fork },
     { "exec",     "exec demo (user5->user2)",   cmd_exec },
     { "fs",       "fs demo (user6)",            cmd_fs },
+    { "fs2",      "dir/path demo (user10)",     cmd_fs2 },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "ps",       "list processes",             cmd_ps },
     { "kill",     "kill <pid>",                 cmd_kill },
@@ -550,7 +597,7 @@ void shell_run(void)
     char line[128];
     for (;;) {
         vga_set_attr(0x0A);
-        vga_printf("winpp@kernel:~$ ");
+        vga_printf("winpp@kernel:%s$ ", fs_cwd);
         vga_set_attr(0x07);
         shell_readline(line, sizeof(line));
         shell_dispatch(line);

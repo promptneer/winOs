@@ -17,3 +17,5 @@ extern const unsigned char _user7_code[USER7_LEN];
 extern const unsigned char _user8_code[USER8_LEN];
 #define USER9_LEN 173
 extern const unsigned char _user9_code[USER9_LEN];
+#define USER10_LEN 283
+extern const unsigned char _user10_code[USER10_LEN];

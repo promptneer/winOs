@@ -1,0 +1,3 @@
+﻿s6 True
+nav6 True
+mkdir True

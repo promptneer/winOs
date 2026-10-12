@@ -1,0 +1,262 @@
+﻿{
+  "src": "D:\\WinPP\\WinPP第六阶段进度报告.html",
+  "url": "file:///D:/WinPP/WinPP%E7%AC%AC%E5%85%AD%E9%98%B6%E6%AE%B5%E8%BF%9B%E5%BA%A6%E6%8A%A5%E5%91%8A.html",
+  "outdir": "D:\\WinPP\\_shots",
+  "include": [
+    "lint",
+    "screenshots",
+    "structure"
+  ],
+  "shots": {
+    "desktop": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第六阶段进度报告_desktop.jpg",
+      "screenshotBytes": 162474,
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 第六阶段进度报告",
+        "firstH1": "第六阶段：文件系统增强（目录 / 路径）",
+        "viewport": {
+          "w": 1424,
+          "h": 749
+        },
+        "fullpage": {
+          "w": 1424,
+          "h": 2663
+        },
+        "counts": {
+          "section": 0,
+          "h1": 1,
+          "h2": 6,
+          "img": 3,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "fakeDisclosureBulletsWarning": [
+        {
+          "tag": "li",
+          "via": "pseudo::before",
+          "char": "▸",
+          "count": 9,
+          "samples": [
+            "syscall 13 mkdir(path) 创建目录",
+            "父目录必须存在；已存在幂等返回 0",
+            "内存盘 16 槽，目录与文件共用"
+          ],
+          "rect": [
+            175,
+            618,
+            317,
+            28
+          ]
+        }
+      ],
+      "fakeDisclosureBulletsHint": "warning · 含义：列表项拿 chevron / caret（`›` `>` `▸` `»` `❯` 等）当项目符号，但这些元素**并不可点击**。chevron 在 UI 惯例里是 disclosure indicator——手风琴的展开箭头、列表项\"进入下一级\"的指示器，用户看到会尝试去点、点了没反应，属于和僵尸按钮同族的假 affordance（`via` 字段说明来源：`pseudo::before` / `list-style-type` / `text-prefix` / `pseudo-list-text`）。 | 修法：要项目符号就用真正表示\"并列\"的记号——`•`（U+2022）、`‣`、`–`，或者 `list-style: disc`；更干净的做法是干掉符号，只靠缩进和行距分隔，同一页面里同级信息块的呈现方式要一致。**反过来说：如果这些列表项本来就该能展开，那不是改符号，是补上真实的展开交互**（`<details>/<summary>` 或挂 click handler + `aria-expanded`）。 | 豁免：(1) 元素或祖先真绑了 click / 是 `<summary>` / 有 `aria-expanded` / 有 `href` 的**不会报**——那时 chevron 是正确用法；带 `note: ancestor-has-data-attr` 的说明交互可能挂在 document 级委托上、本规则的 hook 探测不到，核对一下确实能点就忽略；(2) 面包屑导航、路径指示（`首页 › 产品 › 详情`）里 chevron 是分隔符不是项目符号，误报可忽略；(3) 内容本身就是在讲这些符号（键盘按键说明、Unicode 科普、终端提示符 `>` 的教程）。",
+      "reportSource": "cdp"
+    },
+    "mobile": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP第六阶段进度报告_mobile.jpg",
+      "screenshotBytes": 308251,
+      "slices": [
+        "D:\\WinPP\\_shots\\WinPP第六阶段进度报告_mobile_p1of2.jpg",
+        "D:\\WinPP\\_shots\\WinPP第六阶段进度报告_mobile_p2of2.jpg"
+      ],
+      "sliceHint": "主图过阈值（字节>800KB 或 高度>4000px），已按 3200px 切片。若主图 Read 失败，改读 slices 里各分片。",
+      "truncated": false,
+      "structure": {
+        "title": "WinPP 第六阶段进度报告",
+        "firstH1": "第六阶段：文件系统增强（目录 / 路径）",
+        "viewport": {
+          "w": 500,
+          "h": 693
+        },
+        "fullpage": {
+          "w": 500,
+          "h": 4602
+        },
+        "counts": {
+          "section": 0,
+          "h1": 1,
+          "h2": 6,
+          "img": 3,
+          "canvas": 0,
+          "svg": 0,
+          "links": 0,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "fakeDisclosureBulletsWarning": [
+        {
+          "tag": "li",
+          "via": "pseudo::before",
+          "char": "▸",
+          "count": 9,
+          "samples": [
+            "syscall 13 mkdir(path) 创建目录",
+            "父目录必须存在；已存在幂等返回 0",
+            "内存盘 16 槽，目录与文件共用"
+          ],
+          "rect": [
+            41,
+            855,
+            418,
+            28
+          ]
+        }
+      ],
+      "fakeDisclosureBulletsHint": "warning · 含义：列表项拿 chevron / caret（`›` `>` `▸` `»` `❯` 等）当项目符号，但这些元素**并不可点击**。chevron 在 UI 惯例里是 disclosure indicator——手风琴的展开箭头、列表项\"进入下一级\"的指示器，用户看到会尝试去点、点了没反应，属于和僵尸按钮同族的假 affordance（`via` 字段说明来源：`pseudo::before` / `list-style-type` / `text-prefix` / `pseudo-list-text`）。 | 修法：要项目符号就用真正表示\"并列\"的记号——`•`（U+2022）、`‣`、`–`，或者 `list-style: disc`；更干净的做法是干掉符号，只靠缩进和行距分隔，同一页面里同级信息块的呈现方式要一致。**反过来说：如果这些列表项本来就该能展开，那不是改符号，是补上真实的展开交互**（`<details>/<summary>` 或挂 click handler + `aria-expanded`）。 | 豁免：(1) 元素或祖先真绑了 click / 是 `<summary>` / 有 `aria-expanded` / 有 `href` 的**不会报**——那时 chevron 是正确用法；带 `note: ancestor-has-data-attr` 的说明交互可能挂在 document 级委托上、本规则的 hook 探测不到，核对一下确实能点就忽略；(2) 面包屑导航、路径指示（`首页 › 产品 › 详情`）里 chevron 是分隔符不是项目符号，误报可忽略；(3) 内容本身就是在讲这些符号（键盘按键说明、Unicode 科普、终端提示符 `>` 的教程）。",
+      "reportSource": "cdp"
+    }
+  },
+  "engine": "chrome_cli",
+  "chromiumExec": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "engineDegraded": true,
+  "engineDegradedReason": "playwright 未装",
+  "publishBrokenAssets": [
+    {
+      "file": "assets\\05-fixed-boot.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\06-help-time.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\07-uptime-sysinfo-ls.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\08-demo-ui.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\11-paging.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\12-meminfo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\13-pfault.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\14-help.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\15-ps-before.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\16-run.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\17-run-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\18-s4-addrspace.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\19-s4-ps.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\21-fork-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\23-exec-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\26-fs-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s5-01-ps-pipe.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s5-02-ps-fifo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s5-03-ps-mq.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    }
+  ],
+  "publishBrokenAssetsHint": "含义：发布链路靠静态扫描 HTML 源码决定上传哪些图片文件，**只认 `src` 属性和 CSS `url()` 两个位置**（线上实测）。写在别处的路径不会被上传，发布后 404 裂图。本地打开和自检截图都看不出来——文件真实存在，浏览器照样加载。 | severity=error 的逐条改，改法都是同一个：把路径挪到 `<img src=\"assets/x.png\">` 或 CSS `url('assets/x.png')`。reason=js-literal 路径写在 JS 字符串里（`const g=['assets/x.png']` 这种常量数组也算，照样裂）；reason=js-concat 路径由 JS 拼接（`'assets/img'+i+'.png'`）；reason=non-src-attr 路径写在 `data-src`、`srcset`、`poster` 等非 `src` 属性上——**这类即便静态写在 HTML 属性里也会裂**，懒加载写法要在 `src` 上放真实路径。 | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive +html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。自行判断，别的规则不受它影响。",
+  "elapsedSec": 8.27
+}

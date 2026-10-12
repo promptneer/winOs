@@ -492,6 +492,12 @@ void syscall_handler(regs_t *r)
     else if (nr == 12) {            /* msgrecv(dst)：返回本消息长度 */
         r->eax = (u32)mq_recv((char *)r->edx);
     }
+    else if (nr == 13) {            /* mkdir(path)：S6-1 创建目录 */
+        r->eax = (u32)fs_mkdir((const char *)r->ebx);
+    }
+    else if (nr == 14) {            /* chdir(path)：S6-2 切换当前目录 */
+        r->eax = (u32)fs_chdir((const char *)r->ebx);
+    }
     else {
         r->eax = -1;
     }

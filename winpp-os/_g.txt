@@ -1,0 +1,2 @@
+﻿ba7a374 S5: test checklist HTML (13 items, pipe/fifo/mq)
+77f9656 S5: IPC stage complete - pipe/fifo/mq + user7/8/9 demos + progress report + evidence
