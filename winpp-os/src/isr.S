@@ -116,6 +116,7 @@ irq_common_stub:
     pushl %eax
     call irq_handler
     addl $4, %esp
+irq_common_restore:
     popl %gs
     popl %fs
     popl %es
@@ -123,3 +124,36 @@ irq_common_stub:
     popa
     addl $8, %esp
     iret
+
+# 系统调用 int 0x80（DPL3 门，用户态可触发）
+.global syscall_isr
+syscall_isr:
+    pushl $0
+    pushl $0x80
+    jmp syscall_common_stub
+
+.extern syscall_handler
+syscall_common_stub:
+    pusha
+    pushl %ds
+    pushl %es
+    pushl %fs
+    pushl %gs
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movl %esp, %eax
+    pushl %eax
+    call syscall_handler
+    addl $4, %esp
+    jmp irq_common_restore
+
+# void sched_do_switch(u32 to_ctx) -- 把内核栈切到目标进程上下文帧
+# 然后跳回中断恢复段 pop/iret，从目标进程的用户态现场继续。永不返回。
+.global sched_do_switch
+sched_do_switch:
+    movl 4(%esp), %eax    # to_ctx
+    movl %eax, %esp       # 换内核栈（丢弃当前 irq_handler 栈帧）
+    jmp irq_common_restore

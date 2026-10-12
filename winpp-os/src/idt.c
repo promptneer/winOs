@@ -35,6 +35,9 @@ DECL_IRQ(4)  DECL_IRQ(5)  DECL_IRQ(6)  DECL_IRQ(7)
 DECL_IRQ(8)  DECL_IRQ(9)  DECL_IRQ(10) DECL_IRQ(11)
 DECL_IRQ(12) DECL_IRQ(13) DECL_IRQ(14) DECL_IRQ(15)
 
+/* 系统调用存根 */
+extern void syscall_isr(void);
+
 static void idt_set_gate(u8 n, u32 base, u16 sel, u8 flags)
 {
     idt[n].lo    = (u16)(base & 0xFFFF);
@@ -81,6 +84,9 @@ void idt_init(void)
     SET_IRQ(4)  SET_IRQ(5)  SET_IRQ(6)  SET_IRQ(7)
     SET_IRQ(8)  SET_IRQ(9)  SET_IRQ(10) SET_IRQ(11)
     SET_IRQ(12) SET_IRQ(13) SET_IRQ(14) SET_IRQ(15)
+
+    /* 系统调用门 int 0x80：P=1 DPL=3（用户态可触发） interrupt gate */
+    idt_set_gate(0x80, (u32)syscall_isr, 0x08, 0xEE);
 
     asm volatile("lidt %0" : : "m"(idtp));
 }

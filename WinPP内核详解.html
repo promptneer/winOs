@@ -167,10 +167,10 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
       <h1>WinPP OS 内核<span class="grad">全解析</span></h1>
       <p class="lead">一个从零写起的 i386 迷你操作系统：用什么语言、什么底层逻辑、怎么一步步把它做完整、目前有什么功能——全部展开在这一个页面里，所有结论都经过 Bochs 2.8 实机验证。</p>
       <div class="metrics">
-        <div class="metric"><div class="num">28,688 <b>B</b></div><div class="lab">扁平内核 kernel.bin（入口 0x100000）</div></div>
-        <div class="metric"><div class="num">18 <b>条</b></div><div class="lab">Shell 内建命令，实机逐条执行</div></div>
-        <div class="metric"><div class="num">9 <b>个</b></div><div class="lab">实机修复的启动 / 显示 / 交互 / 分页 Bug</div></div>
-        <div class="metric"><div class="num">0 <b>故障</b></div><div class="lab">bochs.log 全程无异常 / 无重启</div></div>
+        <div class="metric"><div class="num">28,688→<b>32,792 B</b></div><div class="lab">扁平内核 kernel.bin（入口 0x100000，第三阶段含用户程序）</div></div>
+        <div class="metric"><div class="num">22 <b>条</b></div><div class="lab">Shell 内建命令，实机逐条执行</div></div>
+        <div class="metric"><div class="num">12 <b>个</b></div><div class="lab">实机修复的启动 / 显示 / 交互 / 分页 / 用户态 Bug</div></div>
+        <div class="metric"><div class="num">3 <b>进程</b></div><div class="lab">用户态进程并发运行（round-robin）</div></div>
       </div>
     </div>
     <div class="hero-aside">
@@ -256,8 +256,8 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
       <p><code>kernel.c</code> 的 kmain 是总导演：校验内存、初始化 GDT/IDT/PIC/定时器/键盘/串口，然后画状态栏、起 Shell。还实现 8042 键盘控制器重启（reboot）与 ACPI 关机（poweroff）。</p>
     </div>
     <div class="card">
-      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 9h6M7 13h4M15 9h2M15 13h2"/></svg></span>6. 应用层：Shell 与窗口 UI</h4>
-      <p>Shell 逐键读键盘、回显、回车分发命令，18 条内建命令（第二阶段新增内存管理四条：<code>paging</code> / <code>meminfo</code> / <code>alloc</code> / <code>pfault</code>）。demo 是一个迷你窗口管理器：3 个重叠窗口（Terminal / Files / Settings），Tab 切焦点、方向键移动窗口、Esc 返回 Shell——全部在 80×25 文本显存上用画框实现。</p>
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 9h6M7 13h4M15 9h2M15 13h2"/></svg></span>6. 应用层：Shell 与用户进程</h4>
+      <p>Shell 逐键读键盘、回显、回车分发命令，22 条内建命令（第二阶段新增 <code>paging</code> / <code>meminfo</code> / <code>alloc</code> / <code>pfault</code>；第三阶段新增 <code>run</code> / <code>ps</code> / <code>kill</code> / <code>stop</code> 进程管理）。demo 是一个迷你窗口管理器：3 个重叠窗口，Tab 切焦点、方向键移动、Esc 返回——全部在 80×25 文本显存上用画框实现。第三阶段起，<code>run</code> 会在用户态（ring3）拉起 3 个独立进程 user1/2/3，经 int 0x80 系统调用向屏幕和串口打印计数。</p>
     </div>
   </div>
 </div>
@@ -267,7 +267,7 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
 <section class="sec" id="src">
 <div class="wrap">
   <div class="sec-head"><span class="tag">03 /</span><h2>怎么写的：源码结构</h2><div class="rule"></div></div>
-  <p class="sub">21 个源文件，按职责分成五组：引导与中断（汇编）、内核核心（C）、内存管理（C）、驱动（C）、应用（C）。所有文件都在 <code>D:\WinPP\winpp-os\src\</code>。</p>
+  <p class="sub">26 个源文件，按职责分成六组：引导与中断（汇编）、内核核心（C）、内存管理（C）、进程与调度（C）、驱动（C）、应用（C+汇编）。所有文件都在 <code>D:\WinPP\winpp-os\src\</code>。</p>
   <div class="grid g2">
     <div class="card" style="grid-column:1/-1">
       <table>
@@ -277,18 +277,22 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
         <tr><td><b>boot.S</b></td><td>GAS 汇编</td><td>32 位内核入口：可选的 Multiboot v1 头（0x1BADB002）、开 SSE、设栈、A20/LGDT</td></tr>
         <tr><td><b>isr.S</b></td><td>GAS 汇编</td><td>32 个异常 + 16 个 IRQ 的汇编存根，保存寄存器后跳 C 处理函数</td></tr>
         <tr><td><b>kernel.c</b></td><td>C</td><td>kmain 总入口：内存/CMOS 校验、初始化序列、IRQ 分发、#PF 缺页处理、Panic 屏、8042 重启、ACPI 关机、状态栏</td></tr>
-        <tr><td><b>gdt.c/.h</b></td><td>C</td><td>平坦内存模型 GDT（代码/数据段，4GB）</td></tr>
-        <tr><td><b>idt.c/.h</b></td><td>C</td><td>256 门 IDT + 8259 PIC 重映射（IRQ 0–7 → 32–39，IRQ 8–15 → 40–47）</td></tr>
+        <tr><td><b>gdt.c/.h</b></td><td>C</td><td>平坦内存模型 GDT（内核/用户代码与数据段，4GB）+ TSS 描述符</td></tr>
+        <tr><td><b>idt.c/.h</b></td><td>C</td><td>256 门 IDT + 8259 PIC 重映射（IRQ 0–7 → 32–39，IRQ 8–15 → 40–47）；0x80 系统调用门（DPL=3）</td></tr>
         <tr><td><b>pmm.c/.h</b></td><td>C</td><td>物理页分配器：1KB 位图 + 4KB 页粒度，保留低 1MB 与内核，first-fit 找页</td></tr>
-        <tr><td><b>paging.c/.h</b></td><td>C</td><td>4KB 二级分页：PD/PT 构建、恒等映射 1MB+、递归自映射 PD[1023]、map/unmap、invlpg</td></tr>
+        <tr><td><b>paging.c/.h</b></td><td>C</td><td>4KB 二级分页：PD/PT 构建、恒等映射 1MB+、递归自映射 PD[1023]、map/unmap、invlpg；map_page 对用户页自动给 PDE 补 USER 位</td></tr>
         <tr><td><b>kheap.c/.h</b></td><td>C</td><td>内核堆：0x800000 起 8MB，first-fit 边界标签 + 前后向合并（kmalloc/kfree）</td></tr>
+        <tr><td><b>sched.c/.h</b></td><td>C</td><td>进程调度器：pcb_t[8] 表、pid0=shell 常驻、round-robin 时间片 0.1s、用户进程创建（3 物理页：内核栈+代码+用户栈）、ZOMBIE 回收、sched_kill</td></tr>
+        <tr><td><b>tss.c/.h</b></td><td>C</td><td>TSS：ss0/esp0 设置，每次切换更新目标进程内核栈顶（tss_init 必须先于 gdt_init）</td></tr>
         <tr><td><b>vga.c/.h</b></td><td>C</td><td>80×25 文本驱动：写 0xB8000、光标、画框、自实现 vga_printf（含 %d/%u/%x/%s 与补零）</td></tr>
         <tr><td><b>keyboard.c/.h</b></td><td>C</td><td>PS/2 键盘：扫描码表 → ASCII，Shift/CapsLock/E0 方向键，128 字节环形缓冲</td></tr>
-        <tr><td><b>timer.c/.h</b></td><td>C</td><td>PIT 100Hz 节拍计数，供 uptime / 状态栏刷新</td></tr>
+        <tr><td><b>timer.c/.h</b></td><td>C</td><td>PIT 100Hz 节拍计数，供 uptime / 状态栏刷新 / 调度时间片</td></tr>
         <tr><td><b>rtc.c/.h</b></td><td>C</td><td>CMOS 实时时钟：读年月日时分秒</td></tr>
         <tr><td><b>serial.c/.h</b></td><td>C</td><td>COM1 串口输出——机器侧取证通道，按键日志与屏幕转储都走这里</td></tr>
-        <tr><td><b>shell.c/.h</b></td><td>C</td><td>交互 Shell：readline、18 条命令分发、命令前后全屏转储到串口</td></tr>
+        <tr><td><b>shell.c/.h</b></td><td>C</td><td>交互 Shell：readline、22 条命令分发（含 run/ps/kill/stop）、命令前后全屏转储到串口</td></tr>
         <tr><td><b>demo.c/.h</b></td><td>C</td><td>窗口 UI 演示：3 个重叠窗口、焦点切换、移动、Esc 返回</td></tr>
+        <tr><td><b>user1/2/3.S + user1/2/3.ld</b></td><td>GAS 汇编</td><td>用户态进程：链接基址 0x4/0x5/0x6M，busy-wait + int 0x80（write 到 VGA/串口）</td></tr>
+        <tr><td><b>users_inc.c/.h</b></td><td>C（自动生成）</td><td>构建时由 Python 把 userN.bin 转成 C 数组内嵌内核（zig lld 不支持 .incbin 的替代方案）</td></tr>
         <tr><td><b>linker_flat.ld / linker.ld</b></td><td>链接脚本</td><td>把内核链接到 0x100000 入口</td></tr>
       </table>
     </div>
@@ -346,7 +350,7 @@ zig objcopy -O binary
     <div class="tl-item">
       <div class="tl-time">步骤 5</div><div class="tl-axis"><span class="tl-dot"></span></div>
       <div class="tl-body"><h4>Shell：把按键变成命令</h4>
-        <p>实现 readline（回显 / 退格 / 回车分发）、参数切分、18 条命令。键盘扫描码 → ASCII 的映射决定了后面一个关键 Bug 的埋点。</p></div>
+        <p>实现 readline（回显 / 退格 / 回车分发）、参数切分、18 条命令（第三阶段扩到 22 条）。键盘扫描码 → ASCII 的映射决定了后面一个关键 Bug 的埋点。</p></div>
     </div>
     <div class="tl-item">
       <div class="tl-time">步骤 6</div><div class="tl-axis"><span class="tl-dot"></span></div>
@@ -367,8 +371,14 @@ zig objcopy -O binary
     <div class="tl-item">
       <div class="tl-time">步骤 9</div><div class="tl-axis"><span class="tl-dot"></span></div>
       <div class="tl-body"><h4>第二阶段：分页内存管理子系统</h4>
-        <p>自下而上搭三层：pmm（位图物理页分配器）→ paging（4KB 二级分页 + 递归自映射 + #PF 缺页处理）→ kheap（内核堆 kmalloc/kfree）。新增 4 条命令实机全绿，期间修复 3 个新 Bug（见 Bug 卡 7–9）。</p>
+        <p>自下而上搭三层：pmm（位图物理页分配器）→ paging（4KB 二级分页 + 递归自映射 + #PF 缺页处理）→ kheap（内核堆 kmalloc/kfree）。新增 4 条命令实机全绿，期间修复 3 个新 Bug（见 Bug 卡 7–9）。第三阶段再修 3 个（Bug 卡 10–12）。</p>
         <span class="badge">PD 17/1024 项 · demand paging OK · leak=0</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">步骤 10</div><div class="tl-axis"><span class="tl-dot"></span></div>
+      <div class="tl-body"><h4>第三阶段：用户态 + 任务切换</h4>
+        <p>GDT 扩到 6 项（用户代码/数据段 + TSS）、int 0x80 系统调用门（DPL=3）、调度器 round-robin 时间片 0.1s、3 个用户进程 user1/2/3（链接基址 0x4/0x5/0x6M）经 syscall 向 VGA 与串口打印计数。Shell 新增 run / ps / kill / stop。实机全绿：0 页错误，串口 282+ 条 [pidN] 输出。</p>
+        <span class="badge">3 进程并发 · 0 PAGE FAULT · run/ps/kill/stop 全实测</span></div>
     </div>
   </div>
 </div>
@@ -416,6 +426,18 @@ zig objcopy -O binary
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>9. kfree 合并越界 → alloc 挂起</h4>
       <p>释放小块后做前向合并时，<code>nn == h</code> 的严格相等判断遇到垃圾 size 会越过堆边界；坏指针也没兜底。修复：① kfree 加坏指针边界检查（越堆直接拒绝）；② 向后合并加 <code>n+n-&gt;size &lt;= heap_end</code> 边界；③ 前向合并改 <code>if (nn &gt;= h) break</code>。修复后 alloc 六块分配/写回/释放全绿，<code>leak=0</code>，提示符恢复。</p>
     </div>
+    <div class="card">
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>10. 用户页 PDE 缺 USER 位 → err=5 刷屏</h4>
+      <p>第三阶段 <code>run</code>：3 个用户页全部 <code>PAGE FAULT err=5</code>（P=1、W=0、U=0）。根因：map_page 只给 PTE 写 USER 位，PDE 仍是 boot 时无 U 的恒等映射项——用户态访问 4MB+ 先查 PDE 即被拒。修复：map_page 在 flags 含 U 位时给 PDE 补 0x4，实测 <code>pd=112067</code> 生效。</p>
+    </div>
+    <div class="card">
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>11. lld 静默忽略 .incbin → 用户程序是页表垃圾</h4>
+      <p>修 #10 后 fault @0（用户"程序"执行垃圾）。深度归因：zig cc 的 lld <b>不支持 .incbin</b>，.userprogs 段字节未进 kernel.bin，<code>_userN_start</code> 符号（=0x110000，恰为 pmm 分配的 PD 页）读到的是页表内容。修复：弃 .incbin，build 时 Python 把 userN.bin 转 C 数组 users_inc.c/.h 内嵌；kernel.bin 检出 user1 机器码特征 <code>bc 00 10 70</code> 确认。</p>
+    </div>
+    <div class="card">
+      <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><path d="M12 2l10 5-10 5L2 7l10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>12. vga_printf 不支持 %- 左对齐 → ps 列错位</h4>
+      <p>ps 首测串口输出 <code>0 x-7s x-10s ...</code> 列错位——自实现 vga_printf 只认 <code>%</code> 后的数字与字母，遇 <code>%-</code> 参数错位吞掉后续格式。修复：识别 <code>%-</code> 跳过左对齐标记，ps 输出恢复 <code>PID STATE NAME TICKS CODE / 0 run shell 0 0</code> 干净对齐。</p>
+    </div>
   </div>
 </div>
 </section>
@@ -424,13 +446,13 @@ zig objcopy -O binary
 <section class="sec" id="feat">
 <div class="wrap">
   <div class="sec-head"><span class="tag">06 /</span><h2>目前有什么功能</h2><div class="rule"></div></div>
-  <p class="sub">开机进 Shell 后，顶部状态栏每秒刷新（系统时钟 / 运行时间 / 内存），下面是可以逐条敲的 18 条命令，外加一个窗口 UI 演示。第二阶段新增的 4 条内存命令（<code>paging</code> / <code>meminfo</code> / <code>alloc</code> / <code>pfault</code>）在 Bochs 2.8 上全部实机执行并取证。</p>
+  <p class="sub">开机进 Shell 后，顶部状态栏每秒刷新（系统时钟 / 运行时间 / 内存），下面是可以逐条敲的 22 条命令，外加窗口 UI 演示与用户进程管理。第二、三阶段新增的 8 条命令（<code>paging</code> / <code>meminfo</code> / <code>alloc</code> / <code>pfault</code> / <code>run</code> / <code>ps</code> / <code>kill</code> / <code>stop</code>）在 Bochs 2.8 上全部实机执行并取证。</p>
   <div class="grid g2">
     <div class="card" style="grid-column:1/-1">
       <table>
         <colgroup><col style="width:22%"><col style="width:40%"><col style="width:38%"></colgroup>
         <tr><th>命令</th><th>作用</th><th>实机验证输出</th></tr>
-        <tr><td><b>help</b></td><td>显示全部命令</td><td>18 条命令列表逐行上屏</td></tr>
+        <tr><td><b>help</b></td><td>显示全部命令</td><td>22 条命令列表逐行上屏</td></tr>
         <tr><td><b>about</b></td><td>内核版本与编译信息</td><td>WinPP OS v0.1 / i386 / multiboot v1</td></tr>
         <tr><td><b>echo</b></td><td>回显文本</td><td>—</td></tr>
         <tr><td><b>clear</b></td><td>清屏</td><td>—</td></tr>
@@ -446,10 +468,14 @@ zig objcopy -O binary
         <tr><td><b>meminfo</b></td><td>物理内存与内核堆账目</td><td>16288 pages · used 2336 · heap 8192 KB / 0 used</td></tr>
         <tr><td><b>alloc</b></td><td>kmalloc/kfree 压力测试（分配+写回校验+释放）</td><td>6 块分配链 800008→8014C8 全 ok · leak=0</td></tr>
         <tr><td><b>pfault</b></td><td>触发缺页 + demand mapping 恢复</td><td>#PF(err=2) → map 0x120000 → 读回 0x1234 → OK</td></tr>
+        <tr><td><b>run</b></td><td>拉起 3 个用户进程（round-robin）</td><td>created pid 1 2 3 · [pidN] userN: 计数滚动 · 0 页错误</td></tr>
+        <tr><td><b>ps</b></td><td>进程表：PID / STATE / NAME / TICKS / CODE</td><td>0 run shell · 1 ready user1 · 2 ready user2</td></tr>
+        <tr><td><b>kill &lt;pid&gt;</b></td><td>终结指定用户进程</td><td>[kill] pid 1 terminated</td></tr>
+        <tr><td><b>stop</b></td><td>停止调度器、清场全部用户进程</td><td>scheduler stopped, all user procs terminated</td></tr>
         <tr><td><b>reboot</b></td><td>8042 键盘控制器复位</td><td>—</td></tr>
         <tr><td><b>poweroff</b></td><td>ACPI 关机</td><td>—</td></tr>
       </table>
-      <p style="font-size:12.5px;color:var(--ink3);margin-top:8px">另有 clear / echo / help 等共 18 条；"—"为未逐一实机展示但命令已内建。</p>
+      <p style="font-size:12.5px;color:var(--ink3);margin-top:8px">另有 clear / echo 等共 22 条；"—"为未逐一实机展示但命令已内建。</p>
     </div>
     <div class="card">
       <h4><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ee0c8" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M7 9h6M7 13h4M15 9h2M15 13h2"/></svg></span>demo：文本显存上的窗口管理器</h4>
@@ -473,8 +499,18 @@ zig objcopy -O binary
     <div class="layer">
       <div class="l-head"><span class="nm">应用层</span><span class="ds">用户直接交互的界面</span></div>
       <div class="l-body">
-        <span class="mod hot"><b>shell.c</b> 交互 Shell · 18 条命令</span>
+        <span class="mod hot"><b>shell.c</b> 交互 Shell · 22 条命令</span>
         <span class="mod hot"><b>demo.c</b> 窗口 UI（Terminal / Files / Settings）</span>
+        <span class="mod hot"><b>user1/2/3.S</b> 用户态进程（ring3 · 经 int 0x80 系统调用）</span>
+      </div>
+    </div>
+    <div class="arrow-down">▼</div>
+    <div class="layer">
+      <div class="l-head"><span class="nm">进程与调度层</span><span class="ds">第三阶段：进程表 → 调度 → 用户态切换</span></div>
+      <div class="l-body">
+        <span class="mod"><b>sched.c</b> round-robin 调度 · pcb 表 · ZOMBIE 回收 · run/ps/kill/stop</span>
+        <span class="mod"><b>tss.c</b> TSS esp0 切换（用户 → 内核栈）</span>
+        <span class="mod"><b>isr.S</b> syscall_isr（int 0x80）· sched_do_switch（iret 回用户态）</span>
       </div>
     </div>
     <div class="arrow-down">▼</div>
@@ -510,7 +546,7 @@ zig objcopy -O binary
     <div class="layer">
       <div class="l-head"><span class="nm">内核基础层</span><span class="ds">CPU 模式与中断的基石</span></div>
       <div class="l-body">
-        <span class="mod"><b>gdt.c</b> 平坦内存模型</span>
+        <span class="mod"><b>gdt.c</b> 6 项 GDT（内核/用户段 + TSS）</span>
         <span class="mod"><b>idt.c</b> 256 门 IDT + PIC 重映射</span>
         <span class="mod"><b>isr.S</b> 异常 / IRQ 存根</span>
         <span class="mod"><b>boot.S</b> 32 位入口 · SSE · A20</span>
@@ -696,7 +732,9 @@ zig objcopy -O binary
     <div class="shot"><img src="assets/11-paging.png" alt="paging 命令输出"><div class="cap"><b>paging</b> — CR0.PG=YES · CR3=0x10f000 · PD 17/1024 · 自映射就位</div></div>
     <div class="shot"><img src="assets/12-meminfo.png" alt="meminfo 命令输出"><div class="cap"><b>meminfo</b> — 16288 pages · used 2336 · heap 8192 KB / 0 used</div></div>
     <div class="shot"><img src="assets/13-pfault.png" alt="alloc 与 pfault 输出"><div class="cap"><b>alloc + pfault</b> — 6 块分配链 leak=0 · #PF→demand-map→读回 0x1234→OK</div></div>
-    <div class="shot"><img src="assets/14-help.png" alt="18 条命令列表"><div class="cap"><b>help（回归）</b> — 18 条命令表逐行上屏</div></div>
+    <div class="shot"><img src="assets/14-help.png" alt="18 条命令列表"><div class="cap"><b>help（回归）</b> — 22 条命令表逐行上屏</div></div>
+    <div class="shot"><img src="assets/15-ps-before.png" alt="ps 进程表"><div class="cap"><b>ps（第三阶段）</b> — 0 run shell · 1 ready user1 · 2 ready user2</div></div>
+    <div class="shot"><img src="assets/17-run-ok.png" alt="run 三进程运行"><div class="cap"><b>run（第三阶段）</b> — 3 用户进程 VGA 底部两行交替刷计数，0 页错误</div></div>
   </div>
   <div class="grid g2" style="margin-top:16px">
     <div class="card">

@@ -9,12 +9,16 @@
 #include "pmm.h"
 #include "paging.h"
 #include "kheap.h"
+#include "sched.h"
 
 extern u32 g_mem_kb;
 extern char g_cpu_vendor[13];
 extern void kernel_redraw_shell(void);
 extern void kernel_reboot(void);
 extern void kernel_poweroff(void);
+
+/* 内嵌用户程序（build 时由 Python 从 userN.bin 生成 users_inc.c/.h 数组） */
+#include "users_inc.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -54,6 +58,10 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  meminfo   physical memory + heap usage\n");
     vga_printf("  alloc     kmalloc/kfree stress test\n");
     vga_printf("  pfault    trigger page fault + demand map\n");
+    vga_printf("  run       start 3 user procs (round-robin)\n");
+    vga_printf("  ps        list process table\n");
+    vga_printf("  kill <pid>  terminate a user process\n");
+    vga_printf("  stop      stop scheduler, back to shell\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -260,6 +268,56 @@ static void cmd_pfault(int argc, char **argv)
     vga_printf("%s\n", (v == 0x1234) ? "demand paging OK" : "MISMATCH!");
 }
 
+/* ---------------- 第三阶段：进程与调度命令 ---------------- */
+
+static void cmd_run(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p1 = sched_create("user1", 0x400000, 0x701000,
+                          _user1_code, USER1_LEN);
+    int p2 = sched_create("user2", 0x500000, 0x711000,
+                          _user2_code, USER2_LEN);
+    int p3 = sched_create("user3", 0x600000, 0x721000,
+                          _user3_code, USER3_LEN);
+    vga_printf("created user procs: pid %d %d %d\n", p1, p2, p3);
+    serial_printf("[run] created pid %d %d %d\r\n", p1, p2, p3);
+    if (p1 > 0 && p2 > 0 && p3 > 0) {
+        sched_start();
+        vga_printf("scheduler started: 3 procs round-robin (0.1s quantum)\n");
+        serial_printf("[run] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create processes\n");
+    }
+}
+
+static void cmd_ps(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    sched_ps();
+}
+
+static void cmd_kill(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: kill <pid>\n"); return; }
+    int pid = k_atoi(argv[1]);
+    int r = sched_kill(pid);
+    if (r == 0) {
+        vga_printf("killed pid %d\n", pid);
+        serial_printf("[kill] pid %d terminated\r\n", pid);
+    } else {
+        vga_printf("kill: no such pid %d\n", pid);
+    }
+}
+
+static void cmd_stop(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    sched_stop();
+    vga_printf("scheduler stopped, all user procs terminated\n");
+    serial_printf("[stop] scheduler stopped\r\n");
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -285,6 +343,10 @@ static const cmd_t cmds[] = {
     { "meminfo",  "physical mem + heap",        cmd_meminfo },
     { "alloc",    "kmalloc/kfree stress",       cmd_alloc },
     { "pfault",   "page fault + demand map",    cmd_pfault },
+    { "run",      "start 3 user procs",         cmd_run },
+    { "ps",       "list processes",             cmd_ps },
+    { "kill",     "kill <pid>",                 cmd_kill },
+    { "stop",     "stop scheduler",             cmd_stop },
     { "reboot",   "restart machine",            cmd_reboot },
     { "poweroff", "ACPI power off (QEMU)",      cmd_poweroff },
 };

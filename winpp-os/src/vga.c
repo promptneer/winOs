@@ -133,7 +133,8 @@ void vga_printf(const char *fmt, ...)
     for (const char *p = fmt; *p; p++) {
         if (*p != '%') { vga_putc(*p); continue; }
         p++;
-        int zpad = 0, width = 0;
+        int zpad = 0, width = 0, left = 0;
+        if (*p == '-') { left = 1; p++; }
         if (*p == '0') { zpad = 1; p++; }
         while (*p >= '0' && *p <= '9') { width = width * 10 + (*p - '0'); p++; }
         char spec = *p;
@@ -145,7 +146,15 @@ void vga_printf(const char *fmt, ...)
         case 's': {
             const char *s = __builtin_va_arg(ap, const char *);
             if (!s) s = "(null)";
-            while (*s) vga_putc(*s++);
+            int n = 0;
+            while (s[n]) n++;
+            if (left) {
+                while (*s) vga_putc(*s++);
+                for (int i = n; i < width; i++) vga_putc(' ');
+            } else {
+                for (int i = n; i < width; i++) vga_putc(' ');
+                while (*s) vga_putc(*s++);
+            }
             break;
         }
         case 'c':

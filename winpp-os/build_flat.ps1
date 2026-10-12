@@ -32,6 +32,50 @@ Write-Host "zig: $zig"
 $srcC  = (Get-ChildItem "$root\src" -Filter *.c | Select-Object -ExpandProperty FullName)
 $srcAS = @("$root\src\boot.S", "$root\src\isr.S")
 
+# ---------- 0. 用户程序 user1/2/3.bin（第三阶段：用户态进程） ----------
+$users = @(
+  @{ name="user1"; ld="user1.ld" },
+  @{ name="user2"; ld="user2.ld" },
+  @{ name="user3"; ld="user3.ld" }
+)
+foreach ($u in $users) {
+  $uargs = @(
+    "cc",
+    "-target", "x86-freestanding",
+    "-ffreestanding", "-fno-builtin", "-fno-stack-protector",
+    "-fno-pic", "-fno-pie", "-g0",
+    "-O2", "-Wall",
+    "-mno-sse", "-mno-80387",
+    "-nostdlib",
+    "-Wl,-T,$root\src\$($u.ld)",
+    "-Wl,--build-id=none",
+    "-o", "$root\src\$($u.name).elf",
+    "$root\src\$($u.name).S"
+  )
+  & $zig @uargs
+  if ($LASTEXITCODE -ne 0) { throw "$($u.name).elf build failed: $LASTEXITCODE" }
+  & $zig objcopy -O binary "$root\src\$($u.name).elf" "$root\src\$($u.name).bin"
+  if ($LASTEXITCODE -ne 0) { throw "$($u.name).bin objcopy failed: $LASTEXITCODE" }
+  $ub = Get-Item "$root\src\$($u.name).bin"
+  Write-Host "$($u.name).bin: $($ub.Length) bytes"
+  if ($ub.Length -gt 4096) { throw "$($u.name).bin too big for one page (4096)" }
+}
+
+# 生成 users_inc.c/.h（C 数组内嵌用户程序；zig cc 的 lld 不支持 .incbin，改用数组最稳）
+python -c "
+names=['user1','user2','user3']
+lines_c=[]; lines_h=['#pragma once']
+for n in names:
+    d=open(r'$root\src\%s.bin' % n,'rb').read()
+    lines_c.append('const unsigned char _%s_code[%d] = { %s };' % (n, len(d), ', '.join('0x%02x'%b for b in d)))
+    lines_h.append('#define %s_LEN %d' % (n.upper(), len(d)))
+    lines_h.append('extern const unsigned char _%s_code[%s_LEN];' % (n, n.upper()))
+open(r'$root\src\users_inc.c','w',encoding='utf-8').write('\n'.join(lines_c)+'\n')
+open(r'$root\src\users_inc.h','w',encoding='utf-8').write('\n'.join(lines_h)+'\n')
+print('users_inc.c/h generated')
+"
+if ($LASTEXITCODE -ne 0) { throw "users_inc generation failed" }
+
 # ---------- 1. 扁平内核 kernel.bin ----------
 $args = @(
   "cc",

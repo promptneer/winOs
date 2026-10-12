@@ -9,20 +9,15 @@
 #include "pmm.h"
 #include "paging.h"
 #include "kheap.h"
+#include "tss.h"
+#include "sched.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
 
 void status_bar_redraw(void);   /* irq_handler 先于定义使用，需前置声明 */
 
-/* ---------------- 寄存器帧（与 isr.S 存根布局一致） ---------------- */
-
-typedef struct {
-    u32 gs, fs, es, ds;          /* 存根压入 */
-    u32 edi, esi, ebp, esp, ebx, edx, ecx, eax;   /* pusha */
-    u32 int_no, err_code;        /* 存根压入 */
-    u32 eip, cs, eflags, user_esp, ss;  /* CPU 压入 */
-} regs_t;
+/* regs_t 定义见 sched.h（与 isr.S 存根布局一致） */
 
 static const char *exc_names[32] = {
     "#DE Divide Error", "#DB Debug", "#NMI", "#BP Breakpoint",
@@ -58,6 +53,17 @@ void isr_handler(regs_t *r)
         asm volatile("mov %%cr2, %0" : "=r"(cr2));
         pf_inc();
         serial_printf("PAGE FAULT @%x err=%x\r\n", cr2, r->err_code);
+        {
+            u32 pdi = cr2 >> 22, pti = (cr2 >> 12) & 0x3FF;
+            u32 cr3 = read_cr3();
+            volatile u32 *pdv = (volatile u32 *)cr3;   /* 恒等映射 1MB+，cr3 物理页可直接读 */
+            volatile u32 *real_pd = (volatile u32 *)0x10F000; /* boot 时的真 PD 物理页 */
+            serial_printf("[pfdbg] cr2=%x eip=%x cs=%x cr3=%x pd0=%x pd1=%x pd1023=%x PTE=%x realPD0=%x realPD1=%x realPD1023=%x\r\n",
+                          cr2, r->eip, r->cs, cr3,
+                          pdv[0], pdv[1], pdv[1023],
+                          ((volatile u32 *)(0xFFC00000u + pdi * 0x1000))[pti],
+                          real_pd[0], real_pd[1], real_pd[1023]);
+        }
         vga_printf("page fault @%x (err=%x: %s%s%s)\n", cr2, r->err_code,
                    (r->err_code & 1) ? "present" : "not-present",
                    (r->err_code & 2) ? "+write" : "+read",
@@ -96,11 +102,18 @@ void irq_handler(regs_t *r)
     if (irq == 0) {
         timer_tick();
         if (timer_ticks() % TIMER_HZ == 0) status_bar_redraw();
+        /* 多任务：每个时间片强制重新调度 */
+        if (sched_running() && (timer_ticks() % SCHED_QUANTUM) == 0)
+            sched_need_resched();
     } else if (irq == 1) {
         keyboard_handle_irq();
     }
     if (irq >= 8) outb(0xA0, 0x20);   /* 从片 EOI */
     outb(0x20, 0x20);                 /* 主片 EOI */
+
+    /* 末尾：必要时切换进程（sched_do_switch 换栈后不返回） */
+    if (sched_should_switch())
+        sched_tick(r);
 }
 
 /* ---------------- 状态栏 / 欢迎屏 ---------------- */
@@ -189,6 +202,7 @@ void kmain(u32 magic, u32 mb_info)
 
     serial_puts("[1] gdt ...\r\n");
     vga_printf("[1] gdt ...\n");
+    tss_init();          /* 必须先于 gdt_init（TSS 描述符需要 tss 地址） */
     gdt_init();
     serial_puts("[2] idt ...\r\n");
     vga_printf("[2] idt ...\n");
@@ -214,8 +228,11 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[9] kheap ...\r\n");
     vga_printf("[9] kheap ...\n");
     kheap_init();
-    serial_puts("[10] all init ok, drawing UI ...\r\n");
-    vga_printf("[10] all init ok, drawing UI ...\n");
+    serial_puts("[10] sched ...\r\n");
+    vga_printf("[10] sched ...\n");
+    sched_init();
+    serial_puts("[11] all init ok, drawing UI ...\r\n");
+    vga_printf("[11] all init ok, drawing UI ...\n");
 
     vga_set_area(4, 24);
     kernel_redraw_shell();

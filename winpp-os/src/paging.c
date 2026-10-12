@@ -112,8 +112,18 @@ void map_page(u32 vaddr, u32 paddr, u32 flags)
         for (u32 i = 0; i < 1024; i++) pt_v[i] = 0;
         *pd_entry(pd_idx) = pt | PAGE_PRESENT | PAGE_WRITE;
     }
+    /* 恒等映射的 PDE 只有 P|W（无 USER 位）：用户态访问 4MB+ 恒等区会因 PDE 无 U 报 err=5。
+     * 用户映射请求 U 位时，同步给 PDE 补 USER 位（PTE 各自权限仍由 PTE 决定，隔离不破坏）。 */
+    if (flags & 0x4) {
+        u32 pdv2 = *pd_entry(pd_idx);
+        if (!(pdv2 & 0x4))
+            *pd_entry(pd_idx) = pdv2 | 0x4;
+    }
     *pt_entry(pd_idx, pt_idx) = (paddr & 0xFFFFF000u) | flags | PAGE_PRESENT;
-    asm volatile("invlpg (%0)" :: "r"(vaddr));
+    /* 全量 TLB 刷新：PDE/PTE 均可能变更，重载 CR3 保证旧翻译条目全部失效 */
+    u32 cr3;
+    asm volatile("mov %%cr3, %0" : "=r"(cr3));
+    asm volatile("mov %0, %%cr3" :: "r"(cr3));
 }
 
 void unmap_page(u32 vaddr)

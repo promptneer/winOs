@@ -1,4 +1,5 @@
 #include "gdt.h"
+#include "tss.h"
 #include "io.h"
 
 typedef struct {
@@ -15,10 +16,10 @@ typedef struct {
     u32 base;
 } __attribute__((packed)) gdt_ptr_t;
 
-static gdt_entry_t gdt[3];
+static gdt_entry_t gdt[6];   /* 0:null 1:内核代码 2:内核数据 3:用户代码 4:用户数据 5:TSS */
 static gdt_ptr_t gdtp;
 
-static void gdt_set(int i, u32 base, u32 limit, u8 access, u8 gran)
+void gdt_set_entry(int i, u32 base, u32 limit, u8 access, u8 gran)
 {
     gdt[i].limit_lo = (u16)(limit & 0xFFFF);
     gdt[i].base_lo  = (u16)(base & 0xFFFF);
@@ -30,9 +31,12 @@ static void gdt_set(int i, u32 base, u32 limit, u8 access, u8 gran)
 
 void gdt_init(void)
 {
-    gdt_set(0, 0, 0, 0, 0);
-    gdt_set(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);  /* 代码段 0x08 */
-    gdt_set(2, 0, 0xFFFFFFFF, 0x92, 0xCF);  /* 数据段 0x10 */
+    gdt_set_entry(0, 0, 0, 0, 0);
+    gdt_set_entry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);   /* 内核代码段 0x08 */
+    gdt_set_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF);   /* 内核数据段 0x10 */
+    gdt_set_entry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);   /* 用户代码段 0x18 DPL3 */
+    gdt_set_entry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);   /* 用户数据段 0x20 DPL3 */
+    gdt_set_entry(5, (u32)tss_ptr(), sizeof(tss_t) - 1, 0x89, 0x00);  /* TSS 0x28 */
 
     gdtp.limit = (u16)(sizeof(gdt) - 1);
     gdtp.base  = (u32)&gdt;
@@ -47,4 +51,6 @@ void gdt_init(void)
         "movw %%ax, %%gs\n"
         "movw %%ax, %%ss\n"
         ::: "ax", "memory");
+    /* 加载任务寄存器（此后中断可从用户态经 TSS.esp0 切到内核栈） */
+    asm volatile("ltr %0" : : "r"((u16)TSS_SEL));
 }

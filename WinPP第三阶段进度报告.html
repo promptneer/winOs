@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 内核 · 第三阶段进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%230e1512'/%3E%3Cpath d='M6 7h12M6 12h8M6 17h10' stroke='%2334d399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b100e; --panel:#121a16; --panel2:#0f1713; --line:#1f2b25;
+    --txt:#c8d6cf; --dim:#6f8579; --bright:#e8f2ec;
+    --green:#34d399; --cyan:#22d3ee; --amber:#fbbf24; --red:#f87171;
+    --mono:'Cascadia Mono','JetBrains Mono',Consolas,'Courier New',monospace;
+    --sans:'Segoe UI','Microsoft YaHei',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:40px 28px 80px}
+  /* ===== hero ===== */
+  .hero{position:relative;border:1px solid var(--line);border-radius:14px;padding:36px 32px;background:
+    radial-gradient(1000px 300px at 20% 0%,rgba(52,211,153,.08),transparent 60%),
+    radial-gradient(800px 260px at 90% 10%,rgba(34,211,238,.07),transparent 60%),
+    var(--panel2);overflow:hidden}
+  .hero::after{content:"i386 / PROTECTED MODE / USERMODE";position:absolute;right:24px;bottom:14px;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:rgba(52,211,153,.25)}
+  .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:1px;margin-bottom:14px}
+  .crumb b{color:var(--green);font-weight:600}
+  h1{font-family:var(--mono);font-size:30px;color:var(--bright);letter-spacing:.5px}
+  h1 .hl{color:var(--green)}
+  .sub{margin-top:10px;color:var(--dim);font-size:14px;max-width:720px}
+  .badges{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
+  .badge{font-family:var(--mono);font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--line)}
+  .badge.ok{color:var(--green);border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
+  .badge.warn{color:var(--amber);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+  .badge.pend{color:var(--dim);border-color:var(--line)}
+  /* ===== sections ===== */
+  section{margin-top:56px}
+  .sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+  .sec-h .n{font-family:var(--mono);font-size:14px;color:var(--green);font-weight:700}
+  .sec-h h2{font-family:var(--mono);font-size:21px;color:var(--bright);letter-spacing:.5px}
+  .sec-h .tag{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+  /* ===== cards / tables ===== */
+  .grid{display:grid;gap:14px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:860px){.g3,.g2{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:18px 18px 16px}
+  .card h3{font-family:var(--mono);font-size:14px;color:var(--cyan);margin-bottom:8px;letter-spacing:.3px}
+  .card p{font-size:13px;color:var(--txt)}
+  .card .k{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .num{font-family:var(--mono);font-size:26px;color:var(--green);font-weight:700;display:block}
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  colgroup col:nth-child(1){width:16%}colgroup col:nth-child(2){width:13%}
+  colgroup col:nth-child(3){width:46%}colgroup col:nth-child(4){width:25%}
+  th{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);letter-spacing:.5px;text-transform:uppercase}
+  td{padding:10px 12px;border-bottom:1px solid rgba(31,43,37,.6);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.cmd{font-family:var(--mono);color:var(--cyan);font-size:12px}
+  .st{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .st.done{color:var(--green);background:rgba(52,211,153,.1)}
+  .st.half{color:var(--amber);background:rgba(251,191,36,.1)}
+  .st.todo{color:var(--dim);background:rgba(111,133,121,.12)}
+  .st.bug{color:var(--red);background:rgba(248,113,113,.1)}
+  /* ===== terminal / evidence ===== */
+  .term{border:1px solid var(--line);border-radius:12px;background:#070b09;overflow:hidden}
+  .term .bar{display:flex;gap:6px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .term .dot{width:10px;height:10px;border-radius:50%}
+  .term .bar span{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:8px}
+  .term pre{padding:16px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#9fe8c8;white-space:pre-wrap;word-break:break-all}
+  .term pre .cmt{display:block;color:var(--dim);font-size:11px;margin-top:1px}
+  .term pre .r{color:var(--red)}
+  .term pre .g{color:var(--green)}
+  /* ===== screenshots ===== */
+  .shots{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.shots{grid-template-columns:1fr}}
+  .shot{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:12px}
+  .shot img{width:100%;border-radius:8px;display:block;border:1px solid var(--line)}
+  .shot .cap{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:10px}
+  .shot .cap b{color:var(--green);font-weight:600}
+  /* ===== flow diagram (horizontal) ===== */
+  .flow{overflow-x:auto;padding:6px 2px}
+  .flow .track{display:flex;align-items:stretch;min-width:920px;gap:0}
+  .fnode{flex:1;min-width:0}
+  .fbox{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 10px;height:100%;text-align:center}
+  .fbox .t{font-family:var(--mono);font-size:11px;color:var(--green);display:block;margin-bottom:4px;letter-spacing:.5px}
+  .fbox .d{font-size:11.5px;color:var(--txt);line-height:1.5}
+  .farrow{align-self:center;color:var(--dim);font-family:var(--mono);font-size:15px;padding:0 8px;flex:0 0 auto}
+  .farrow .sym{display:block;text-align:center}
+  /* ===== timeline ===== */
+  .tl{display:grid;grid-template-columns:96px 1fr;row-gap:0;position:relative}
+  .tl::before{content:"";position:absolute;left:95px;top:8px;bottom:8px;width:2px;background:var(--line)}
+  .tl-item{display:contents}
+  .tl-time{font-family:var(--mono);font-size:12px;color:var(--dim);padding:14px 12px 14px 0;text-align:right;align-self:start;position:relative}
+  .tl-time::after{content:"";position:absolute;right:-5px;top:20px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--green);box-sizing:border-box}
+  .tl-body{padding:14px 0 14px 24px}
+  .tl-body h4{font-family:var(--mono);font-size:14px;color:var(--bright);margin-bottom:4px}
+  .tl-body p{font-size:12.5px;color:var(--dim);line-height:1.6}
+  .tl-body p b{color:var(--txt);font-weight:600}
+  /* ===== footer ===== */
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  code.in{font-family:var(--mono);font-size:12px;color:var(--cyan);background:rgba(34,211,238,.08);padding:1px 6px;border-radius:5px}
+  .note{border-left:3px solid var(--amber);background:rgba(251,191,36,.06);padding:12px 16px;border-radius:0 10px 10px 0;font-size:13px;color:var(--txt);margin-top:16px}
+  .note b{color:var(--amber)}
+  .note.green{border-left-color:var(--green);background:rgba(52,211,153,.06)}
+  .note.green b{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div class="crumb">WINPP OS / <b>PROJECT STATUS</b> / REPORT v1.0</div>
+    <h1>第三阶段进度报告：<span class="hl">用户态 + 任务切换</span></h1>
+    <p class="sub">从"能交互的 i386 内核"到"真操作系统"的关键一步 —— 用 TSS + 时钟中断做进程上下文切换，跑 3 个用户进程，Shell 新增 run / ps / kill / stop。本报告记录截至当前的全部进度、实机取证与待办。</p>
+    <div class="badges">
+      <span class="badge ok">基础完成</span>
+      <span class="badge ok">run 实测通过</span>
+      <span class="badge ok">ps/kill/stop 全实测</span>
+      <span class="badge warn">HTML/GitHub 收尾中</span>
+    </div>
+  </div>
+
+  <!-- ============ 1 总览 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">01</span><h2>总体进度</h2><span class="tag">sizing snapshot</span></div>
+    <div class="grid g3">
+      <div class="card"><span class="num">22</span><h3>Shell 命令</h3><p>help 列表已增至 22 条（新增 run/ps/kill/stop）</p></div>
+      <div class="card"><span class="num">32792 B</span><h3>内核镜像</h3><p>kernel.bin 32792 字节 = 65 扇区，软盘可引导；内嵌 3 个用户程序（各 107 B，C 数组）</p></div>
+      <div class="card"><span class="num">4 项</span><h3>进程表</h3><p>pcb_t[8]：pid0=shell 常驻 + 3 个用户进程（user1/2/3）</p></div>
+      <div class="card"><span class="num">6 项</span><h3>GDT 扩展</h3><p>null / 内核 cs,ds / 用户 cs(0x1B),ds(0x23) / TSS(0x28)</p></div>
+      <div class="card"><span class="num">0x80</span><h3>syscall 门</h3><p>int 0x80 DPL=3，用户态可触发；约定 eax=0 yield / 1 write / 2 exit</p></div>
+      <div class="card"><span class="num">0.1 s</span><h3>时间片</h3><p>SCHED_QUANTUM=10 tick，round-robin 轮转，串口已取证</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 2 任务状态表 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">02</span><h2>任务状态</h2><span class="tag">逐项核实</span></div>
+    <div class="card" style="padding:8px 4px">
+    <table>
+      <colgroup><col><col><col><col></colgroup>
+      <tr><th>任务</th><th>状态</th><th>实测证据</th><th>说明</th></tr>
+      <tr><td class="cmd">GDT 6 项 + TSS</td><td><span class="st done">已完成</span></td><td>无头启动日志 [1] gdt 通过，ltr 加载无崩溃</td><td>tss_init 必须先于 gdt_init</td></tr>
+      <tr><td class="cmd">0x80 syscall 门</td><td><span class="st done">已完成</span></td><td>IDT 0x80 门 flags 0xEE（DPL=3）</td><td>用户态可触发</td></tr>
+      <tr><td class="cmd">3 个用户程序</td><td><span class="st done">已完成</span></td><td>user1/2/3.bin 各 107 B，编译 + 内嵌链接通过</td><td>链接基址 0x400000/0x500000/0x600000</td></tr>
+      <tr><td class="cmd">调度器轮转</td><td><span class="st done">已取证</span></td><td>串口 [sched] pid0-&gt;pid1-&gt;pid2-&gt;pid3 轮转日志</td><td>round-robin + 僵尸回收</td></tr>
+      <tr><td class="cmd">ps</td><td><span class="st done">已取证</span></td><td>截图 15-ps-before.png + screen dump：<code class="in">0 run shell 0 0</code></td><td>修复了 vga_printf 不支持 %- 的参数错位 bug</td></tr>
+      <tr><td class="cmd">run</td><td><span class="st done">已取证</span></td><td>截图 17-run-ok.png + 串口 <code class="in">[pid1] user1: 010710</code> 滚动（0 页错误）</td><td>连拔 3 根钉子：PDE 缺 U 位 → lld 不支持 .incbin（用户程序未进镜像）→ C 数组内嵌</td></tr>
+      <tr><td class="cmd">kill / stop</td><td><span class="st done">已取证</span></td><td>串口 <code class="in">[kill] pid 1 terminated</code> / <code class="in">[stop] scheduler stopped</code></td><td>进程终结 + 全场清场均实测通过</td></tr>
+      <tr><td class="cmd">运行中 ps</td><td><span class="st done">已取证</span></td><td>串口：<code class="in">0 run shell · 1 ready user1 · 2 ready user2</code></td><td>进程表在调度运行期间实时可查</td></tr>
+      <tr><td class="cmd">串口取证归档</td><td><span class="st done">已完成</span></td><td>serial-evidence.txt 已更新（run/ps/kill/stop 全量日志）</td><td>第三阶段完整取证落盘</td></tr>
+      <tr><td class="cmd">HTML 详情页 + 推送</td><td><span class="st todo">未做</span></td><td>WinPP内核详解.html 仍为第二阶段版本</td><td>第三阶段收尾时更新并推送 GitHub</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <!-- ============ 3 实测证据 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">03</span><h2>实测证据（机器取证）</h2><span class="tag">Bochs 2.8 · 截图 + COM1 串口双通道</span></div>
+
+    <div class="shots">
+      <div class="shot">
+        <img src="assets/15-ps-before.png" alt="ps 进程表截图">
+        <div class="cap"><b>取证 1</b> · 15-ps-before.png · <code class="in">ps</code> 显示 shell 进程（pid 0 / run / shell / ticks 0 / code 0），修复 %- 格式 bug 后的干净输出</div>
+      </div>
+      <div class="shot">
+        <img src="assets/17-run-ok.png" alt="run 成功截图">
+        <div class="cap"><b>取证 2（关键）</b> · 17-run-ok.png · <code class="in">run</code> 后 VGA 底部两行 <code class="in">zer1/zer2</code> 交替刷计数，0 页错误</div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--mono);font-size:14px;color:var(--cyan);margin:26px 0 12px">串口真值（serial 日志原文 · 成功版）</h3>
+    <div class="term">
+      <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span>serial.out · COM1</span></div>
+      <pre><span class="cmt">=== WinPP kernel boot ===</span>
+[11] all init ok, drawing UI ...
+<span class="cmt">[key 114][key 117][key 110][key 10]   ← 键入 run + Enter</span>
+<span class="g">[dbg] map code 400000-&gt;122000 pd=112067 pte=122007</span>  <span class="cmt">← PDE/PTE 均含 USER 位 ✓</span>
+[dbg] map code 500000-&gt;125000 pd=112067 pte=125007
+[dbg] map code 600000-&gt;128000 pd=112067 pte=128007
+<span class="g">[run] created pid 1 2 3</span>
+<span class="g">[run] scheduler started</span>
+[sched] pid0 -&gt; pid1
+<span class="g">[pid1] user1: 000000</span>             <span class="cmt">← 用户态进程 1 经 int 0x80 write 串口输出 ✓</span>
+[pid2] user2: 000000
+[pid2] user2: 000010                  <span class="cmt">← 计数器每轮递增 ✓</span>
+[pid3] user3: 000000
+[pid3] user3: 000010
+[pid1] user1: 000010
+...（轮转中 3 进程持续输出，0 页错误）
+<span class="cmt">[key 112][key 115][key 10]   ← 键入 ps（调度运行中）</span>
+PID  STATE   NAME       TICKS  CODE
+<span class="g">0    run     shell     ...    0</span>      <span class="cmt">← shell 常驻 ✓</span>
+<span class="g">1    ready   user1     ...    400000</span>   <span class="cmt">← user1 就绪态，入口 0x400000 ✓</span>
+2    ready   user2     ...    500000
+<span class="cmt">[key 107][key 105]...  ← 键入 kill 1</span>
+<span class="g">[kill] pid 1 terminated</span>              <span class="cmt">← 进程 1 被终结 ✓</span>
+killed pid 1
+<span class="cmt">[key 115][key 116]...  ← 键入 stop</span>
+<span class="g">[stop] scheduler stopped</span>
+scheduler stopped, all user procs terminated  <span class="cmt">← 全场清场 ✓</span></pre>
+    </div>
+
+    <div class="note green"><b>结论：</b>第三阶段核心验收<b>全部通过</b>——3 个用户进程在用户态（DPL=3）经 0x80 门做系统调用、round-robin 调度轮转、运行中 ps 可查、kill 单杀、stop 全场清场，全程 <b>0 个 PAGE FAULT</b>。机器实测：串口 282+ 条 [pidN] 输出 + VGA 底部两行交替刷计数（截图 17-run-ok.png）。</div>
+  </section>
+
+  <!-- ============ 4 Bug 定位 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">04</span><h2>Bug 归因全记录（三根钉子全拔）</h2><span class="tag">err=5 → err=6/7 → 0 错误</span></div>
+
+    <table>
+      <colgroup><col style="width:16%"><col style="width:14%"><col style="width:40%"><col style="width:30%"></colgroup>
+      <tr><th>钉子</th><th>现象</th><th>根因</th><th>修复</th></tr>
+      <tr><td class="cmd">#1</td><td>PAGE FAULT @0x400000 err=5（P 存在 / U 无用户位）</td><td>map_page 只给 PTE 写 USER 位，PDE 仍是无 U 的恒等映射项 → 用户态访问 4MB+ 先查 PDE 即拒绝</td><td>map_page：flags 含 U 时给 PDE 补 0x4，实测 <code class="in">pd=112067</code> 生效</td></tr>
+      <tr><td class="cmd">#2</td><td>修 #1 后 fault @0 err=6/7（用户"程序"执行垃圾）</td><td>zig cc 的 lld <b>不支持 .incbin</b>：.userprogs 段字节未进 kernel.bin，_userN_start 符号指向的地址实为页表垃圾（src=0x110000 = PD 页）</td><td>弃 .incbin，build 时用 Python 把 userN.bin 转成 C 数组 <code class="in">users_inc.c/.h</code> 内嵌，kernel.bin 检出 user1 机器码特征 ✓</td></tr>
+      <tr><td class="cmd">#3</td><td>（连带隐患）_kernel_end 在 .userprogs 之前</td><td>pmm 以 _kernel_end 为内核边界，把用户程序区域当空闲页分配给了 PD/PT → 代码被覆盖</td><td>linker_flat.ld 移 .userprogs 到 _kernel_end 之前（最终因 #2 弃用该段，C 数组在 .rodata 内天然受保护）</td></tr>
+    </table>
+
+    <div class="note green"><b>最终状态：</b>重跑 <code class="in">run</code> → 3 个用户进程在用户态经 0x80 门输出计数（串口 282+ 条 [pidN] + 屏幕底部两行交替刷），全程 <b>0 个 PAGE FAULT</b>；kill / stop / 运行中 ps 全部实测通过。</div>
+  </section>
+
+  <!-- ============ 5 架构与流程 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">05</span><h2>第三阶段架构（横向流程图）</h2><span class="tag">数据流：用户程序 → 中断 → 内核 → 调度</span></div>
+
+    <div class="card" style="padding:22px 10px">
+      <div class="flow">
+        <div class="track">
+          <div class="fnode"><div class="fbox"><span class="t">USER PROCS</span><div class="d">user1/2/3.S<br>链接基址 0x4/0x5/0x6M<br>busy-wait + int 0x80</div></div></div>
+          <div class="farrow"><span class="sym">→</span></div>
+          <div class="fnode"><div class="fbox"><span class="t">INT 0x80</span><div class="d">syscall_isr<br>保存帧 → syscall_handler<br>DPL=3 门</div></div></div>
+          <div class="farrow"><span class="sym">→</span></div>
+          <div class="fnode"><div class="fbox"><span class="t">SYSCALL 分发</span><div class="d">eax=0 yield<br>eax=1 write(fd1 VGA / fd2 串口)<br>eax=2 exit</div></div></div>
+          <div class="farrow"><span class="sym">→</span></div>
+          <div class="fnode"><div class="fbox"><span class="t">时钟中断</span><div class="d">IRQ0 每 0.1s<br>sched_need_resched<br>irq_handler 末尾切换</div></div></div>
+          <div class="farrow"><span class="sym">→</span></div>
+          <div class="fnode"><div class="fbox"><span class="t">调度器</span><div class="d">保存 ctx → round-robin<br>顺带回收 ZOMBIE<br>TSS.esp0 = 目标内核栈</div></div></div>
+          <div class="farrow"><span class="sym">→</span></div>
+          <div class="fnode"><div class="fbox"><span class="t">sched_do_switch</span><div class="d">movl to_ctx,%esp<br>jmp irq_common_restore<br>iret 回用户态（永不返回）</div></div></div>
+          <div class="farrow"><span class="sym">→</span></div>
+          <div class="fnode"><div class="fbox"><span class="t">下一个进程</span><div class="d">pid1 → 2 → 3 → 0<br>共享同一 CR3<br>用户/内核用段 DPL 区分</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--mono);font-size:14px;color:var(--cyan);margin:26px 0 12px">内存与特权模型</h3>
+    <div class="grid g2">
+      <div class="card"><h3>共享页目录（单一 CR3）</h3><p>所有进程同一 CR3、恒等映射 1MB+。不做独立地址空间，<b>用 PTE 的 USER 位 + 段选择子 RPL 双保险</b>区分用户/内核权限。用户页 flag=0x7（P+W+U），内核页无 U 位 → 用户访问内核页触发 #PF（本次 bug 即此位未写入）。</p></div>
+      <div class="card"><h3>纯内核栈切换</h3><p>每个用户进程分配 3 个物理页：<b>内核栈（存上下文帧 regs_t）+ 用户代码页 + 用户栈页</b>。切换 = 保存当前帧指针 → 换 TSS.esp0 → sched_do_switch 换 esp → iret。无 TSS 硬件任务切换，无浮点上下文（用户程序禁用 SSE/x87）。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 6 时间线 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">06</span><h2>项目时间线</h2><span class="tag">三阶段演进</span></div>
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-time">第一阶段<br>已完成</div>
+        <div class="tl-body"><h4>内核本体 + 交互 Shell</h4><p>Zig 0.17 交叉编译 i386 保护模式内核，软盘引导 + 交互 Shell；交付 <b>WinPP内核详解.html</b>（分层架构/横向流程图/8 张实机截图）、真机部署手册、GitHub 仓库 <b>promptneer/winOs</b>（9cf8a62 / 4032b75）。</p></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">第二阶段<br>已完成</div>
+        <div class="tl-body"><h4>分页内存管理子系统</h4><p>pmm（位图 16288 页）+ paging（恒等 1MB+ / 自映射）+ kheap（8MB），命令 <b>paging / meminfo / alloc / pfault</b>，修复 3 个 bug（%#x 格式符、PD 自映射读错、kfree 合并越界），Bochs 全实测截图（11–14），已推送 69d85b7。</p></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">第三阶段<br>已完成 ✅</div>
+        <div class="tl-body"><h4>用户态 + 任务切换</h4><p>GDT 6 项 + TSS + 0x80 门 + 3 用户进程 + 调度器 + 4 条新命令。<b>全部机器实测通过：</b>run（3 进程轮转计数、0 页错误，截图 17-run-ok.png）、运行中 ps（shell run / user ready）、kill 1（[kill] pid 1 terminated）、stop（全场清场）。连拔 3 根钉子：PDE 缺 U 位、lld 不支持 .incbin、_kernel_end 边界。</p></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">第四阶段<br>展望</div>
+        <div class="tl-body"><h4>独立地址空间 / fork</h4><p>进程独立 CR3 + 页目录复制（写时复制），实现 <b>fork / exec / 用户态文件系统</b>，向"真操作系统"再进一步。方向待用户拍板。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7 下一步 ============ -->
+  <section>
+    <div class="sec-h"><span class="n">07</span><h2>下一步执行清单</h2><span class="tag">收尾路径</span></div>
+    <div class="card">
+      <table>
+        <colgroup><col style="width:8%"><col style="width:38%"><col style="width:30%"><col style="width:24%"></colgroup>
+        <tr><th>#</th><th>动作</th><th>验证方式</th><th>状态</th></tr>
+        <tr><td>1</td><td class="cmd">run：3 用户进程轮转计数</td><td>串口 [pidN] + 截图 17-run-ok.png（0 页错误）</td><td><span class="st done">已完成</span></td></tr>
+        <tr><td>2</td><td class="cmd">运行中 ps / kill 1 / stop</td><td>进程表 + 单杀 + 清场串口原文</td><td><span class="st done">已完成</span></td></tr>
+        <tr><td>3</td><td class="cmd">串口归档 serial-evidence.txt</td><td>第三阶段全量日志落盘</td><td><span class="st done">已完成</span></td></tr>
+        <tr><td>4</td><td class="cmd">更新本报告 + WinPP内核详解.html（命令 18→22）</td><td>shot.py 自检渲染</td><td><span class="st half">进行中</span></td></tr>
+        <tr><td>5</td><td class="cmd">git 提交推送 GitHub</td><td>远端 main 确认新 commit</td><td><span class="st todo">待执行</span></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- something todo -->
+</div>
+</body>
+</html>
