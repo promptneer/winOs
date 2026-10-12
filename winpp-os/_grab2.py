@@ -2,7 +2,7 @@
 import ctypes, ctypes.wintypes, struct, time
 u = ctypes.windll.user32
 g = ctypes.windll.gdi32
-h = 2885434  # Bochs for Windows - Display
+h = 787056  # Bochs for Windows - Display
 r = ctypes.wintypes.RECT()
 u.GetWindowRect(h, ctypes.byref(r))
 w = r.right - r.left
@@ -28,7 +28,7 @@ bi.biCompression = 0
 buf = ctypes.create_string_buffer(w * hh * 3)
 g.GetDIBits(hdc, bmp, 0, hh, buf, ctypes.byref(bi), 0)
 hdr = b'BM' + struct.pack('<IHHI', 54 + len(buf), 0, 0, 54) + struct.pack('<IiiHHIIiiII', 40, w, hh, 1, 24, 0, len(buf), 0, 0, 0, 0)
-out = r'D:\WinPP\winpp-os\shots\24-exec-ps.png'
+out = r'D:\WinPP\winpp-os\shots\26-fs-ok.png'
 open(out, 'wb').write(hdr + buf)
 g.DeleteObject(bmp); g.DeleteDC(mdc); u.ReleaseDC(h, hdc)
 print('ok', w, hh, ok)

@@ -5,6 +5,7 @@
 #include "paging.h"
 #include "tss.h"
 #include "gdt.h"
+#include "fs.h"
 #include "users_inc.h"
 
 /* 用户代码/栈映射标志：P + W + U（用户态可访问；内核页无 U 位 → 用户访问 #PF） */
@@ -455,6 +456,18 @@ void syscall_handler(regs_t *r)
             r->eax = (u32)sched_exec(sched_current, r, (int)r->ebx);
         else
             r->eax = 0xFFFFFFFFu;   /* shell 不允许 exec */
+    }
+    else if (nr == 5) {             /* open(name, flags)：S4-4 文件系统 */
+        r->eax = (u32)fs_open((const char *)r->ebx, (int)r->ecx);
+    }
+    else if (nr == 6) {             /* write(fd, buf, len) */
+        r->eax = (u32)fs_write((int)r->ebx, (const char *)r->ecx, (int)r->edx);
+    }
+    else if (nr == 7) {             /* read(fd, buf, len) */
+        r->eax = (u32)fs_read((int)r->ebx, (char *)r->ecx, (int)r->edx);
+    }
+    else if (nr == 8) {             /* close(fd) */
+        r->eax = (u32)fs_close((int)r->ebx);
     }
     else {
         r->eax = -1;

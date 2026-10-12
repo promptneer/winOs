@@ -19,6 +19,7 @@ extern void kernel_poweroff(void);
 
 /* 内嵌用户程序（build 时由 Python 从 userN.bin 生成 users_inc.c/.h 数组） */
 #include "users_inc.h"
+#include "fs.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -354,6 +355,31 @@ static void cmd_exec(int argc, char **argv)
     }
 }
 
+/* S4-4：启动文件系统演示进程（user6：创建/写/读 hello.txt） */
+static void cmd_fs(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user6", 0x630000, 0x751000,
+                         _user6_code, USER6_LEN);
+    if (p > 0) {
+        vga_printf("created fs-demo proc: pid %d\n", p);
+        serial_printf("[fs] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: fs demo (0.1s quantum)\n");
+        serial_printf("[fs] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create fs-demo process\n");
+    }
+}
+
+/* S4-4：显示内存盘文件表 */
+static void cmd_fslist(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    fs_list();
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -382,6 +408,8 @@ static const cmd_t cmds[] = {
     { "run",      "start 3 user procs",         cmd_run },
     { "fork",     "fork demo (user4)",          cmd_fork },
     { "exec",     "exec demo (user5->user2)",   cmd_exec },
+    { "fs",       "fs demo (user6)",            cmd_fs },
+    { "fslist",   "list ramdisk files",         cmd_fslist },
     { "ps",       "list processes",             cmd_ps },
     { "kill",     "kill <pid>",                 cmd_kill },
     { "stop",     "stop scheduler",             cmd_stop },
