@@ -1,4 +1,5 @@
 #include "serial.h"
+#include "device.h"
 #include <stdarg.h>
 
 static int serial_ready = 0;
@@ -49,8 +50,10 @@ void serial_printf(const char *fmt, ...)
     for (; *fmt && bi < 250; fmt++) {
         if (*fmt != '%') { buf[bi++] = *fmt; continue; }
         fmt++;
+        if (*fmt == '-') fmt++;                  /* 忽略左对齐标记 */
         while (*fmt >= '0' && *fmt <= '9') fmt++;   /* 忽略宽度 */
         switch (*fmt) {
+        case 'c': buf[bi++] = (char)va_arg(ap, int); break;
         case 's': {
             const char *p = va_arg(ap, const char *);
             while (*p && bi < 250) buf[bi++] = *p++;
@@ -79,4 +82,21 @@ void serial_printf(const char *fmt, ...)
     buf[bi] = 0;
     va_end(ap);
     serial_puts(buf);
+}
+
+/* ============ S7 设备驱动：串口作为字符设备 ============ */
+
+static int com_write(const char *buf, int len)
+{
+    for (int i = 0; i < len; i++) serial_putc(buf[i]);
+    return len;
+}
+
+device_t *serial_device(void)
+{
+    static device_t d = {
+        "com1", DEV_CHAR, DEV_MAJOR_COM1, 4,  /* name/type/major/irqno=IRQ4(未启用) */
+        0, 0, com_write, 0, 0                 /* init/read/write/ioctl/irq */
+    };
+    return &d;
 }

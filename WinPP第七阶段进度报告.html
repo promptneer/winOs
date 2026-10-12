@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第七阶段进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ctext x='16' y='23' font-size='18' font-family='monospace' fill='%2334d399' text-anchor='middle'%3E%E2%98%B0%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --text:#d7dee8; --dim:#7d8a9c; --green:#34d399; --cyan:#38bdf8;
+    --amber:#fbbf24; --red:#f87171; --mono:'Consolas','Courier New',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.65;padding:34px 18px 90px}
+  .wrap{max-width:1120px;margin:0 auto}
+  .term{font-family:var(--mono);font-size:13px}
+  .hero{border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#0f1720,#0d1a2e 70%);padding:34px 38px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 14px;border-radius:99px;letter-spacing:.08em;margin-bottom:16px}
+  h1{font-size:30px;font-weight:800;line-height:1.3}
+  h1 .grad{background:linear-gradient(90deg,#34d399,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:12px;font-size:14.5px;color:var(--dim);max-width:980px}
+  .sub b{color:var(--green)}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+  .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;font-family:var(--mono);font-size:13px;min-width:130px}
+  .stat .v{font-size:22px;font-weight:700;color:var(--green)}
+  .stat .k{color:var(--dim);font-size:11.5px;margin-top:2px}
+  .sec{margin-top:38px}
+  .sec h2{font-size:20px;font-weight:800;border-left:4px solid var(--green);padding-left:14px;margin-bottom:6px}
+  .sec .hsub{font-size:13px;color:var(--dim);margin-bottom:18px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:20px 22px}
+  .card .num{font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.35);padding:2px 10px;border-radius:6px;display:inline-block}
+  .card h3{font-size:16.5px;font-weight:700;margin:10px 0 6px}
+  .card .plain{font-size:13.5px;color:var(--dim);margin-bottom:10px}
+  .card .plain b{color:var(--text)}
+  .card ul{list-style:none;font-size:13px;color:var(--text)}
+  .card ul li{padding:3px 0 3px 18px;position:relative}
+  .card ul li:before{content:'▸';position:absolute;left:0;color:var(--green)}
+  .card .ok{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 12px;border-radius:99px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;table-layout:fixed}
+  colgroup col:first-child{width:9%}
+  th{background:var(--panel2);color:var(--cyan);font-family:var(--mono);font-weight:700;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-word}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--green)}
+  td .mono{font-family:var(--mono);font-size:12.5px;color:var(--amber)}
+  .ev{border:1px solid var(--line);border-radius:12px;background:#0a0d12;padding:16px 18px;margin-bottom:16px}
+  .ev .eh{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;margin-bottom:10px;color:var(--dim)}
+  .ev .eh .tag3{color:var(--green)}
+  .ev pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#9fd8b8;white-space:pre-wrap;word-break:break-all}
+  .ev pre .c{color:#566173}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .shot img{width:100%;display:block;background:#000}
+  .shot .cap{font-family:var(--mono);font-size:12px;color:var(--dim);padding:10px 14px}
+  .bug{border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.06);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .bug h4{font-size:14px;color:var(--red);margin-bottom:6px}
+  .bug p{font-size:13px;color:var(--text)}
+  .bug .fx{color:var(--green)}
+  .tl{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .tl .node{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 14px;font-size:12.5px;min-width:92px;text-align:center}
+  .tl .node b{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:2px}
+  .tl .node.done{border-color:rgba(52,211,153,.45)}
+  .tl .node.done span{color:var(--green)}
+  .tl .node.now{border-color:var(--amber);background:rgba(251,191,36,.08)}
+  .tl .node.now b{color:var(--amber)}
+  .tl .node.now span{color:var(--amber)}
+  .tl .arrow{align-self:center;color:var(--dim);font-family:var(--mono)}
+  .foot{margin-top:34px;font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center}
+  @media (max-width:760px){
+    h1{font-size:23px}
+    .stats .stat{min-width:calc(50% - 8px)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">WINPP OS · STAGE 7 · DEVICE DRIVERS</span>
+    <h1>第七阶段：<span class="grad">设备驱动（设备表 + 统一接口）</span></h1>
+    <p class="sub">一句话意义：之前键盘、定时器、串口是"散落在各处的外设代码"；第七阶段把它们收进一张 <b>设备表</b>（device table），统一成 <b>read / write / ioctl / irq</b> 四个接口，中断按设备分发——外设第一次有了"正式编制"。全部 Bochs 实机 + 串口 + 截图验证通过。</p>
+    <div class="stats">
+      <div class="stat"><div class="v">3</div><div class="k">设备注册（kbd/timer/com1）</div></div>
+      <div class="stat"><div class="v">0</div><div class="k">PAGE_FAULT（全程）</div></div>
+      <div class="stat"><div class="v">100Hz</div><div class="k">定时器真实频率（修复后）</div></div>
+      <div class="stat"><div class="v">2</div><div class="k">serial_printf Bug 修复</div></div>
+      <div class="stat"><div class="v">1</div><div class="k">新增 shell 命令（dev）</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>三大件：是什么、怎么用</h2>
+    <div class="hsub">大白话对照 —— 外设从"野路子"变成"有编制的正式员工"。</div>
+    <div class="cards">
+      <div class="card">
+        <span class="num">S7-1 设备框架</span>
+        <h3>一张设备表 + 四个统一接口</h3>
+        <div class="plain">内核维护 <b>device_t</b> 表：每个设备一行（名字/主设备号/中断号/能力）。上层找设备用 <b>device_get(major)</b>，分发中断用 <b>device_by_irq(irq)</b>。</div>
+        <ul>
+          <li>统一接口：<span class="term">read / write / ioctl / irq</span></li>
+          <li>device_register 注册、DEV_MAX=8 槽</li>
+          <li>主设备号唯一（类似 Linux major）</li>
+        </ul>
+        <span class="ok">实测通过 · 注册表打印正确</span>
+      </div>
+      <div class="card">
+        <span class="num">S7-2 三大设备驱动化</span>
+        <h3>键盘 / 定时器 / 串口</h3>
+        <div class="plain">三个设备各自暴露 <b>keyboard_device() / timer_device() / serial_device()</b>，把自己挂进设备表。</div>
+        <ul>
+          <li><span class="term">kbd</span> major=1 · IRQ1 · read（读一键）</li>
+          <li><span class="term">timer</span> major=2 · IRQ0 · ioctl（查 ticks/uptime）</li>
+          <li><span class="term">com1</span> major=3 · IRQ4 · write（串口输出）</li>
+        </ul>
+        <span class="ok">实测通过 · 三设备齐全</span>
+      </div>
+      <div class="card">
+        <span class="num">S7-3 中断按设备分发</span>
+        <h3>irq_handler 查表分发</h3>
+        <div class="plain">中断进来不再 if/else 判断，而是 <b>device_by_irq(irq)-&gt;irq()</b> 直接调对应驱动；内核只保留"策略层"（调度/状态栏）。</div>
+        <ul>
+          <li>IRQ0 → timer_tick（设备层）+ 调度策略（内核层）</li>
+          <li>IRQ1 → keyboard_handle_irq</li>
+          <li>将来加新设备 = 注册一行，不改中断代码</li>
+        </ul>
+        <span class="ok">实测通过 · 0 页错误</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>新增 shell 命令</h2>
+    <div class="hsub">终端输入 <span class="term">dev</span>，查看设备表并实测三个统一接口。</div>
+    <table>
+      <colgroup><col style="width:18%"><col style="width:82%"></colgroup>
+      <tr><th>命令</th><th>作用</th></tr>
+      <tr><td><b>dev</b></td><td>打印设备表（name/major/type/irq/能力）→ 按任意键走 <span class="term">kbd.read()</span> → 调 <span class="term">timer.ioctl()</span> 查状态 → 调 <span class="term">com1.write()</span> 往串口写一行</td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <h2>串口铁证（COM1）</h2>
+    <div class="hsub">Bochs 2.8 实机（clock sync=realtime），全程 0 页错误。</div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">S7-1/2 设备注册表（boot 时）</span><span>PAGE_FAULT = 0</span></div>
+      <pre>[3b] device table ...
+[dev] registered 3 devices:
+[dev]   kbd major=1 type=1 irq=1 r=1 w=0 io=0
+[dev]   timer major=2 type=2 irq=0 r=0 w=0 io=1
+[dev]   com1 major=3 type=1 irq=4 r=0 w=1 io=0
+[timer] init divisor=11931 expect 100Hz</pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">S7-3 dev 命令：统一接口实测</span><span>PAGE_FAULT = 0</span></div>
+      <pre>[dev] kbd read via device interface: 'z'   <span class="c"># 键盘 read() 读到一个键（注入 'z'）</span>
+[dev] timer ioctl ticks=2150 uptime=21      <span class="c"># 定时器 ioctl 查询状态</span>
+[dev] com1 write returned 43 bytes         <span class="c"># 串口 write() 输出 43 字节（见上方原文）</span></pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">定时器真实频率核验</span><span>sync=realtime 修复后</span></div>
+      <pre>uptime: 00:00:29 (ticks=2910)   <span class="c"># 29 秒 = 2910 ticks ≈ 100Hz ✓</span>
+uptime: 00:00:42 (ticks=4242)   <span class="c"># 42 秒 = 4242 ticks ≈ 100Hz ✓（间隔 13s ≈ +1300 ticks）</span></pre>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>实测截图</h2>
+    <div class="shots">
+      <div class="shot"><img src="assets/s7-01-dev.png" alt="dev 命令画面"><div class="cap">dev 命令：设备表 + kbd.read 提示按键</div></div>
+      <div class="shot"><img src="assets/s7-02-final.png" alt="回归画面"><div class="cap">S6 回归：mkdir/cd/fs2 演示 + ps 进程表</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>设计修正（2 处内核 Bug + 1 处环境配置）</h2>
+    <div class="bug">
+      <h4>BUG-S7-01：serial_printf 不支持 %- 左对齐 → 设备表打印错乱</h4>
+      <p>串口格式化只跳宽度数字、不跳 <span class="term">-</span>，<span class="term">%-6s</span> 被拆成字面字符 + 参数错位（major 变成指针值）。修正：<span class="fx">格式化时跳过 '-' 标记。</span></p>
+    </div>
+    <div class="bug">
+      <h4>BUG-S7-02：serial_printf 不支持 %c → 读键显示假象 'c'</h4>
+      <p>键盘设备接口明明读到 <span class="term">'z'</span>，串口却打印 <span class="term">'c'</span>——因为 <span class="term">%c</span> 无分支，格式串里的 'c' 被原样输出。修正：<span class="fx">serial_printf 增加 %c 分支。</span>实测后正确显示 <span class="term">'z'</span>。</p>
+    </div>
+    <div class="bug">
+      <h4>环境修复：Bochs clock sync=none → 虚拟时钟加速约 326 倍</h4>
+      <p>sync=none 下 Bochs 虚拟时钟按模拟速度全速跑：PIT 实测 ~32.6kHz（应为 100Hz），uptime 显示"1 小时"而真实只过了几分钟。修正：<span class="fx">bochsrc 改 clock: sync=realtime</span>，PIT 恢复真实 100Hz（串口核验 29s/2910 ticks）。</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>开发时间线</h2>
+    <div class="tl">
+      <div class="node done"><b>S1</b><span>软盘引导</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S2</b><span>分页内存</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S3</b><span>用户态+任务切换</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S4</b><span>地址空间/fork/exec/fs</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S5</b><span>进程间通信 IPC</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S6</b><span>文件系统目录/路径</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S7</b><span>设备驱动</span></div><span class="arrow">→</span>
+      <div class="node now"><b>S8</b><span>用户与权限（下一步）</span></div><span class="arrow">→</span>
+      <div class="node"><b>S9</b><span>信号与同步</span></div><span class="arrow">→</span>
+      <div class="node"><b>S10</b><span>GUI 窗口</span></div><span class="arrow">→</span>
+      <div class="node"><b>S11</b><span>网络</span></div>
+    </div>
+  </div>
+
+  <div class="foot">WinPP OS · 第七阶段进度报告 · 2026-10-12 · 全部 Bochs 实测取证</div>
+</div>
+</body>
+</html>

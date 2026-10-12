@@ -49414,3 +49414,2067 @@ r23|scheduler stopped, all user procs terminated                                
 r24|                                                                                |
 [key 27]
 [key 114]
+
+
+===== 2026-10-12 S7 设备驱动全量实测 (sync=realtime) =====
+
+=== WinPP kernel boot ===
+kmain magic=0 mb=0
+[1] gdt ...
+[2] idt ...
+[3] pic ...
+[3b] device table ...
+[dev] registered 3 devices:
+[dev]   kbd major=1 type=1 irq=1 r=1 w=0 io=0
+[dev]   timer major=2 type=2 irq=0 r=0 w=0 io=1
+[dev]   com1 major=3 type=1 irq=4 r=0 w=1 io=0
+[4] timer ...
+[timer] init divisor=11931 expect 100Hz
+[5] kbd ...
+[6] cpu ...
+[7] pmm ...
+[pmm] total=16288 pages (65152 KB) kernel_end=131000 used=305
+[8] paging ...
+[pg] step1 pd alloc
+[pg] step2 identity map
+[pg] step3 vga pt
+[pg] step4 selfmap
+[pg] step5 cr3
+[pg] step6 cr0
+[pg] step7 after cr0
+[paging] ON cr3=131000 identity=1MB..65152KB vga+selfmap ok
+[9] kheap ...
+[kheap] base=800000 size=8192 KB
+[10] sched ...
+[10] sched ...
+[11] fs ...
+[fs] init: ramdisk 16 files x 4KB ready, cwd=/
+[11b] ipc ...
+[ipc] init: pipes + fifos + mq ready
+[12] all init ok, drawing UI ...
+[key 100]
+[key 101]
+[key 118]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-12 22:50:48 [up 00:00:19] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|                                                                                |
+r8|                                                                                |
+r9|                                                                                |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[dev] kbd read via device interface: 'z'
+[dev] timer ioctl ticks=2150 uptime=21
+hello from com1.write() via device layer
+  [dev] com1 write returned 43 bytes
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-12 22:58:26 [up 00:00:21] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 10]
+[key 117]
+[key 112]
+[key 116]
+[key 105]
+[key 109]
+[key 101]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-12 23:29:06 [up 00:00:29] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-12 23:29:06 [up 00:00:29] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 117]
+[key 112]
+[key 116]
+[key 105]
+[key 109]
+[key 101]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 00:19:38 [up 00:00:42] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|winpp@kernel:/$ uptime                                                          |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 00:19:38 [up 00:00:42] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|winpp@kernel:/$ uptime                                                          |
+r19|uptime: 00:00:42 (ticks=4242)                                                   |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 109]
+[key 107]
+[key 100]
+[key 105]
+[key 114]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 02:20:10 [up 00:01:13] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|winpp@kernel:/$ uptime                                                          |
+r19|uptime: 00:00:42 (ticks=4242)                                                   |
+r20|winpp@kernel:/$ mkdir                                                           |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 02:20:10 [up 00:01:13] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|winpp@kernel:/$ uptime                                                          |
+r19|uptime: 00:00:42 (ticks=4242)                                                   |
+r20|winpp@kernel:/$ mkdir                                                           |
+r21|usage: mkdir <path>                                                             |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 32]
+[key 100]
+[key 111]
+[key 99]
+[key 115]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 02:35:13 [up 00:01:17] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|winpp@kernel:/$ uptime                                                          |
+r19|uptime: 00:00:42 (ticks=4242)                                                   |
+r20|winpp@kernel:/$ mkdir                                                           |
+r21|usage: mkdir <path>                                                             |
+r22|winpp@kernel:/$  docs                                                           |
+r23|                                                                                |
+r24|                                                                                |
+=== screen dump (after-unknown) ===
+r0| WinPP OS v0.1. 2026-10-13 02:35:13 [up 00:01:17] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|winpp@kernel:/$ dev                                                             |
+r7|device table (3 registered):                                                    |
+r8|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r9|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r10|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r11|press any key -> kbd.read() ...                                                 |
+r12|kbd.read got 'z'                                                                |
+r13|timer.ioctl: ticks=2150 uptime=21s                                              |
+r14|com1.write: 43 bytes -> serial (see log)                                        |
+r15|winpp@kernel:/$                                                                 |
+r16|winpp@kernel:/$ uptime                                                          |
+r17|uptime: 00:00:29 (ticks=2910)                                                   |
+r18|winpp@kernel:/$ uptime                                                          |
+r19|uptime: 00:00:42 (ticks=4242)                                                   |
+r20|winpp@kernel:/$ mkdir                                                           |
+r21|usage: mkdir <path>                                                             |
+r22|winpp@kernel:/$  docs                                                           |
+r23|sh: command not found: docs                                                     |
+r24|                                                                                |
+[key 108]
+[key 115]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 02:46:31 [up 00:01:20] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|                                                                                |
+r5|winpp@kernel:/$ dev                                                             |
+r6|device table (3 registered):                                                    |
+r7|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r8|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r9|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r10|press any key -> kbd.read() ...                                                 |
+r11|kbd.read got 'z'                                                                |
+r12|timer.ioctl: ticks=2150 uptime=21s                                              |
+r13|com1.write: 43 bytes -> serial (see log)                                        |
+r14|winpp@kernel:/$                                                                 |
+r15|winpp@kernel:/$ uptime                                                          |
+r16|uptime: 00:00:29 (ticks=2910)                                                   |
+r17|winpp@kernel:/$ uptime                                                          |
+r18|uptime: 00:00:42 (ticks=4242)                                                   |
+r19|winpp@kernel:/$ mkdir                                                           |
+r20|usage: mkdir <path>                                                             |
+r21|winpp@kernel:/$  docs                                                           |
+r22|sh: command not found: docs                                                     |
+r23|winpp@kernel:/$ ls                                                              |
+r24|                                                                                |
+[ls] /:
+[ls] 0 entries
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 02:46:31 [up 00:01:20] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|device table (3 registered):                                                    |
+r5|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r6|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r7|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r8|press any key -> kbd.read() ...                                                 |
+r9|kbd.read got 'z'                                                                |
+r10|timer.ioctl: ticks=2150 uptime=21s                                              |
+r11|com1.write: 43 bytes -> serial (see log)                                        |
+r12|winpp@kernel:/$                                                                 |
+r13|winpp@kernel:/$ uptime                                                          |
+r14|uptime: 00:00:29 (ticks=2910)                                                   |
+r15|winpp@kernel:/$ uptime                                                          |
+r16|uptime: 00:00:42 (ticks=4242)                                                   |
+r17|winpp@kernel:/$ mkdir                                                           |
+r18|usage: mkdir <path>                                                             |
+r19|winpp@kernel:/$  docs                                                           |
+r20|sh: command not found: docs                                                     |
+r21|winpp@kernel:/$ ls                                                              |
+r22|/:                                                                              |
+r23|0 entries                                                                       |
+r24|                                                                                |
+[key 99]
+[key 100]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 02:57:51 [up 00:01:23] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|  [1] kbd    type=char irq=1  r=yes w=- ioctl=-                                 |
+r5|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r6|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r7|press any key -> kbd.read() ...                                                 |
+r8|kbd.read got 'z'                                                                |
+r9|timer.ioctl: ticks=2150 uptime=21s                                              |
+r10|com1.write: 43 bytes -> serial (see log)                                        |
+r11|winpp@kernel:/$                                                                 |
+r12|winpp@kernel:/$ uptime                                                          |
+r13|uptime: 00:00:29 (ticks=2910)                                                   |
+r14|winpp@kernel:/$ uptime                                                          |
+r15|uptime: 00:00:42 (ticks=4242)                                                   |
+r16|winpp@kernel:/$ mkdir                                                           |
+r17|usage: mkdir <path>                                                             |
+r18|winpp@kernel:/$  docs                                                           |
+r19|sh: command not found: docs                                                     |
+r20|winpp@kernel:/$ ls                                                              |
+r21|/:                                                                              |
+r22|0 entries                                                                       |
+r23|winpp@kernel:/$ cd                                                              |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 02:57:51 [up 00:01:23] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|  [2] timer  type=clock irq=0  r=- w=- ioctl=yes                                |
+r5|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r6|press any key -> kbd.read() ...                                                 |
+r7|kbd.read got 'z'                                                                |
+r8|timer.ioctl: ticks=2150 uptime=21s                                              |
+r9|com1.write: 43 bytes -> serial (see log)                                        |
+r10|winpp@kernel:/$                                                                 |
+r11|winpp@kernel:/$ uptime                                                          |
+r12|uptime: 00:00:29 (ticks=2910)                                                   |
+r13|winpp@kernel:/$ uptime                                                          |
+r14|uptime: 00:00:42 (ticks=4242)                                                   |
+r15|winpp@kernel:/$ mkdir                                                           |
+r16|usage: mkdir <path>                                                             |
+r17|winpp@kernel:/$  docs                                                           |
+r18|sh: command not found: docs                                                     |
+r19|winpp@kernel:/$ ls                                                              |
+r20|/:                                                                              |
+r21|0 entries                                                                       |
+r22|winpp@kernel:/$ cd                                                              |
+r23|usage: cd <path>                                                                |
+r24|                                                                                |
+[key 32]
+[key 100]
+[key 111]
+[key 99]
+[key 115]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:16:34 [up 00:01:28] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|  [3] com1   type=char irq=4  r=- w=yes ioctl=-                                 |
+r5|press any key -> kbd.read() ...                                                 |
+r6|kbd.read got 'z'                                                                |
+r7|timer.ioctl: ticks=2150 uptime=21s                                              |
+r8|com1.write: 43 bytes -> serial (see log)                                        |
+r9|winpp@kernel:/$                                                                 |
+r10|winpp@kernel:/$ uptime                                                          |
+r11|uptime: 00:00:29 (ticks=2910)                                                   |
+r12|winpp@kernel:/$ uptime                                                          |
+r13|uptime: 00:00:42 (ticks=4242)                                                   |
+r14|winpp@kernel:/$ mkdir                                                           |
+r15|usage: mkdir <path>                                                             |
+r16|winpp@kernel:/$  docs                                                           |
+r17|sh: command not found: docs                                                     |
+r18|winpp@kernel:/$ ls                                                              |
+r19|/:                                                                              |
+r20|0 entries                                                                       |
+r21|winpp@kernel:/$ cd                                                              |
+r22|usage: cd <path>                                                                |
+r23|winpp@kernel:/$  docs                                                           |
+r24|                                                                                |
+=== screen dump (after-unknown) ===
+r0| WinPP OS v0.1. 2026-10-13 03:16:34 [up 00:01:28] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|press any key -> kbd.read() ...                                                 |
+r5|kbd.read got 'z'                                                                |
+r6|timer.ioctl: ticks=2150 uptime=21s                                              |
+r7|com1.write: 43 bytes -> serial (see log)                                        |
+r8|winpp@kernel:/$                                                                 |
+r9|winpp@kernel:/$ uptime                                                          |
+r10|uptime: 00:00:29 (ticks=2910)                                                   |
+r11|winpp@kernel:/$ uptime                                                          |
+r12|uptime: 00:00:42 (ticks=4242)                                                   |
+r13|winpp@kernel:/$ mkdir                                                           |
+r14|usage: mkdir <path>                                                             |
+r15|winpp@kernel:/$  docs                                                           |
+r16|sh: command not found: docs                                                     |
+r17|winpp@kernel:/$ ls                                                              |
+r18|/:                                                                              |
+r19|0 entries                                                                       |
+r20|winpp@kernel:/$ cd                                                              |
+r21|usage: cd <path>                                                                |
+r22|winpp@kernel:/$  docs                                                           |
+r23|sh: command not found: docs                                                     |
+r24|                                                                                |
+[key 112]
+[key 119]
+[key 100]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:27:41 [up 00:01:31] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|kbd.read got 'z'                                                                |
+r5|timer.ioctl: ticks=2150 uptime=21s                                              |
+r6|com1.write: 43 bytes -> serial (see log)                                        |
+r7|winpp@kernel:/$                                                                 |
+r8|winpp@kernel:/$ uptime                                                          |
+r9|uptime: 00:00:29 (ticks=2910)                                                   |
+r10|winpp@kernel:/$ uptime                                                          |
+r11|uptime: 00:00:42 (ticks=4242)                                                   |
+r12|winpp@kernel:/$ mkdir                                                           |
+r13|usage: mkdir <path>                                                             |
+r14|winpp@kernel:/$  docs                                                           |
+r15|sh: command not found: docs                                                     |
+r16|winpp@kernel:/$ ls                                                              |
+r17|/:                                                                              |
+r18|0 entries                                                                       |
+r19|winpp@kernel:/$ cd                                                              |
+r20|usage: cd <path>                                                                |
+r21|winpp@kernel:/$  docs                                                           |
+r22|sh: command not found: docs                                                     |
+r23|winpp@kernel:/$ pwd                                                             |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:27:41 [up 00:01:31] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|timer.ioctl: ticks=2150 uptime=21s                                              |
+r5|com1.write: 43 bytes -> serial (see log)                                        |
+r6|winpp@kernel:/$                                                                 |
+r7|winpp@kernel:/$ uptime                                                          |
+r8|uptime: 00:00:29 (ticks=2910)                                                   |
+r9|winpp@kernel:/$ uptime                                                          |
+r10|uptime: 00:00:42 (ticks=4242)                                                   |
+r11|winpp@kernel:/$ mkdir                                                           |
+r12|usage: mkdir <path>                                                             |
+r13|winpp@kernel:/$  docs                                                           |
+r14|sh: command not found: docs                                                     |
+r15|winpp@kernel:/$ ls                                                              |
+r16|/:                                                                              |
+r17|0 entries                                                                       |
+r18|winpp@kernel:/$ cd                                                              |
+r19|usage: cd <path>                                                                |
+r20|winpp@kernel:/$  docs                                                           |
+r21|sh: command not found: docs                                                     |
+r22|winpp@kernel:/$ pwd                                                             |
+r23|/                                                                               |
+r24|                                                                                |
+[key 99]
+[key 100]
+[key 32]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:42:34 [up 00:01:35] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|com1.write: 43 bytes -> serial (see log)                                        |
+r5|winpp@kernel:/$                                                                 |
+r6|winpp@kernel:/$ uptime                                                          |
+r7|uptime: 00:00:29 (ticks=2910)                                                   |
+r8|winpp@kernel:/$ uptime                                                          |
+r9|uptime: 00:00:42 (ticks=4242)                                                   |
+r10|winpp@kernel:/$ mkdir                                                           |
+r11|usage: mkdir <path>                                                             |
+r12|winpp@kernel:/$  docs                                                           |
+r13|sh: command not found: docs                                                     |
+r14|winpp@kernel:/$ ls                                                              |
+r15|/:                                                                              |
+r16|0 entries                                                                       |
+r17|winpp@kernel:/$ cd                                                              |
+r18|usage: cd <path>                                                                |
+r19|winpp@kernel:/$  docs                                                           |
+r20|sh: command not found: docs                                                     |
+r21|winpp@kernel:/$ pwd                                                             |
+r22|/                                                                               |
+r23|winpp@kernel:/$ cd                                                              |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:42:34 [up 00:01:35] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|winpp@kernel:/$                                                                 |
+r5|winpp@kernel:/$ uptime                                                          |
+r6|uptime: 00:00:29 (ticks=2910)                                                   |
+r7|winpp@kernel:/$ uptime                                                          |
+r8|uptime: 00:00:42 (ticks=4242)                                                   |
+r9|winpp@kernel:/$ mkdir                                                           |
+r10|usage: mkdir <path>                                                             |
+r11|winpp@kernel:/$  docs                                                           |
+r12|sh: command not found: docs                                                     |
+r13|winpp@kernel:/$ ls                                                              |
+r14|/:                                                                              |
+r15|0 entries                                                                       |
+r16|winpp@kernel:/$ cd                                                              |
+r17|usage: cd <path>                                                                |
+r18|winpp@kernel:/$  docs                                                           |
+r19|sh: command not found: docs                                                     |
+r20|winpp@kernel:/$ pwd                                                             |
+r21|/                                                                               |
+r22|winpp@kernel:/$ cd                                                              |
+r23|usage: cd <path>                                                                |
+r24|                                                                                |
+[key 102]
+[key 115]
+[key 50]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:53:50 [up 00:01:38] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|winpp@kernel:/$ uptime                                                          |
+r5|uptime: 00:00:29 (ticks=2910)                                                   |
+r6|winpp@kernel:/$ uptime                                                          |
+r7|uptime: 00:00:42 (ticks=4242)                                                   |
+r8|winpp@kernel:/$ mkdir                                                           |
+r9|usage: mkdir <path>                                                             |
+r10|winpp@kernel:/$  docs                                                           |
+r11|sh: command not found: docs                                                     |
+r12|winpp@kernel:/$ ls                                                              |
+r13|/:                                                                              |
+r14|0 entries                                                                       |
+r15|winpp@kernel:/$ cd                                                              |
+r16|usage: cd <path>                                                                |
+r17|winpp@kernel:/$  docs                                                           |
+r18|sh: command not found: docs                                                     |
+r19|winpp@kernel:/$ pwd                                                             |
+r20|/                                                                               |
+r21|winpp@kernel:/$ cd                                                              |
+r22|usage: cd <path>                                                                |
+r23|winpp@kernel:/$ fs2                                                             |
+r24|                                                                                |
+[dbg] src=10bbea code=bc01079031edb8
+[dbg] addrspace pd=145000 pt1=146000 code 670000->143000 stack 791000->144000
+[fs2] demo proc pid 1
+[fs2] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:53:50 [up 00:01:38] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|winpp@kernel:/$ uptime                                                          |
+r5|uptime: 00:00:42 (ticks=4242)                                                   |
+r6|winpp@kernel:/$ mkdir                                               [sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] mkdir '/docs' fd=0
+[fs] open created '/docs/a.txt' fd=1
+[fs] chdir '/docs'
+[fs] open created '/docs/b.txt' fd=2
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+            |
+r7|usage: mkdir <path>                                                             |
+r8|winpp@kernel:/$  docs                                                           |
+r9|sh: command not found: docs                                                     |
+r10|winpp@kernel:/$ ls                                                              |
+r11|/:                                                                              |
+r12|0 entries                                                                       |
+r13|winpp@kernel:/$ cd                                                              |
+r14|usage: cd <path>                                                                |
+r15|winpp@kernel:/$  docs                                                           |
+r16|sh: command not found: docs                                                     |
+r17|winpp@kernel:/$ pwd                                                             |
+r18|/                                                                               |
+r19|winpp@kernel:/$ cd                                                              |
+r20|usage: cd <path>                                                                |
+r21|winpp@kernel:/$ fs2                                                             |
+r22|created dir-demo proc: pid 1                   [sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+                                 |
+r23|scheduler started: dir demo (0.1s quantum)                                      |
+r24|                                                                                |
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 112]
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 115]
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 04:02:23 [up 00:01:46] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|uptime: 00:00:42 (ticks=4242)                                                   |
+r5|winpp@kernel:/$ mkdir                                                           |
+r6|usage: mkdir <path>                                                             |
+r7|winpp@kernel:/$  docs                                                           |
+r8|sh: command not found: docs                                                     |
+r9|winpp@kernel:/$ ls                                                              |
+r10|/:                                                                              |
+r11|0 entries                                                                       |
+r12|winpp@kernel:/$ cd                                                              |
+r13|usage: cd <path>                                                                |
+r14|winpp@kernel:/$  docs                                                           |
+r15|sh: command not found: docs                                                     |
+r16|winpp@kernel:/$ pwd                                                             |
+r17|/                                                                               |
+r18|winpp@kernel:/$ cd                                                              |
+r19|usage: cd <path>                                                                |
+r20|winpp@kernel:/$ fs2                                                             |
+r21|created dir-demo proc: pid 1                                                    |
+r22|scheduler started: dir demo (0.1s quantum)                                      |
+r23|winpp@kernel:/docs$ ps                                                          |
+r24|                                                            [sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+                    |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 04:02:23 [up 00:01:46] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|winpp@kernel:/$  docs                                                           |
+r5|sh: command not found: docs                                                     |
+r6|winpp@kernel:/$ ls                                                              |
+r7|/:                                                                              |
+r8|0 entries                                                                       |
+r9|winpp@kernel:/$ cd                                                              |
+r10|usage: cd <path>                                                                |
+r11|winpp@kernel:/$  docs                                                           |
+r12|sh: command not found: docs                                                     |
+r13|winpp@kernel:/$ pwd                                                             |
+r14|/                                                                               |
+r15|winpp@kernel:/$ cd                                                              |
+r16|usage: cd <path>                                                                |
+r17|winpp@kernel:/$ fs2                                                             |
+r18|created dir-demo proc: pid 1                                                    |
+r19|scheduler started: dir demo (0.1s quantum)                                      |
+r20|winpp@kernel:/docs$ ps                                                          |
+r21|PID  STATE   NAME       TICKS  CODE                                             |
+r22|0  run     shell      76  0                                                     |
+r23|1  ready   user10     76  670000                                                |
+r24|                                                                                |
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 115]
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 116]
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 111]
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 112]
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[sched] pid0 -> pid1 (pd=145000 esp0=143000)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[fs] open '/docs/b.txt' fd=2 (exist)
+[fs] open '/docs/b.txt' fd=2 (exist)
+[pid1] Sub File!
+[sched] pid1 -> pid0 (pd=131000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 04:05:21 [up 00:01:51] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|sh: command not found: docs                                                     |
+r5|winpp@kernel:/$ ls                                                              |
+r6|/:                                                                              |
+r7|0 entries                                                                       |
+r8|winpp@kernel:/$ cd                                                              |
+r9|usage: cd <path>                                                                |
+r10|winpp@kernel:/$  docs                                                           |
+r11|sh: command not found: docs                                                     |
+r12|winpp@kernel:/$ pwd                                                             |
+r13|/                                                                               |
+r14|winpp@kernel:/$ cd                                                              |
+r15|usage: cd <path>                                                                |
+r16|winpp@kernel:/$ fs2                                                             |
+r17|created dir-demo proc: pid 1                                                    |
+r18|scheduler started: dir demo (0.1s quantum)                                      |
+r19|winpp@kernel:/docs$ ps                                                          |
+r20|PID  STATE   NAME       TICKS  CODE                                             |
+r21|0  run     shell      76  0                                                     |
+r22|1  ready   user10     76  670000                                                |
+r23|winpp@kernel:/docs$ stop                                                        |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 04:05:21 [up 00:01:51] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|winpp@kernel:/$ ls                                                              |
+r5|/:                                                                              |
+r6|0 entries                                                                       |
+r7|winpp@kernel:/$ cd                                                              |
+r8|usage: cd <path>                                                                |
+r9|winpp@kernel:/$  docs                                                           |
+r10|sh: command not found: docs                                                     |
+r11|winpp@kernel:/$ pwd                                                             |
+r12|/                                                                               |
+r13|winpp@kernel:/$ cd                                                              |
+r14|usage: cd <path>                                                                |
+r15|winpp@kernel:/$ fs2                                                             |
+r16|created dir-demo proc: pid 1                                                    |
+r17|scheduler started: dir demo (0.1s quantum)                                      |
+r18|winpp@kernel:/docs$ ps                                                          |
+r19|PID  STATE   NAME       TICKS  CODE                                             |
+r20|0  run     shell      76  0                                                     |
+r21|1  ready   user10     76  670000                                                |
+r22|winpp@kernel:/docs$ stop                                                        |
+r23|scheduler stopped, all user procs terminated                                    |
+r24|                                                                                |

@@ -13,6 +13,7 @@
 #include "sched.h"
 #include "fs.h"
 #include "ipc.h"
+#include "device.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -101,14 +102,17 @@ void isr_handler(regs_t *r)
 void irq_handler(regs_t *r)
 {
     u8 irq = (u8)(r->int_no - 32);
+
+    /* S7 设备驱动层：按 IRQ 号分发到注册设备（timer.irq / kbd.irq） */
+    device_t *d = device_by_irq(irq);
+    if (d && d->irq) d->irq();
+
+    /* 内核策略层（不属于设备驱动）：调度与状态栏刷新 */
     if (irq == 0) {
-        timer_tick();
         if (timer_ticks() % TIMER_HZ == 0) status_bar_redraw();
         /* 多任务：每个时间片强制重新调度 */
         if (sched_running() && (timer_ticks() % SCHED_QUANTUM) == 0)
             sched_need_resched();
-    } else if (irq == 1) {
-        keyboard_handle_irq();
     }
     if (irq >= 8) outb(0xA0, 0x20);   /* 从片 EOI */
     outb(0x20, 0x20);                 /* 主片 EOI */
@@ -212,6 +216,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[3] pic ...\r\n");
     vga_printf("[3] pic ...\n");
     pic_remap();
+    serial_puts("[3b] device table ...\r\n");
+    vga_printf("[3b] device table ...\n");
+    device_init_all();
     serial_puts("[4] timer ...\r\n");
     vga_printf("[4] timer ...\n");
     timer_init();

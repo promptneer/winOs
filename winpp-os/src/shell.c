@@ -20,6 +20,7 @@ extern void kernel_poweroff(void);
 /* 内嵌用户程序（build 时由 Python 从 userN.bin 生成 users_inc.c/.h 数组） */
 #include "users_inc.h"
 #include "fs.h"
+#include "device.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -482,6 +483,50 @@ static void cmd_mq(int argc, char **argv)
     }
 }
 
+/* S7：设备表 + 统一接口演示（dev） */
+static void cmd_dev(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    vga_printf("device table (%d registered):\n", device_count());
+    for (u8 m = 1; m < DEV_MAX; m++) {
+        device_t *d = device_get(m);
+        if (!d) continue;
+        vga_printf("  [%u] %-6s type=%s irq=%u  r=%s w=%s ioctl=%s\n",
+                   d->major, d->name,
+                   d->type == DEV_CLOCK ? "clock" : "char",
+                   d->irqno,
+                   d->read ? "yes" : "-", d->write ? "yes" : "-",
+                   d->ioctl ? "yes" : "-");
+    }
+
+    /* 统一接口实测：read（键盘，阻塞等一键） */
+    device_t *k = device_get(DEV_MAJOR_KBD);
+    if (k && k->read) {
+        vga_printf("press any key -> kbd.read() ...\n");
+        char c;
+        if (k->read(&c, 1) == 1) {
+            vga_printf("kbd.read got '%c'\n", c);
+            serial_printf("[dev] kbd read via device interface: '%c'\r\n", c);
+        }
+    }
+    /* 统一接口实测：ioctl（定时器查状态） */
+    device_t *t = device_get(DEV_MAJOR_TIMER);
+    if (t && t->ioctl) {
+        int tk = t->ioctl(DEV_IOCTL_TICKS, 0);
+        int up = t->ioctl(DEV_IOCTL_UPTIME, 0);
+        vga_printf("timer.ioctl: ticks=%d uptime=%ds\n", tk, up);
+        serial_printf("[dev] timer ioctl ticks=%d uptime=%d\r\n", tk, up);
+    }
+    /* 统一接口实测：write（串口输出） */
+    device_t *s = device_get(DEV_MAJOR_COM1);
+    if (s && s->write) {
+        const char *msg = "hello from com1.write() via device layer\n";
+        int n = s->write(msg, 43);
+        vga_printf("com1.write: %d bytes -> serial (see log)\n", n);
+        serial_printf("[dev] com1 write returned %d bytes\r\n", n);
+    }
+}
+
 /* ---------------- 命令表 ---------------- */
 
 typedef struct {
@@ -519,6 +564,7 @@ static const cmd_t cmds[] = {
     { "fs",       "fs demo (user6)",            cmd_fs },
     { "fs2",      "dir/path demo (user10)",     cmd_fs2 },
     { "fslist",   "list ramdisk files",         cmd_fslist },
+    { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
     { "kill",     "kill <pid>",                 cmd_kill },
     { "stop",     "stop scheduler",             cmd_stop },

@@ -1,0 +1,3 @@
+﻿s7 True
+nav7 True
+devtable True

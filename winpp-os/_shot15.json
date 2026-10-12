@@ -1,0 +1,683 @@
+﻿{
+  "src": "D:\\WinPP\\WinPP内核详解.html",
+  "url": "file:///D:/WinPP/WinPP%E5%86%85%E6%A0%B8%E8%AF%A6%E8%A7%A3.html",
+  "outdir": "D:\\WinPP\\_shots",
+  "include": [
+    "lint",
+    "screenshots",
+    "structure"
+  ],
+  "shots": {
+    "desktop": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP内核详解_desktop.jpg",
+      "screenshotBytes": 1429121,
+      "slices": [
+        "D:\\WinPP\\_shots\\WinPP内核详解_desktop_p1of5.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_desktop_p2of5.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_desktop_p3of5.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_desktop_p4of5.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_desktop_p5of5.jpg"
+      ],
+      "sliceHint": "主图过阈值（字节>800KB 或 高度>4000px），已按 3200px 切片。若主图 Read 失败，改读 slices 里各分片。",
+      "truncated": false,
+      "structure": {
+        "title": "WinPP OS 内核全解析 — 语言、底层逻辑、实现过程与功能",
+        "firstH1": "WinPP OS 内核全解析",
+        "viewport": {
+          "w": 1424,
+          "h": 749
+        },
+        "fullpage": {
+          "w": 1424,
+          "h": 18229
+        },
+        "counts": {
+          "section": 13,
+          "h1": 1,
+          "h2": 13,
+          "img": 10,
+          "canvas": 0,
+          "svg": 31,
+          "links": 13,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "a",
+            "text": "语言与工具链",
+            "rect": [
+              164,
+              955,
+              105,
+              36
+            ]
+          },
+          "b": {
+            "tag": "h2",
+            "text": "用什么语言写的",
+            "rect": [
+              208,
+              989,
+              186,
+              46
+            ]
+          },
+          "intersectPx": 97,
+          "coverRatio": 0.03
+        },
+        {
+          "a": {
+            "tag": "a",
+            "text": "底层逻辑",
+            "rect": [
+              273,
+              955,
+              78,
+              36
+            ]
+          },
+          "b": {
+            "tag": "h2",
+            "text": "用什么语言写的",
+            "rect": [
+              208,
+              989,
+              186,
+              46
+            ]
+          },
+          "intersectPx": 126,
+          "coverRatio": 0.05
+        },
+        {
+          "a": {
+            "tag": "a",
+            "text": "源码结构",
+            "rect": [
+              355,
+              955,
+              78,
+              36
+            ]
+          },
+          "b": {
+            "tag": "h2",
+            "text": "用什么语言写的",
+            "rect": [
+              208,
+              989,
+              186,
+              46
+            ]
+          },
+          "intersectPx": 63,
+          "coverRatio": 0.02
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "n+n->size <= heap_end",
+            "rect": [
+              259,
+              6564,
+              172,
+              17
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "if (nn >= h) break",
+            "rect": [
+              185,
+              6564,
+              483,
+              42
+            ]
+          },
+          "intersectPx": 2932,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "if (nn >= h) break",
+            "rect": [
+              185,
+              6564,
+              483,
+              42
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "leak=0",
+            "rect": [
+              491,
+              6588,
+              59,
+              17
+            ]
+          },
+          "intersectPx": 1008,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "b",
+            "text": "不支持 .incbin",
+            "rect": [
+              185,
+              6702,
+              482,
+              43
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "_userN_start",
+            "rect": [
+              474,
+              6727,
+              105,
+              17
+            ]
+          },
+          "intersectPx": 1778,
+          "coverRatio": 1
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "reportSource": "cdp"
+    },
+    "mobile": {
+      "screenshot": "D:\\WinPP\\_shots\\WinPP内核详解_mobile.jpg",
+      "screenshotBytes": 2172958,
+      "slices": [
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p1of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p2of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p3of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p4of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p5of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p6of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p7of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p8of9.jpg",
+        "D:\\WinPP\\_shots\\WinPP内核详解_mobile_p9of9.jpg"
+      ],
+      "sliceHint": "主图过阈值（字节>800KB 或 高度>4000px），已按 3200px 切片。若主图 Read 失败，改读 slices 里各分片。",
+      "truncated": false,
+      "structure": {
+        "title": "WinPP OS 内核全解析 — 语言、底层逻辑、实现过程与功能",
+        "firstH1": "WinPP OS 内核全解析",
+        "viewport": {
+          "w": 500,
+          "h": 693
+        },
+        "fullpage": {
+          "w": 529,
+          "h": 28085
+        },
+        "counts": {
+          "section": 13,
+          "h1": 1,
+          "h2": 13,
+          "img": 10,
+          "canvas": 0,
+          "svg": 31,
+          "links": 13,
+          "buttons": 0
+        }
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "horizontalOverflow": [
+        {
+          "tag": "div",
+          "cls": "card",
+          "left": 22,
+          "right": 529,
+          "width": 507
+        },
+        {
+          "tag": "h4",
+          "cls": "",
+          "left": 43,
+          "right": 508,
+          "width": 465
+        },
+        {
+          "tag": "pre",
+          "cls": "",
+          "left": 43,
+          "right": 508,
+          "width": 465
+        },
+        {
+          "tag": "div",
+          "cls": "card",
+          "left": 22,
+          "right": 529,
+          "width": 507
+        },
+        {
+          "tag": "h4",
+          "cls": "",
+          "left": 43,
+          "right": 508,
+          "width": 465
+        },
+        {
+          "tag": "pre",
+          "cls": "",
+          "left": 43,
+          "right": 508,
+          "width": 465
+        }
+      ],
+      "resourceErrors": [],
+      "overlappingText": [
+        {
+          "a": {
+            "tag": "a",
+            "text": "语言与工具链",
+            "rect": [
+              22,
+              1491,
+              105,
+              36
+            ]
+          },
+          "b": {
+            "tag": "p",
+            "text": "内核不是用一种语言写的——引导用汇编、内核本体用 C 子集、工具链用 Zig。三样各管一段，最后被 Zig 编译成一份扁",
+            "rect": [
+              22,
+              1521,
+              456,
+              81
+            ]
+          },
+          "intersectPx": 597,
+          "coverRatio": 0.16
+        },
+        {
+          "a": {
+            "tag": "a",
+            "text": "底层逻辑",
+            "rect": [
+              131,
+              1491,
+              78,
+              36
+            ]
+          },
+          "b": {
+            "tag": "p",
+            "text": "内核不是用一种语言写的——引导用汇编、内核本体用 C 子集、工具链用 Zig。三样各管一段，最后被 Zig 编译成一份扁",
+            "rect": [
+              22,
+              1521,
+              456,
+              81
+            ]
+          },
+          "intersectPx": 444,
+          "coverRatio": 0.16
+        },
+        {
+          "a": {
+            "tag": "a",
+            "text": "源码结构",
+            "rect": [
+              213,
+              1491,
+              78,
+              36
+            ]
+          },
+          "b": {
+            "tag": "p",
+            "text": "内核不是用一种语言写的——引导用汇编、内核本体用 C 子集、工具链用 Zig。三样各管一段，最后被 Zig 编译成一份扁",
+            "rect": [
+              22,
+              1521,
+              456,
+              81
+            ]
+          },
+          "intersectPx": 444,
+          "coverRatio": 0.16
+        },
+        {
+          "a": {
+            "tag": "a",
+            "text": "开发历程",
+            "rect": [
+              295,
+              1491,
+              78,
+              36
+            ]
+          },
+          "b": {
+            "tag": "p",
+            "text": "内核不是用一种语言写的——引导用汇编、内核本体用 C 子集、工具链用 Zig。三样各管一段，最后被 Zig 编译成一份扁",
+            "rect": [
+              22,
+              1521,
+              456,
+              81
+            ]
+          },
+          "intersectPx": 444,
+          "coverRatio": 0.16
+        },
+        {
+          "a": {
+            "tag": "a",
+            "text": "实机 Bug 修复",
+            "rect": [
+              377,
+              1491,
+              111,
+              36
+            ]
+          },
+          "b": {
+            "tag": "p",
+            "text": "内核不是用一种语言写的——引导用汇编、内核本体用 C 子集、工具链用 Zig。三样各管一段，最后被 Zig 编译成一份扁",
+            "rect": [
+              22,
+              1521,
+              456,
+              81
+            ]
+          },
+          "intersectPx": 574,
+          "coverRatio": 0.14
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "zig build-exe -target x86-freestanding",
+            "rect": [
+              43,
+              2074,
+              379,
+              42
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "x86-freestanding",
+            "rect": [
+              43,
+              2099,
+              374,
+              42
+            ]
+          },
+          "intersectPx": 6351,
+          "coverRatio": 0.41
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "x86-freestanding",
+            "rect": [
+              43,
+              2099,
+              374,
+              42
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "--oformat=binary",
+            "rect": [
+              257,
+              2123,
+              135,
+              17
+            ]
+          },
+          "intersectPx": 2291,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "keyboard.h",
+            "rect": [
+              43,
+              9703,
+              89,
+              17
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "k == KEY_ENTER",
+            "rect": [
+              43,
+              9703,
+              412,
+              42
+            ]
+          },
+          "intersectPx": 1521,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "KEY_ENTER",
+            "rect": [
+              155,
+              9703,
+              82,
+              17
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "k == KEY_ENTER",
+            "rect": [
+              43,
+              9703,
+              412,
+              42
+            ]
+          },
+          "intersectPx": 1393,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "13",
+            "rect": [
+              301,
+              9703,
+              29,
+              17
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "k == KEY_ENTER",
+            "rect": [
+              43,
+              9703,
+              412,
+              42
+            ]
+          },
+          "intersectPx": 495,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "n+n->size <= heap_end",
+            "rect": [
+              43,
+              10416,
+              358,
+              42
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "if (nn >= h) break",
+            "rect": [
+              249,
+              10441,
+              150,
+              17
+            ]
+          },
+          "intersectPx": 2547,
+          "coverRatio": 1
+        },
+        {
+          "a": {
+            "tag": "code",
+            "text": "%-",
+            "rect": [
+              159,
+              11079,
+              29,
+              17
+            ]
+          },
+          "b": {
+            "tag": "code",
+            "text": "PID STATE NAME TICKS CODE / 0 run shell 0 0",
+            "rect": [
+              43,
+              11079,
+              371,
+              42
+            ]
+          },
+          "intersectPx": 495,
+          "coverRatio": 1
+        }
+      ],
+      "overlappingTextHint": "含义：两个含文字的元素 bounding rect 有交集。典型 case：绝对定位徽章/浮层压到内容文字上、卡片尺寸没对齐。coverRatio 是交集面积占较小元素面积的比例，越大越可疑。 | 修法：调整定位、给徽章预留空间、或缩小重叠元素之一。 | 豁免：(1) 故意的视觉层叠（如卡片右上角小 badge 落在卡片 padding 空隙里没盖文字），可对着截图确认后忽略；(2) coverRatio < 0.1 且截图看不出问题的，多半是亚像素抖动。",
+      "reportSource": "cdp"
+    }
+  },
+  "engine": "chrome_cli",
+  "chromiumExec": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "engineDegraded": true,
+  "engineDegradedReason": "playwright 未装",
+  "publishBrokenAssets": [
+    {
+      "file": "assets\\16-run.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\18-s4-addrspace.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\19-s4-ps.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\21-fork-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\23-exec-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\26-fs-ok.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s5-01-ps-pipe.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s5-02-ps-fifo.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s5-03-ps-mq.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s6-01-dirs.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s6-02-ps-fs2.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s6-03-final.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s7-01-dev.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    },
+    {
+      "file": "assets\\s7-02-final.png",
+      "reason": "unreferenced-file",
+      "severity": "warning",
+      "loadedAtRuntime": false,
+      "onDisk": true
+    }
+  ],
+  "publishBrokenAssetsHint": "含义：发布链路靠静态扫描 HTML 源码决定上传哪些图片文件，**只认 `src` 属性和 CSS `url()` 两个位置**（线上实测）。写在别处的路径不会被上传，发布后 404 裂图。本地打开和自检截图都看不出来——文件真实存在，浏览器照样加载。 | severity=error 的逐条改，改法都是同一个：把路径挪到 `<img src=\"assets/x.png\">` 或 CSS `url('assets/x.png')`。reason=js-literal 路径写在 JS 字符串里（`const g=['assets/x.png']` 这种常量数组也算，照样裂）；reason=js-concat 路径由 JS 拼接（`'assets/img'+i+'.png'`）；reason=non-src-attr 路径写在 `data-src`、`srcset`、`poster` 等非 `src` 属性上——**这类即便静态写在 HTML 属性里也会裂**，懒加载写法要在 `src` 上放真实路径。 | severity=warning（reason=unreferenced-file）是提醒不是错误：`assets/` 里有这个文件，但源码和运行时都没引用到它。可能是没用上的多余素材（删掉即可），也可能是路径拼接且当前视口没渲染到的图（那就是会裂的，按 error 处理）。**这一条只在本地电脑（macOS / Windows）检测**——云电脑图片走 `lark-cli drive +html-image-upload`，HTML 引用外链、`assets/` 里的原图本就该保留且不被引用，在那儿报是纯误报，所以直接不报；**别因为这条去删云电脑上的原图**。自行判断，别的规则不受它影响。",
+  "elapsedSec": 10.13
+}

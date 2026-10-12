@@ -10,7 +10,7 @@ user8.bin: 147 bytes
 user9.bin: 173 bytes
 user10.bin: 283 bytes
 users_inc.c/h generated
-kernel.bin: 49192 bytes -> 97 sectors
+kernel.bin: 49279 bytes -> 97 sectors
 bootsec.bin: 512 bytes (expect exactly 512)
 boot magic 0xAA55 OK
 OK -> D:\WinPP\winpp-os\floppy.img  (1474560 bytes, kernel at sector 1, 97 sectors)

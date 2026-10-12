@@ -7,6 +7,6 @@ display_library: win32
 vga: extension=vbe
 keyboard: type=xt, serial_delay=200, paste_delay=200000
 cpu: count=1, ips=20000000
-clock: sync=none
+clock: sync=realtime, time0=local
 log: D:\WinPP\winpp-os\bochs.log
 com1: enabled=1, mode=file, dev=D:\WinPP\winpp-os\serial.out

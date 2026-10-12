@@ -1,4 +1,6 @@
 #include "keyboard.h"
+#include "device.h"
+#include "serial.h"
 
 #define BUF_SIZE 128
 
@@ -97,4 +99,23 @@ int keyboard_getkey(void)
 {
     int c = get_raw();
     return c;
+}
+
+/* ============ S7 设备驱动：键盘作为字符设备 ============ */
+
+static int kbd_read(char *buf, int len)
+{
+    if (len < 1) return 0;
+    buf[0] = (char)keyboard_getchar();   /* 统一接口：阻塞取一个字符 */
+    return 1;
+}
+
+device_t *keyboard_device(void)
+{
+    static device_t d = {
+        "kbd", DEV_CHAR, DEV_MAJOR_KBD, 1,   /* name/type/major/irqno=IRQ1 */
+        0, 0, 0, 0, keyboard_handle_irq       /* init/read/write/ioctl/irq */
+    };
+    d.read = kbd_read;
+    return &d;
 }
