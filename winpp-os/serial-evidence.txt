@@ -53654,3 +53654,981 @@ r21|scheduler started: dir demo (0.1s quantum)                                  
 r22|root@kernel:/docs# stop                                                         |
 r23|scheduler stopped, all user procs terminated                                    |
 r24|                                                                                |
+
+
+===== 2026-10-12 S9 信号与同步全量实测 =====
+
+=== WinPP kernel boot ===
+kmain magic=0 mb=0
+[1] gdt ...
+[2] idt ...
+[3] pic ...
+[3b] device table ...
+[dev] registered 3 devices:
+[dev]   kbd major=1 type=1 irq=1 r=1 w=0 io=0
+[dev]   timer major=2 type=2 irq=0 r=0 w=0 io=1
+[dev]   com1 major=3 type=1 irq=4 r=0 w=1 io=0
+[4] timer ...
+[timer] init divisor=11931 expect 100Hz
+[5] kbd ...
+[6] cpu ...
+[7] pmm ...
+[pmm] total=16288 pages (65152 KB) kernel_end=134000 used=308
+[8] paging ...
+[pg] step1 pd alloc
+[pg] step2 identity map
+[pg] step3 vga pt
+[pg] step4 selfmap
+[pg] step5 cr3
+[pg] step6 cr0
+[pg] step7 after cr0
+[paging] ON cr3=134000 identity=1MB..65152KB vga+selfmap ok
+[9] kheap ...
+[kheap] base=800000 size=8192 KB
+[10] sched ...
+[10] sched ...
+[10b] user ...
+[user] init: root(uid=0) guest(uid=1), current=root
+[11] fs ...
+[fs] seed /secret.txt (0600 root)
+[fs] seed /public.txt (0644 root)
+[fs] seed /rootonly (0700 root dir)
+[fs] init: ramdisk 16 files x 4KB ready, cwd=/
+[11b] ipc ...
+[ipc] init: pipes + fifos + mq ready
+[11c] sem ...
+[11] sem ... 8 slots ready
+[12] all init ok, drawing UI ...
+[key 115]
+[key 121]
+[key 110]
+[key 99]
+[key 100]
+[key 101]
+[key 109]
+[key 111]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 00:28:24 [up 00:00:20] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|                                                                                |
+r8|                                                                                |
+r9|                                                                                |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[dbg] src=10e995 code=bc0107b031edb8
+[dbg] addrspace pd=148000 pt1=149000 code 690000->146000 stack 7b1000->147000
+[sync] demo proc pid 1
+[sync] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 00:28:24 [up 00:00:20] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|         [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sem] create sem0 value=1
+[fork] pid 1 -> child pid 2 (pd=14d000 esp0=14b000)
+[fork] pid 1 -> child pid 3 (pd=152000 esp0=150000)
+[sched] pid1 exit
+[sched] pid1 -> pid2 (pd=14d000 esp0=14b000)
+[sched] pid2 sleep 60 (tick=2069 wake=2129)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[sem] wait sem0 pid3 take (v=0)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2069 wake=2089)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+                                                                       |
+r6|roo[sched] pid0 -> pid0 (pd=134000 esp0=0)
+t@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|                                                                                |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2089)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 (v=1) no waiter
+[sem] wait sem0 pid3 take (v=0)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2090 wake=2110)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2110)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 (v=1) no waiter
+[sem] wait sem0 pid3 take (v=0)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2110 wake=2130)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2129)
+[sched] pid3 wake (tick=2130)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 slept
+[sem] wait sem0 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 handoff wake pid2 (q=0)
+[sem] wait sem0 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2140 wake=2160)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2160)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 handoff wake pid3 (q=0)
+[sem] wait sem0 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2160 wake=2180)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2180)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 handoff wake pid2 (q=0)
+[sem] wait sem0 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2190 wake=2210)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2210)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 handoff wake pid3 (q=0)
+[sem] wait sem0 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2210 wake=2230)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2230)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 handoff wake pid2 (q=0)
+[sem] wait sem0 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2240 wake=2260)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2260)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 handoff wake pid3 (q=0)
+[sem] wait sem0 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2260 wake=2280)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2280)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 handoff wake pid2 (q=0)
+[sem] wait sem0 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2290 wake=2310)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2310)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 handoff wake pid3 (q=0)
+[sem] wait sem0 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2310 wake=2330)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2330)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 handoff wake pid2 (q=0)
+[sem] wait sem0 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2340 wake=2360)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2360)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 handoff wake pid3 (q=0)
+[sem] wait sem0 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=2360 wake=2380)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=2380)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem0 pid3 handoff wake pid2 (q=0)
+[sched] pid3 exit
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2390 wake=2410)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2410)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 (v=1) no waiter
+[sem] wait sem0 pid2 take (v=0)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2410 wake=2430)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=2430)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 (v=1) no waiter
+[sem] wait sem0 pid2 take (v=0)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=2430 wake=2450)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 00:42:06 [up 00:00:24] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|                                                                                |
+r11|                                                                                |
+r12|                                                                                |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 00:42:06 [up 00:00:24] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|                                                                                |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[sched] pid2 wake (tick=2450)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem0 pid2 (v=1) no waiter
+[sched] pid2 exit
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 116]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 111]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 01:12:12 [up 00:00:32] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|                                                                                |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 01:12:12 [up 00:00:32] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|                                                                                |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[key 115]
+[key 121]
+[key 110]
+[key 99]
+[key 100]
+[key 101]
+[key 109]
+[key 111]
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:07:25 [up 00:01:02] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# syncdemo                                                         |
+r16|                                                                                |
+r17|                                                                                |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[dbg] src=10e995 code=bc0107b031edb8
+[dbg] addrspace pd=148000 pt1=149000 code 690000->146000 stack 7b1000->147000
+[sync] demo proc pid 1
+[sync] scheduler started
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:07:25 [up 00:01:02] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                 [sched] pid0 -> pid1 (pd=148000 esp0=146000)
+[sem] create sem1 value=1
+[fork] pid 1 -> child pid 2 (pd=14d000 esp0=14b000)
+[fork] pid 1 -> child pid 3 (pd=152000 esp0=150000)
+[sched] pid1 exit
+[sched] pid1 -> pid2 (pd=14d000 esp0=14b000)
+[sched] pid2 sleep 60 (tick=6291 wake=6351)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[sem] wait sem1 pid3 take (v=0)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6291 wake=6311)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+                |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# syncdemo                                                         |
+r16|created sync-demo proc: pid 1                                                   |
+r17|scheduler started: semaphore/mutex + sleep demo                                 |
+r18|                                                                                |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=6311)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 (v=1) no waiter
+[sem] wait sem1 pid3 take (v=0)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6320 wake=6340)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=6340)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 (v=1) no waiter
+[sem] wait sem1 pid3 take (v=0)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6340 wake=6360)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6351)
+[sched] pid3 wake (tick=6360)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 slept
+[sem] wait sem1 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 handoff wake pid2 (q=0)
+[sem] wait sem1 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6370 wake=6390)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6390)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 handoff wake pid3 (q=0)
+[sem] wait sem1 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6390 wake=6410)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=6410)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 handoff wake pid2 (q=0)
+[sem] wait sem1 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6420 wake=6440)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6440)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 handoff wake pid3 (q=0)
+[sem] wait sem1 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6440 wake=6460)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=6460)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 handoff wake pid2 (q=0)
+[sem] wait sem1 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6470 wake=6490)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6490)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 handoff wake pid3 (q=0)
+[sem] wait sem1 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6490 wake=6510)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid3 wake (tick=6510)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 handoff wake pid2 (q=0)
+[sem] wait sem1 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6520 wake=6540)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6540)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 handoff wake pid3 (q=0)
+[sem] wait sem1 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6540 wake=6560)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=6560)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 handoff wake pid2 (q=0)
+[sem] wait sem1 pid3 block (q=1)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6570 wake=6590)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6590)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 handoff wake pid3 (q=0)
+[sem] wait sem1 pid2 block (q=1)
+[sched] pid2 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 IN 
+[sched] pid3 sleep 20 (tick=6590 wake=6610)
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid3 wake (tick=6610)
+[sched] pid0 -> pid3 (pd=152000 esp0=150000)
+[pid3] C2 OUT
+[sem] signal sem1 pid3 handoff wake pid2 (q=0)
+[sched] pid3 exit
+[sched] pid3 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6620 wake=6640)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6640)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 (v=1) no waiter
+[sem] wait sem1 pid2 take (v=0)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6640 wake=6660)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid2 wake (tick=6660)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 (v=1) no waiter
+[sem] wait sem1 pid2 take (v=0)
+[pid2] C1 IN 
+[sched] pid2 sleep 20 (tick=6660 wake=6680)
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 03:22:11 [up 00:01:06] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# syncdemo                                                         |
+r16|created sync-demo proc: pid 1                                                   |
+r17|scheduler started: semaphore/mutex + sleep demo                                 |
+r18|root@kernel:/# ps                                                               |
+r19|                                                                                |
+r20|                                                                                |
+r21|                                                                                |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 03:22:11 [up 00:01:06] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# syncdemo                   [sched] pid0 -> pid0 (pd=134000 esp0=0)
+                                      |
+r16|created sync-demo proc: pid 1                                                   |
+r17|scheduler started: semaphore/mutex + sleep demo                                 |
+r18|root@kernel:/# ps                                                               |
+r19|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r20|0  run     shell      0 314  0                                                  |
+r21|2  sleep   fser12     0 30  690000                                              |
+r22|                                                                                |
+r23|                                                                                |
+r24|                                                                                |
+[sched] pid2 wake (tick=6680)
+[sched] pid0 -> pid2 (pd=14d000 esp0=14b000)
+[pid2] C1 OUT
+[sem] signal sem1 pid2 (v=1) no waiter
+[sched] pid2 exit
+[sched] pid2 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 115]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 116]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 111]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 112]
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[sched] pid0 -> pid0 (pd=134000 esp0=0)
+[key 10]
+=== screen dump (before) ===
+r0| WinPP OS v0.1. 2026-10-13 04:18:24 [up 00:01:21] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# syncdemo                                                         |
+r16|created sync-demo proc: pid 1                                                   |
+r17|scheduler started: semaphore/mutex + sleep demo                                 |
+r18|root@kernel:/# ps                                                               |
+r19|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r20|0  run     shell      0 314  0                                                  |
+r21|2  sleep   fser12     0 30  690000                                              |
+r22|root@kernel:/# stop                                                             |
+r23|                                                                                |
+r24|                                                                                |
+[stop] scheduler stopped
+=== screen dump (after) ===
+r0| WinPP OS v0.1. 2026-10-13 04:18:24 [up 00:01:21] [mem 65152 KB]                |
+r1|  WinPP OS v0.1 -- a tiny unix-like kernel for i386                             |
+r2|  multiboot v1 | VGA text 80x25 | type 'help' for commands                      |
+r3|                                                                                |
+r4|WinPP kernel alive. RAM: 65152 KB. CPU: GenuineIntel                            |
+r5|                                                                                |
+r6|root@kernel:/# syncdemo                                                         |
+r7|created sync-demo proc: pid 1                                                   |
+r8|scheduler started: semaphore/mutex + sleep demo                                 |
+r9|root@kernel:/# ps                                                               |
+r10|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r11|0  run     shell      0 78  0                                                   |
+r12|2  sleep   fser12     0 30  690000                                              |
+r13|root@kernel:/# stop                                                             |
+r14|scheduler stopped, all user procs terminated                                    |
+r15|root@kernel:/# syncdemo                                                         |
+r16|created sync-demo proc: pid 1                                                   |
+r17|scheduler started: semaphore/mutex + sleep demo                                 |
+r18|root@kernel:/# ps                                                               |
+r19|PID  STATE   NAME       UID  TICKS  CODE                                        |
+r20|0  run     shell      0 314  0                                                  |
+r21|2  sleep   fser12     0 30  690000                                              |
+r22|root@kernel:/# stop                                                             |
+r23|scheduler stopped, all user procs terminated                                    |
+r24|                                                                                |

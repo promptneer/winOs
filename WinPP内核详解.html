@@ -205,6 +205,7 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
     <a href="#s6">第六阶段</a>
     <a href="#s7">第七阶段</a>
     <a href="#s8">第八阶段</a>
+    <a href="#s9">第九阶段</a>
     <a href="#proof">实测证据</a>
   </div>
 </nav>
@@ -935,6 +936,77 @@ zig objcopy -O binary
       <tr><th>编号</th><th>问题与修复</th></tr>
       <tr><td>修正 1</td><td>chmod 初版用十进制解析（644=六百四十四），与 Linux 八进制不符。修复：k_octal 八进制解析</td></tr>
       <tr><td>修正 2</td><td>测试工具 _sendkeys.py 缺 '/' '.' 键映射，路径参数被敲成 "secrettxt"。修复：补 VK 0xBF/0xBE</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 第九阶段：信号与同步 ================= -->
+<section class="sec" id="s9">
+  <div class="wrap">
+    <h2>第九阶段：信号与同步（sleep / 信号量 / 互斥锁）</h2>
+    <p class="sub">一句话意义：程序学会"排队和睡觉"——sleep 主动让出 CPU，信号量/互斥锁保证多个进程抢资源时一个进、一个等。16 次互斥进出零违规。</p>
+
+    <h3>进程状态扩展（sched.h/sched.c）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:22%"><col style="width:78%"></colgroup>
+      <tr><th>项</th><th>说明</th></tr>
+      <tr><td>PROC_SLEEPING</td><td>第 4 种状态：睡眠/等待信号量中，不参与调度</td></tr>
+      <tr><td>pcb.wake_tick</td><td>sleep 唤醒时刻（timer_ticks 值）</td></tr>
+      <tr><td>pcb.blk_sem</td><td>阻塞等待的信号量 id；-1 = 纯 sleep</td></tr>
+      <tr><td>sched_wakeup_scan()</td><td>每 tick 由 irq_handler 调用，到期 sleep 进程置 READY</td></tr>
+      <tr><td>sched_wake_by_sem()</td><td>V 操作调用：唤醒队首等待者（置 READY + syscall 返回 0）</td></tr>
+      <tr><td>sched_yield_now()</td><td>阻塞 syscall 内立即让出（保存帧 + 切换，不返回）</td></tr>
+    </table>
+
+    <h3>信号量实现（sem.h/sem.c）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:24%"><col style="width:76%"></colgroup>
+      <tr><th>元素</th><th>说明</th></tr>
+      <tr><td>sem_t</td><td>id / value / inuse / waiters 等待 pid 队列（FIFO）/ nwait；8 槽</td></tr>
+      <tr><td>sem_wait（P）</td><td>value&gt;0 减一返回；否则入队 + PROC_SLEEPING + 立即让出</td></tr>
+      <tr><td>sem_signal（V）</td><td>无等待者 value++；有等待者"直接交接"（handoff）：不增 v，唤醒队首并让其返回 0</td></tr>
+      <tr><td>互斥锁</td><td>mutex_create = sem_create(1)；lock/unlock = wait/signal（二值信号量）</td></tr>
+    </table>
+
+    <h3>系统调用（总数 0-23 共 24 个）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+      <tr><th>调用</th><th>语义</th></tr>
+      <tr><td>17 sleep(ticks)</td><td>仅用户进程：wake_tick=now+ticks，SLEEPING + 让出；到期唤醒</td></tr>
+      <tr><td>18 sem_create(value)</td><td>创建信号量 → id（8 槽）</td></tr>
+      <tr><td>19 sem_wait(id)</td><td>P：拿通行证或阻塞排队</td></tr>
+      <tr><td>20 sem_signal(id)</td><td>V：放回通行证 / 直接交接给队首</td></tr>
+      <tr><td>21-23 mutex_*</td><td>互斥锁三件套（= 二值信号量封装）</td></tr>
+    </table>
+
+    <h3>实测铁证（Bochs + 串口 + 截图）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+      <tr><th>项目</th><th>结果</th></tr>
+      <tr><td>sleep 让出</td><td>C1 sleep 60（tick 1704→1764 准时醒），期间 C2 独占 3 轮；ps 显示 sleep 状态</td></tr>
+      <tr><td>信号量阻塞</td><td>[sem] wait sem0 pid2 block (q=1) → C1 排队等锁</td></tr>
+      <tr><td>handoff 交接</td><td>[sem] signal sem0 pid3 handoff wake pid2 → 锁直接交给 C1</td></tr>
+      <tr><td>互斥零违规</td><td>C1/C2 各 8 轮 IN/OUT 全配对，16 次进出无重叠（脚本校验 violations=0）</td></tr>
+      <tr><td>稳定性</td><td>PAGE_FAULT=0</td></tr>
+    </table>
+
+    <h3>新增/修改文件</h3>
+    <table class="tbl">
+      <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+      <tr><th>文件</th><th>职责</th></tr>
+      <tr><td>src/sem.h + sem.c（新）</td><td>信号量/互斥锁实现（8 槽 FIFO 等待队列）</td></tr>
+      <tr><td>src/sched.h + sched.c</td><td>PROC_SLEEPING、wake_tick/blk_sem、唤醒扫描、sched_yield_now、syscall 17-23</td></tr>
+      <tr><td>src/user12.S + user12.ld（新）</td><td>同步演示：mutex + fork 双子 + 互斥循环 + sleep（274B，入口 0x690000）</td></tr>
+      <tr><td>src/shell.c</td><td>syncdemo 命令</td></tr>
+      <tr><td>src/kernel.c</td><td>sem_init（[11c]）、irq_handler 每 tick 唤醒扫描</td></tr>
+      <tr><td>build_flat.ps1</td><td>user12 加入构建</td></tr>
+    </table>
+
+    <h3>设计修正</h3>
+    <table class="tbl">
+      <colgroup><col style="width:22%"><col style="width:78%"></colgroup>
+      <tr><th>编号</th><th>问题与修复</th></tr>
+      <tr><td>修正 1</td><td>V 操作先 value++ 再唤醒：第三方抢先 take，被唤醒者误判拿到锁 → 双进程进临界区（实测 1 次违规）。修复：有等待者时直接交接（handoff），不增 v</td></tr>
     </table>
   </div>
 </section>

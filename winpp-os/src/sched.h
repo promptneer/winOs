@@ -16,6 +16,7 @@ typedef struct {
 #define PROC_READY   1
 #define PROC_RUNNING 2
 #define PROC_ZOMBIE  3
+#define PROC_SLEEPING 4   /* S9：睡眠/等待信号量中（wake_tick 或 blk_sem 决定唤醒方式） */
 
 #define SCHED_QUANTUM 10   /* 每 10 个 tick（0.1s）强制切换 */
 
@@ -35,6 +36,8 @@ typedef struct {
     u32  pt1_page;       /* 进程独立 PT1（4-8MB 用户区页表，含内核栈恒等项） */
     u32  reaped;         /* 资源已回收 */
     u32  uid;            /* S8: 进程属主 UID（创建时继承当前身份） */
+    u32  wake_tick;      /* S9: sleep 唤醒时刻（timer_ticks 值；blk_sem>=0 时无效） */
+    int  blk_sem;        /* S9: 阻塞等待的信号量 id；-1=非信号量阻塞（sleep） */
 } pcb_t;
 
 /* 调度器 */
@@ -53,6 +56,11 @@ void   sched_tick(regs_t *r);    /* irq_handler 末尾调用；可能不返回 *
 int    sched_kill(int pid);
 void   sched_ps(void);
 u32    sched_user_count(void);
+
+/* S9 同步：每 tick 唤醒到期睡眠进程；信号量唤醒；立即让出（阻塞 syscall 用） */
+void   sched_wakeup_scan(void);
+int    sched_wake_by_sem(int id, u32 pid);
+void   sched_yield_now(regs_t *r);   /* 保存当前帧并强制切换（阻塞后调用，不返回） */
 
 /* 系统调用分发（int 0x80 → syscall_common_stub → 此处） */
 void syscall_handler(regs_t *r);

@@ -269,10 +269,27 @@ static void cmd_fs11(int argc, char **argv)
     }
 }
 
-static void cmd_demo(int argc, char **argv)
+/* S9：信号量互斥 + sleep 演示（user12：两个子进程争一把互斥锁） */
+static void cmd_syncdemo(int argc, char **argv)
 {
     (void)argc; (void)argv;
-    demo_run();
+    if (sched_running()) { vga_printf("scheduler already running\n"); return; }
+    int p = sched_create("user12", 0x690000, 0x7B1000,
+                         _user12_code, USER12_LEN);
+    if (p > 0) {
+        vga_printf("created sync-demo proc: pid %d\n", p);
+        serial_printf("[sync] demo proc pid %d\r\n", p);
+        sched_start();
+        vga_printf("scheduler started: semaphore/mutex + sleep demo\n");
+        serial_printf("[sync] scheduler started\r\n");
+    } else {
+        vga_printf("failed to create sync-demo process\n");
+    }
+}
+
+static void cmd_demo(int argc, char **argv)
+{
+    (void)argc; (void)argv;    demo_run();
     kernel_redraw_shell();   /* demo 退出后恢复 Shell 界面 */
     vga_putc('\n');
 }
@@ -642,6 +659,7 @@ static const cmd_t cmds[] = {
     { "fs",       "fs demo (user6)",            cmd_fs },
     { "fs2",      "dir/path demo (user10)",     cmd_fs2 },
     { "fs11",     "permission demo (user11)",   cmd_fs11 },
+    { "syncdemo", "sem/mutex/sleep demo (user12)", cmd_syncdemo },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },

@@ -15,6 +15,7 @@
 #include "ipc.h"
 #include "device.h"
 #include "user.h"
+#include "sem.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -111,6 +112,8 @@ void irq_handler(regs_t *r)
     /* 内核策略层（不属于设备驱动）：调度与状态栏刷新 */
     if (irq == 0) {
         if (timer_ticks() % TIMER_HZ == 0) status_bar_redraw();
+        /* S9：每 tick 唤醒到期睡眠进程（不依赖 need_resched） */
+        if (sched_running()) sched_wakeup_scan();
         /* 多任务：每个时间片强制重新调度 */
         if (sched_running() && (timer_ticks() % SCHED_QUANTUM) == 0)
             sched_need_resched();
@@ -253,6 +256,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[11b] ipc ...\r\n");
     vga_printf("[11b] ipc ...\n");
     ipc_init();
+    serial_puts("[11c] sem ...\r\n");
+    vga_printf("[11c] sem ...\n");
+    sem_init();
     serial_puts("[12] all init ok, drawing UI ...\r\n");
     vga_printf("[12] all init ok, drawing UI ...\n");
 

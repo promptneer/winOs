@@ -9,6 +9,8 @@
 #include "ipc.h"
 #include "user.h"
 #include "users_inc.h"
+#include "timer.h"
+#include "sem.h"
 
 /* 用户代码/栈映射标志：P + W + U（用户态可访问；内核页无 U 位 → 用户访问 #PF） */
 #define USER_PAGE_FLAGS 0x7
@@ -136,6 +138,8 @@ void sched_init(void)
         procs[i].pd_page = procs[i].pt1_page = 0;
         procs[i].ticks_run = 0;
         procs[i].uid = 0;
+        procs[i].wake_tick = 0;
+        procs[i].blk_sem = -1;
     }
     procs[0].pid = 0;
     procs[0].state = PROC_RUNNING;    /* shell 初始即运行 */
@@ -145,6 +149,8 @@ void sched_init(void)
     procs[0].pd_page = read_cr3();    /* shell 沿用 boot PD */
     procs[0].pt1_page = 0;
     procs[0].uid = user_current_uid();   /* S8: shell 初始身份（root） */
+    procs[0].wake_tick = 0;
+    procs[0].blk_sem = -1;
     k_strcpy(procs[0].name, "shell");
     sched_current = &procs[0];
     sched_on = 0;
@@ -220,6 +226,8 @@ int sched_create(const char *name, u32 entry, u32 stack_vaddr,
     p->ticks_run = 0;
     p->reaped = 0;
     p->uid = user_current_uid();       /* S8: 进程继承创建者身份 */
+    p->wake_tick = 0;
+    p->blk_sem = -1;
     k_strcpy(p->name, name);
     proc_init_frame(p, entry, stack_vaddr);
 
@@ -273,6 +281,8 @@ int sched_fork(pcb_t *parent, const regs_t *r)
     c->ticks_run = 0;
     c->reaped = 0;
     c->uid = parent->uid;              /* S8: fork 继承父身份 */
+    c->wake_tick = 0;
+    c->blk_sem = -1;
     k_strcpy(c->name, parent->name);
     c->name[0] = 'f';              /* "user1" -> "fuser1"（同 pid 前缀） */
 
@@ -377,6 +387,50 @@ static pcb_t *pick_next(void)
     return 0;
 }
 
+/* S9 唤醒扫描：每时钟 tick 调用一次，把 sleep 到期（blk_sem==-1）的睡眠进程置 READY */
+void sched_wakeup_scan(void)
+{
+    if (!sched_on) return;
+    u32 now = timer_ticks();
+    for (u32 i = 0; i < nprocs; i++) {
+        if (procs[i].state != PROC_SLEEPING) continue;
+        if (procs[i].blk_sem >= 0) continue;      /* 信号量等待由 sem_signal 唤醒 */
+        if ((u32)(now - procs[i].wake_tick) >= 0x80000000u) continue;  /* 未到期 */
+        {
+            procs[i].state = PROC_READY;
+            serial_printf("[sched] pid%d wake (tick=%u)\r\n", procs[i].pid, now);
+        }
+    }
+}
+
+/* S9 信号量唤醒：V 操作调这里，把等待该信号量的 pid 置 READY（FIFO 队首） */
+int sched_wake_by_sem(int id, u32 pid)
+{
+    for (u32 i = 0; i < nprocs; i++) {
+        if (procs[i].pid != pid) continue;
+        if (procs[i].state != PROC_SLEEPING || procs[i].blk_sem != id) continue;
+        procs[i].state = PROC_READY;
+        procs[i].blk_sem = -1;
+        /* 唤醒后从阻塞的 int 0x80 返回：sem_wait 返回 0（已拿到锁） */
+        if (procs[i].ctx) {
+            regs_t *f = (regs_t *)procs[i].ctx;
+            f->eax = 0;
+        }
+        return 0;
+    }
+    return -1;
+}
+
+/* S9 强制让出：阻塞 syscall 后调用，保存当前帧并立即切换（不返回）。
+ * 若没有其他就绪进程，等待下一个 tick 唤醒扫描后再切换。 */
+void sched_yield_now(regs_t *r)
+{
+    if (!sched_on) return;
+    sched_need_resched();
+    sched_tick(r);
+    for (;;) asm volatile("hlt");   /* 保险：sched_tick 应已换栈不返回 */
+}
+
 void sched_tick(regs_t *r)
 {
     if (!sched_on || !need_resched) return;
@@ -385,12 +439,13 @@ void sched_tick(regs_t *r)
 
     pcb_t *cur = sched_current;
     cur->ctx = (u32)r;               /* 保存当前上下文帧（位于当前内核栈） */
-    cur->state = PROC_READY;
+    if (cur->state == PROC_RUNNING) cur->state = PROC_READY;  /* S9: 阻塞中保持 SLEEPING */
     cur->ticks_run++;
 
     pcb_t *next = pick_next();
     if (!next) {
-        cur->state = PROC_RUNNING;   /* 没有其他就绪进程：留在原地 */
+        /* S9：当前若是阻塞（SLEEPING）则原地等待唤醒扫描；否则恢复运行 */
+        if (cur->state == PROC_READY) cur->state = PROC_RUNNING;
         cur->ctx = 0;
         return;
     }
@@ -408,7 +463,7 @@ void sched_tick(regs_t *r)
 
 void sched_ps(void)
 {
-    static const char *st[4] = { "empty", "ready", "run", "zombie" };
+    static const char *st[5] = { "empty", "ready", "run", "zombie", "sleep" };
     vga_printf("PID  STATE   NAME       UID  TICKS  CODE\n");
     for (u32 i = 0; i < nprocs; i++) {
         if (procs[i].state == PROC_EMPTY) continue;
@@ -509,6 +564,52 @@ void syscall_handler(regs_t *r)
     }
     else if (nr == 16) {            /* chmod(path, mode)：S8 改文件权限 */
         r->eax = (u32)fs_chmod((const char *)r->ebx, r->ecx);
+    }
+    else if (nr == 17) {            /* sleep(ticks)：S9 进程睡眠（仅用户进程） */
+        if (sched_current && sched_current->pid != 0) {
+            sched_current->wake_tick = timer_ticks() + r->ebx;
+            sched_current->blk_sem = -1;
+            sched_current->state = PROC_SLEEPING;
+            serial_printf("[sched] pid%d sleep %u (tick=%u wake=%u)\r\n",
+                          sched_current->pid, r->ebx, timer_ticks(),
+                          sched_current->wake_tick);
+            r->eax = 0;
+            sched_yield_now(r);     /* 立即让出，不返回 */
+        } else {
+            r->eax = 0xFFFFFFFFu;   /* shell 不允许睡眠 */
+        }
+    }
+    else if (nr == 18) {            /* sem_create(value)：S9 创建信号量 */
+        r->eax = (u32)sem_create((int)r->ebx);
+    }
+    else if (nr == 19) {            /* sem_wait(id)：S9 P 操作（可阻塞） */
+        if (sched_current && sched_current->pid != 0) {
+            int rc = sem_wait((int)r->ebx);
+            r->eax = (u32)rc;
+            if (rc == -1 && sched_current->state == PROC_SLEEPING)
+                sched_yield_now(r); /* 阻塞：立即让出，不返回 */
+        } else {
+            r->eax = 0xFFFFFFFFu;
+        }
+    }
+    else if (nr == 20) {            /* sem_signal(id)：S9 V 操作 */
+        r->eax = (u32)sem_signal((int)r->ebx);
+    }
+    else if (nr == 21) {            /* mutex_create()：S9 互斥锁（=初值 1 的信号量） */
+        r->eax = (u32)sem_create(1);
+    }
+    else if (nr == 22) {            /* mutex_lock(id)：S9 加锁（=P，可阻塞） */
+        if (sched_current && sched_current->pid != 0) {
+            int rc = sem_wait((int)r->ebx);
+            r->eax = (u32)rc;
+            if (rc == -1 && sched_current->state == PROC_SLEEPING)
+                sched_yield_now(r);
+        } else {
+            r->eax = 0xFFFFFFFFu;
+        }
+    }
+    else if (nr == 23) {            /* mutex_unlock(id)：S9 解锁（=V） */
+        r->eax = (u32)sem_signal((int)r->ebx);
     }
     else {
         r->eax = -1;

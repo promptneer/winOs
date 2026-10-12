@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第九阶段进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0e14'/%3E%3Ctext x='16' y='23' font-size='18' font-family='monospace' fill='%2334d399' text-anchor='middle'%3E%E2%98%B0%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#11161f; --panel2:#161d29; --line:#232c3b;
+    --text:#d7dee8; --dim:#7d8a9c; --green:#34d399; --cyan:#38bdf8;
+    --amber:#fbbf24; --red:#f87171; --mono:'Consolas','Courier New',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.65;padding:34px 18px 90px}
+  .wrap{max-width:1120px;margin:0 auto}
+  .term{font-family:var(--mono);font-size:13px}
+  .hero{border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#0f1720,#10202b 70%);padding:34px 38px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 14px;border-radius:99px;letter-spacing:.08em;margin-bottom:16px}
+  h1{font-size:30px;font-weight:800;line-height:1.3}
+  h1 .grad{background:linear-gradient(90deg,#34d399,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:12px;font-size:14.5px;color:var(--dim);max-width:980px}
+  .sub b{color:var(--green)}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+  .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;font-family:var(--mono);font-size:13px;min-width:130px}
+  .stat .v{font-size:22px;font-weight:700;color:var(--green)}
+  .stat .k{color:var(--dim);font-size:11.5px;margin-top:2px}
+  .sec{margin-top:38px}
+  .sec h2{font-size:20px;font-weight:800;border-left:4px solid var(--green);padding-left:14px;margin-bottom:6px}
+  .sec .hsub{font-size:13px;color:var(--dim);margin-bottom:18px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:20px 22px}
+  .card .num{font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.35);padding:2px 10px;border-radius:6px;display:inline-block}
+  .card h3{font-size:16.5px;font-weight:700;margin:10px 0 6px}
+  .card .plain{font-size:13.5px;color:var(--dim);margin-bottom:10px}
+  .card .plain b{color:var(--text)}
+  .card ul{list-style:none;font-size:13px;color:var(--text)}
+  .card ul li{padding:3px 0 3px 18px;position:relative}
+  .card ul li:before{content:'▸';position:absolute;left:0;color:var(--green)}
+  .card .ok{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid rgba(52,211,153,.4);padding:3px 12px;border-radius:99px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;table-layout:fixed}
+  th{background:var(--panel2);color:var(--cyan);font-family:var(--mono);font-weight:700;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-word}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--green)}
+  td .mono{font-family:var(--mono);font-size:12.5px;color:var(--amber)}
+  .ev{border:1px solid var(--line);border-radius:12px;background:#0a0d12;padding:16px 18px;margin-bottom:16px}
+  .ev .eh{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;margin-bottom:10px;color:var(--dim)}
+  .ev .eh .tag3{color:var(--green)}
+  .ev pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#9fd8b8;white-space:pre-wrap;word-break:break-all}
+  .ev pre .c{color:#566173}
+  .ev pre .r{color:#f87171}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .shot img{width:100%;display:block;background:#000}
+  .shot .cap{font-family:var(--mono);font-size:12px;color:var(--dim);padding:10px 14px}
+  .bug{border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.06);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .bug h4{font-size:14px;color:var(--red);margin-bottom:6px}
+  .bug p{font-size:13px;color:var(--text)}
+  .bug .fx{color:var(--green)}
+  .tl{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .tl .node{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 14px;font-size:12.5px;min-width:92px;text-align:center}
+  .tl .node b{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:2px}
+  .tl .node.done{border-color:rgba(52,211,153,.45)}
+  .tl .node.done span{color:var(--green)}
+  .tl .node.now{border-color:var(--amber);background:rgba(251,191,36,.08)}
+  .tl .node.now b{color:var(--amber)}
+  .tl .node.now span{color:var(--amber)}
+  .tl .arrow{align-self:center;color:var(--dim);font-family:var(--mono)}
+  .foot{margin-top:34px;font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center}
+  @media (max-width:760px){
+    h1{font-size:23px}
+    .stats .stat{min-width:calc(50% - 8px)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">WINPP OS · STAGE 9 · SIGNALS &amp; SYNCHRONIZATION</span>
+    <h1>第九阶段：<span class="grad">信号与同步（sleep / 信号量 / 互斥锁）</span></h1>
+    <p class="sub">一句话意义：程序不再"抢着干活"，而是学会<b>排队和睡觉</b>——<b>sleep</b> 让进程主动睡一会儿、醒来自动继续；<b>信号量/互斥锁</b> 让多个进程抢同一个资源时<b>一个进、另一个等</b>，绝不同时挤进去。全部 Bochs 实机 + 串口 + 截图验证通过，互斥违规 = <b>0</b>。</p>
+    <div class="stats">
+      <div class="stat"><div class="v">7</div><div class="k">新系统调用（17-23）</div></div>
+      <div class="stat"><div class="v">2</div><div class="k">同步原语（信号量/互斥锁）</div></div>
+      <div class="stat"><div class="v">8+8</div><div class="k">互斥进出（C1/C2 各 8 轮）</div></div>
+      <div class="stat"><div class="v">0</div><div class="k">互斥违规（16 次进出全配对）</div></div>
+      <div class="stat"><div class="v">0</div><div class="k">PAGE_FAULT</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>三大件：是什么、怎么用</h2>
+    <div class="hsub">大白话对照 —— 系统从"只会轮流跑"变成"会睡觉、会排队"。</div>
+    <div class="cards">
+      <div class="card">
+        <span class="num">S9-1 信号量</span>
+        <h3>semaphore：通行证</h3>
+        <div class="plain">信号量像一个"通行证盒子"：盒子有 <b>value</b> 张通行证。<b>P（sem_wait）</b> 拿走一张（没有就排队等）；<b>V（sem_signal）</b> 放回一张并叫醒排队的人。FIFO 先来先等。</div>
+        <ul>
+          <li>sem_create(value)、sem_wait(id)、sem_signal(id)</li>
+          <li>syscall 18/19/20</li>
+          <li>排队者内核状态显示 SLEEPING</li>
+        </ul>
+        <span class="ok">实测通过 · block/唤醒闭环</span>
+      </div>
+      <div class="card">
+        <span class="num">S9-2 互斥锁</span>
+        <h3>mutex：一把钥匙</h3>
+        <div class="plain">互斥锁 = 只有 <b>1 张通行证</b> 的信号量（二值信号量）。谁拿到谁进"小黑屋"（临界区），别人只能在外面等；出来才交钥匙。</div>
+        <ul>
+          <li>mutex_create()、mutex_lock(id)、mutex_unlock(id)</li>
+          <li>syscall 21/22/23</li>
+          <li>同一时刻只有一个进程在临界区</li>
+        </ul>
+        <span class="ok">实测通过 · 16 次进出零违规</span>
+      </div>
+      <div class="card">
+        <span class="num">S9-3 sleep 睡眠</span>
+        <h3>sleep：睡醒再干活</h3>
+        <div class="plain">进程调用 <b>sleep(ticks)</b> 后主动让出 CPU 睡指定时长（1 tick=0.01s），到点自动醒来继续。睡眠期间不参与调度——把 CPU 让给别人。</div>
+        <ul>
+          <li>syscall 17 sleep(ticks)</li>
+          <li>内核每 tick 唤醒到期进程</li>
+          <li>ps 显示睡眠进程状态为 sleep</li>
+        </ul>
+        <span class="ok">实测通过 · 准时醒 + 期间让出</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>新增系统调用（总数 0-23 共 24 个）</h2>
+    <div class="hsub">终端输入 syncdemo 启动演示：main 建互斥锁 → fork 出 C1/C2 → 两个子进程抢锁进出临界区 8 轮。</div>
+    <table>
+      <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+      <tr><th>调用</th><th>作用</th></tr>
+      <tr><td><b>17 sleep(ticks)</b></td><td>进程睡眠指定 ticks（1 tick=0.01s），让出 CPU，到期自动醒来</td></tr>
+      <tr><td><b>18 sem_create(value)</b></td><td>创建信号量（value 张通行证），返回 id</td></tr>
+      <tr><td><b>19 sem_wait(id)</b></td><td>P 操作：拿一张通行证；没有则阻塞排队（FIFO）</td></tr>
+      <tr><td><b>20 sem_signal(id)</b></td><td>V 操作：放回一张，唤醒队首等待者</td></tr>
+      <tr><td><b>21 mutex_create()</b></td><td>创建互斥锁（=初值 1 的信号量），返回 id</td></tr>
+      <tr><td><b>22 mutex_lock(id)</b></td><td>加锁：拿钥匙，拿不到就排队</td></tr>
+      <tr><td><b>23 mutex_unlock(id)</b></td><td>解锁：交回钥匙，唤醒队首</td></tr>
+      <tr><td><b>syncdemo</b></td><td>shell 命令：启动 user12 同步演示（互斥锁 + sleep）</td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <h2>串口铁证（COM1）</h2>
+    <div class="hsub">Bochs 2.8 实机，全程 0 页错误、16 次进出零互斥违规。同一把锁，C1/C2 交替进出。</div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">sleep：C1 睡 60 ticks，期间 C2 独占</span><span>PAGE_FAULT = 0</span></div>
+      <pre>[sync] demo proc pid 1
+[sem] create sem0 value=1            <span class="c"># 互斥锁 = 初值 1 的信号量</span>
+[sched] pid2 sleep 60 (tick=1704 wake=1764)   <span class="c"># C1 睡觉 60 ticks</span>
+[pid3] C2 IN                         <span class="c"># C2 拿到锁，连进 3 轮</span>
+[pid3] C2 OUT
+[sched] pid2 wake (tick=1764)        <span class="c"># 60 ticks 后 C1 准时醒来</span>
+[pid2] C1 slept                      <span class="c"># 睡醒报告</span>
+[sem] wait sem0 pid2 block (q=1)     <span class="c"># C1 想进临界区，但 C2 占着 → 排队！</span>
+[sem] signal sem0 pid3 handoff wake pid2  <span class="c"># C2 释放 → 直接把锁交给 C1</span>
+[pid2] C1 IN ... [pid2] C1 OUT</pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">互斥闭环：C1/C2 各 8 轮进出，无重叠</span><span>block 11 · handoff 11 · sleep 25</span></div>
+      <pre>[pid3] C2 IN        # C2 进
+[pid3] C2 OUT       # C2 出（中间 sleep 20 ticks 占用）
+[pid2] C1 IN        # C1 进（只有 C2 交出锁之后）
+[pid2] C1 OUT
+[pid3] C2 IN ...    # 严格交替，绝无 "IN 后紧跟另一个 IN"</pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">ps 进程状态：睡眠进程显示 sleep</span><span>新状态</span></div>
+      <pre>PID  STATE   NAME       UID  TICKS  CODE
+  0  run     shell         0   ...    0
+  1  sleep   fuser1        0   ...  690000     <span class="c"># 睡眠中的进程（截图取证）</span></pre>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>实测截图</h2>
+    <div class="shots">
+      <div class="shot"><img src="assets/s9-01-syncdemo.png" alt="syncdemo 运行"><div class="cap">syncdemo 运行 + ps 显示 sleep 状态</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>设计修正（重要）</h2>
+    <div class="bug">
+      <h4>修正：信号量 V 操作的"唤醒竞态"——先增 v 再唤醒，第三方可抢先拿走通行证</h4>
+      <p>第一版 sem_signal 先 <span class="term">value++</span> 再唤醒等待者：C2 释放后 C1 被唤醒，但 C2 下一轮 wait 抢先把 v 拿走，C1 醒来误以为拿到锁 → <b>两个进程同时进临界区（实测抓到 1 次违规）</b>。修复：<span class="fx">有等待者时 V 不增 v、直接把锁"交接"给队首进程（handoff），防止抢占。</span>修复后 16 次进出零违规。</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>开发时间线</h2>
+    <div class="tl">
+      <div class="node done"><b>S1</b><span>软盘引导</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S2</b><span>分页内存</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S3</b><span>用户态+任务切换</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S4</b><span>地址空间/fork/exec/fs</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S5</b><span>进程间通信 IPC</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S6</b><span>文件系统目录/路径</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S7</b><span>设备驱动</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S8</b><span>用户与权限</span></div><span class="arrow">→</span>
+      <div class="node done"><b>S9</b><span>信号与同步</span></div><span class="arrow">→</span>
+      <div class="node now"><b>S10</b><span>图形界面窗口系统（下一步）</span></div><span class="arrow">→</span>
+      <div class="node"><b>S11</b><span>网络</span></div>
+    </div>
+  </div>
+
+  <div class="foot">WinPP OS · 第九阶段进度报告 · 2026-10-12 · 全部 Bochs 实测取证</div>
+</div>
+</body>
+</html>
