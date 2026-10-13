@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十五阶段进度报告</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0883e'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%230d1117'%3EW%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--fg:#e6edf3;--muted:#8b949e;--accent:#f0883e;--ok:#3fb950;--warn:#d29922;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","PingFang SC",sans-serif;line-height:1.7;padding:32px 16px 80px;}
+.wrap{max-width:1080px;margin:0 auto;}
+h1{font-size:28px;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+h2{font-size:21px;margin:30px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;margin:16px 0 8px;color:var(--accent);}
+table{width:100%;border-collapse:collapse;table-layout:fixed;margin:10px 0;}
+th,td{border:1px solid var(--border);padding:9px 11px;font-size:13px;text-align:left;vertical-align:top;overflow-wrap:break-word;}
+th{background:#21262d;}
+code{font-family:Consolas,monospace;background:#21262d;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#58a6ff;}
+pre{background:#161b22;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:Consolas,monospace;font-size:12.5px;color:#7ee787;line-height:1.55;}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-right:6px;}
+.tag.ok{background:rgba(63,185,80,.15);color:var(--ok);}
+.tag.warn{background:rgba(210,153,34,.15);color:var(--warn);}
+.tag.info{background:rgba(88,166,255,.15);color:#58a6ff;}
+.note{background:#1f2430;border-left:4px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--muted);margin:10px 0;}
+.next{background:linear-gradient(135deg,rgba(240,136,62,.12),rgba(240,136,62,.04));border:1px solid rgba(240,136,62,.35);border-radius:10px;padding:18px 20px;margin-top:24px;}
+.mono{font-family:Consolas,monospace;font-size:12.5px;color:#7ee787;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>WinPP 第十五阶段 · 进度报告</h1>
+<div class="sub">阶段：S15 网络服务（跨机 TCP 聊天服务 + 简单 HTTP 服务器） ｜ 2026-10-13 ｜ 实测全绿，源码已提交推送</div>
+
+<h2>一句话总结</h2>
+<div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+<p>S11-S14 让内核"学会收发电报（网络）"，S15 让内核"自己开店当服务器"：<b>HTTP 服务器</b>（Windows 浏览器直接打开内核的网页）＋ <b>跨机聊天服务</b>（Windows 的终端连上来发消息，内核收到并原样回显）。到这一步，你的内核已经是一个能对外提供服务的"迷你网络主机"。</p>
+</div>
+
+<h2>本阶段完成内容</h2>
+<table>
+<colgroup><col style="width:6%"><col style="width:22%"><col style="width:14%"><col style="width:58%"></colgroup>
+<thead><tr><th>#</th><th>模块</th><th>类型</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>src/httpd.h + httpd.c</td><td>新增</td><td>HTTP 服务器（8080）+ 跨机 TCP 聊天服务（7784）：httpd_start/chat_start 绑定监听；httpd_poll/chat_poll 周期处理。HTTP 只支持 GET，解析请求头边界 \r\n\r\n 与请求行取路径，返回 / 主页（内建 HTML，带 uptime/内存/TCP 收发实时值）、/info 纯文本、其余 404。chat 收到数据打印屏幕+串口并原样回显。内核无 snprintf，全部手写 k_utoa/k_cat 拼装。</td></tr>
+<tr><td>2</td><td>src/shell.c</td><td>修改</td><td>新增 cmd_httpd / cmd_chat 两条命令 + 命令表条目 + help 文案（"HTTP server on :8080 (browser: 127.0.0.1:8080)" / "TCP chat server on :7784 (echo to client)"）。</td></tr>
+<tr><td>3</td><td>src/kernel.c</td><td>修改</td><td>IRQ0 定时器中断里，每 10 tick（约 100ms）调 tcp_poll() + httpd_poll() + chat_poll()，让服务器在后台自动收发处理。</td></tr>
+<tr><td>4</td><td>slirp.conf</td><td>修改</td><td>新增 tcp::8080、tcp::7784 两条 hostfwd（Windows 127.0.0.1 端口 → 内核）。因 Bochs slirp 的 hostfwd 规则有上限，注释了 S14 演示端口 7781/7782，当前保留 5 条。</td></tr>
+<tr><td>5</td><td>构建产物</td><td>更新</td><td>kernel.bin 289 sectors（约 147 KB），floppy.img 可启动软盘镜像，构建 0 error 0 warning。</td></tr>
+</tbody>
+</table>
+
+<h2>Bochs 机器实测取证（serial.out 关键行）</h2>
+<pre>[tcp] stack init: state machine + 2 sockets
+[tcp] listen :8080 (socket 0)
+[httpd] listening :8080
+[httpd] server on :8080  (browser: http://127.0.0.1:8080/)
+
+[tcp] accept from 10.0.2.2:65136 (socket 0, SYN+ACK sent)   ← Windows 发起 HTTP 请求
+[httpd] GET / from 10.0.2.2:65136
+[httpd] reply 200 (453 B, rc=0)                              ← 主页 200 ✓
+[httpd] conn done (LAST_ACK) -> re-listen :8080              ← 连接自动回收 ✓
+
+[httpd] GET /info from 10.0.2.2:65139
+[httpd] reply 200 (237 B, rc=0)                              ← 系统信息 200 ✓
+
+[httpd] GET /nope from 10.0.2.2:65140
+[httpd] reply 404 (175 B, rc=0)                              ← 404 ✓
+
+[tcp] listen :7784 (socket 1)
+[chat] listening :7784
+[chat] server on :7784  (connect 127.0.0.1:7784)
+[tcp] accept from 10.0.2.2:57669 (socket 1, SYN+ACK sent)    ← Windows 连上聊天服务
+[chat] rx 10.0.2.2:57669 len=25: hello-from-windows-chat     ← 收到 Windows 消息 ✓
+[chat] echo rc=0                                             ← 回显成功 ✓
+[chat] conn done (LAST_ACK) -> re-listen :7784               ← 自动重新监听 ✓</pre>
+<p style="font-size:13px;color:var(--muted);">Windows 端实测：<span class="mono">http://127.0.0.1:8080/ → HTTP 200（主页 453B）</span>、<span class="mono">/info → 200（237B）</span>、<span class="mono">/nope → 404（175B）</span>；聊天：<span class="mono">socket 连 127.0.0.1:7784 发 hello-from-windows-chat，收到原样回显</span>。</p>
+
+<h2>Bug 修复记录</h2>
+<table>
+<colgroup><col style="width:10%"><col style="width:34%"><col style="width:18%"><col style="width:38%"></colgroup>
+<thead><tr><th>#</th><th>问题</th><th>修复</th><th>实测结果</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Bochs slirp 报 "too many 'hostfwd' rules"——hostfwd 规则数超 Bochs 上限（7 条），新增的 8080/7784 端口全部不生效，Windows 连接被拒绝（10061）</td><td>精简 slirp.conf：注释 S14 演示端口 7781/7782，保留 5 条核心映射（udp 7777/7778、tcp 7779/8080/7784）</td><td>8080、7784 全部连通 ✓</td></tr>
+<tr><td>2</td><td>HTTP 第一个请求成功，但 /info、/nope 全部超时——TCP 连接被对端 FIN 后进入 CLOSE_WAIT→LAST_ACK，连接槽（TCP_MAX=2）未释放，后续 SYN 到达时找不到 LISTEN 槽被丢弃</td><td>httpd_poll/chat_poll 开头增加"连接结束（非 LISTEN/ESTABLISHED）→ used=0 → 重新监听"逻辑</td><td>连续 6 次请求全部 200/200/404，日志见 conn done -> re-listen ✓</td></tr>
+</tbody>
+</table>
+
+<h2>验收清单</h2>
+<table>
+<colgroup><col style="width:60%"><col style="width:14%"><col style="width:26%"></colgroup>
+<thead><tr><th>验收项</th><th>结果</th><th>证据</th></tr></thead>
+<tbody>
+<tr><td>httpd 命令启动 HTTP 服务器并显示监听日志</td><td><span class="tag ok">通过</span></td><td>serial [httpd] listening :8080</td></tr>
+<tr><td>Windows 浏览器访问 / 返回 200 主页（含实时系统信息）</td><td><span class="tag ok">通过</span></td><td>HTTP 200 / 453B / 主页内容命中</td></tr>
+<tr><td>/info 返回 200 系统信息文本</td><td><span class="tag ok">通过</span></td><td>HTTP 200 / 237B / uptime/mem 命中</td></tr>
+<tr><td>不存在的路径返回 404</td><td><span class="tag ok">通过</span></td><td>HTTP 404 / 175B</td></tr>
+<tr><td>chat 命令启动跨机 TCP 聊天服务</td><td><span class="tag ok">通过</span></td><td>serial [chat] listening :7784</td></tr>
+<tr><td>Windows TCP 连 7784 发消息，内核收到并原样回显</td><td><span class="tag ok">通过</span></td><td>[chat] rx …hello-from-windows-chat + echo rc=0 + 客户端收到回显</td></tr>
+<tr><td>连接关闭后自动回收并重新监听，连续请求不卡死</td><td><span class="tag ok">通过</span></td><td>conn done -> re-listen 多次出现，6 连测全绿</td></tr>
+</tbody>
+</table>
+
+<h2>当前能力与已知限制（诚实说明）</h2>
+<table>
+<colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+<thead><tr><th>项</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>TCP 连接表仅 2 条</td><td>httpd 与 chat 各占 1 条，同一时间只能服务 1 个 HTTP 客户端 + 1 个聊天客户端；连接结束后自动回收（100ms 内检测，3 秒兜底）。</td></tr>
+<tr><td>HTTP 响应 ≤ 512 字节</td><td>教学内核发送缓冲限制，主页 453B / info 237B / 404 175B 均在范围内。</td></tr>
+<tr><td>HTTP 仅支持 GET</td><td>不支持 POST/表单提交；只解析请求行和头部边界，够演示用。</td></tr>
+<tr><td>slirp hostfwd 上限</td><td>Bochs 的 slirp 转发规则约 5 条上限，演示端口需取舍（真机无此限制）。当前 5 条：udp 7777/7778、tcp 7779/8080/7784。</td></tr>
+<tr><td>局域网真机</td><td>本阶段在 Bochs 内通过 slirp 转发完成跨机验证；真机 NIC 直连物理网络（真机里程碑 S20）时不受 hostfwd 限制。</td></tr>
+</tbody>
+</table>
+
+<div class="next">
+<h3 style="margin:0 0 8px;color:var(--fg);">下一阶段预告：S16 硬盘驱动（ATA PIO）</h3>
+<p style="font-size:14px;">S15 之后，内核已经"能上网、能当服务器"。下一步 S16 是<b>硬盘驱动</b>：让内核认识真正的硬盘（ATA PIO 读写磁盘扇区），为 S17 的磁盘文件系统（把文件真正存进硬盘、断电不丢）打地基。S1-S15 的文件系统是内存模拟的，S16/S17 之后才有"真硬盘上的持久化文件"。</p>
+<p style="font-size:13px;color:var(--muted);margin-top:8px;">路线图节点：S14 socket+DNS → <b>S15 网络服务 ✓（本次）</b> → S16 硬盘驱动 → S17 磁盘文件系统 → S18 用户态库 → S19 POSIX 完善 → S20 真机里程碑。</p>
+</div>
+
+</div>
+</body>
+</html>

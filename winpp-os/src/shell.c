@@ -28,6 +28,7 @@ extern void kernel_poweroff(void);
 #include "tcp.h"
 #include "sock.h"
 #include "dns.h"
+#include "httpd.h"
 #include "vt.h"
 
 /* ---------------- 极简 libc ---------------- */
@@ -109,6 +110,10 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  tcp listen <port> / connect <ip> <port>\n");
     vga_printf("  tcp send <text> / tcp recv\n");
     vga_printf("  tcpstat   TCP connection state table\n");
+    vga_printf("  sock open udp|tcp <port> / connect / send / recv / close / list\n");
+    vga_printf("  dns <hostname>  A-record lookup (via 10.0.2.3:53)\n");
+    vga_printf("  httpd     HTTP server on :8080 (browser: 127.0.0.1:8080)\n");
+    vga_printf("  chat      TCP chat server on :7784 (echo to client)\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -452,6 +457,20 @@ static void cmd_dns(int argc, char **argv)
 {
     if (argc != 2) { vga_printf("usage: dns <hostname>\n"); return; }
     dns_query(argv[1]);
+}
+
+/* S15: httpd —— 启动 HTTP 服务器（8080） */
+static void cmd_httpd(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    httpd_start(8080);
+}
+
+/* S15: chat —— 启动跨机 TCP 聊天服务（7784） */
+static void cmd_chat(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    chat_start(7784);
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1288,6 +1307,8 @@ static const cmd_t cmds[] = {
     { "tcpstat",  "tcp connection state table",    cmd_tcpstat },
     { "sock",     "unified sock open/connect/send/recv/close/list", cmd_sock },
     { "dns",      "dns <hostname> A-record lookup", cmd_dns },
+    { "httpd",    "HTTP server on :8080 (browser: 127.0.0.1:8080)", cmd_httpd },
+    { "chat",     "TCP chat server on :7784 (echo)", cmd_chat },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
