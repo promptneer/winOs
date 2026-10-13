@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十七阶段进度报告</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0883e'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%230d1117'%3EW%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--fg:#e6edf3;--muted:#8b949e;--accent:#f0883e;--ok:#3fb950;--warn:#d29922;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","PingFang SC",sans-serif;line-height:1.7;padding:32px 16px 80px;}
+.wrap{max-width:1080px;margin:0 auto;}
+h1{font-size:28px;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+h2{font-size:21px;margin:30px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;margin:16px 0 8px;color:var(--accent);}
+table{width:100%;border-collapse:collapse;table-layout:fixed;margin:10px 0;}
+th,td{border:1px solid var(--border);padding:9px 11px;font-size:13px;text-align:left;vertical-align:top;overflow-wrap:break-word;}
+th{background:#21262d;}
+code{font-family:Consolas,monospace;background:#21262d;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#58a6ff;}
+pre{background:#161b22;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:Consolas,monospace;font-size:12.5px;color:#7ee787;line-height:1.55;}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-right:6px;}
+.tag.ok{background:rgba(63,185,80,.15);color:var(--ok);}
+.tag.warn{background:rgba(210,153,34,.15);color:var(--warn);}
+.note{background:#1f2430;border-left:4px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--muted);margin:10px 0;}
+.next{background:linear-gradient(135deg,rgba(240,136,62,.12),rgba(240,136,62,.04));border:1px solid rgba(240,136,62,.35);border-radius:10px;padding:18px 20px;margin-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>WinPP 第十七阶段 · 进度报告</h1>
+<div class="sub">阶段：S17 磁盘文件系统 ｜ 2026-10-13 ｜ 实测全绿（含断电不丢），源码已提交推送</div>
+
+<h2>一句话总结</h2>
+<div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+<p>S17 让内核在 S16 的硬盘上<b>建立了自己的文件系统</b>：硬盘被组织成"超级块（档案册）+ 目录区（文件名单）+ 数据区（文件内容）"，内核能<b>建文件、读文件、列目录、删文件</b>。最关键的是：<b>写入的文件在重启内核后依然存在</b>——你的内核第一次拥有了"断电不丢"的持久化存储。</p>
+</div>
+
+<h2>本阶段完成内容</h2>
+<table>
+<colgroup><col style="width:6%"><col style="width:22%"><col style="width:14%"><col style="width:58%"></colgroup>
+<thead><tr><th>#</th><th>模块</th><th>类型</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>src/fs_disk.h + fs_disk.c</td><td>新增</td><td>极简磁盘文件系统：超级块（LBA 1，魔数 WP/版本/文件数/目录区位置/数据区起始）+ 目录区（LBA 2-3，2 扇区 × 16 项 = 32 个 32 字节目录项：文件名 15 字符/used/type/size/start_lba）+ 数据区（LBA 4 起，每文件 1 扇区）。实现 fs_disk_init（挂载）/format（格式化）/mkfile（找空槽+空数据扇区）/cat（读回）/ls/rm（清目录项）。</td></tr>
+<tr><td>2</td><td>src/shell.c</td><td>修改</td><td>新增 cmd_fsd 命令：fsd init / mkfile / cat / ls / rm；命令表 + help 文案（命名 fsd 以区分 S4 的内存盘 demo 命令 fs）。</td></tr>
+<tr><td>3</td><td>src/kernel.c</td><td>修改</td><td>初始化序列新增 [11g] disk fs → fs_disk_init()，开机自动挂载磁盘文件系统。</td></tr>
+<tr><td>4</td><td>bochsrc.txt + hd18.img</td><td>修改/新增</td><td>磁盘文件改用 hd18.img（10MB，20160 扇区，扇区 0 预写签名+MBR 55AA）；_mk_hd18.py 可重建空盘。</td></tr>
+<tr><td>5</td><td>构建产物</td><td>更新</td><td>kernel.bin 297 sectors（约 148 KB），floppy.img 可启动镜像，构建 0 error 0 warning。</td></tr>
+</tbody>
+</table>
+
+<h2>Bochs 机器实测取证（serial.out 关键行）</h2>
+<pre>[fs] no filesystem (run 'fs init')                          ← 首次挂载提示未格式化 ✓
+[fs] formatted: superblock + 32 dir slots                    ← fsd init 格式化 ✓
+[fs] created 'hello.txt' size=15 lba=4 (files=1)             ← 建文件，占数据扇区 LBA 4 ✓
+[fs] created 'data.bin' size=11 lba=5 (files=2)              ← 第二个文件 LBA 5 ✓
+[fs] removed 'data.bin' (files=1)                            ← 删除 ✓
+[fs] created 'persist.txt' size=15 lba=5 (files=2)           ← 复用删除后的空扇区 LBA 5 ✓
+--- 内核 reboot 重启 ---
+[ata] IDENTIFY ok: 20 cyl 16 head 63 spt, 20160 sectors (9 MB)
+[fs] mounted: 2 files, data from LBA 4                       ← 断电不丢：hello.txt + persist.txt 都在 ✓</pre>
+
+<h2>验收清单</h2>
+<table>
+<colgroup><col style="width:60%"><col style="width:14%"><col style="width:26%"></colgroup>
+<thead><tr><th>验收项</th><th>结果</th><th>证据</th></tr></thead>
+<tbody>
+<tr><td>未格式化时提示"no filesystem"</td><td><span class="tag ok">通过</span></td><td>[fs] no filesystem (run 'fs init')</td></tr>
+<tr><td>fsd init 格式化（超级块+32 目录项）</td><td><span class="tag ok">通过</span></td><td>[fs] formatted: superblock + 32 dir slots</td></tr>
+<tr><td>fsd mkfile 建文件并分配数据扇区</td><td><span class="tag ok">通过</span></td><td>created 'hello.txt' size=15 lba=4 (files=1)</td></tr>
+<tr><td>fsd ls 列出文件与大小/扇区</td><td><span class="tag ok">通过</span></td><td>disk files (2)：hello.txt + data.bin</td></tr>
+<tr><td>fsd cat 读回文件内容</td><td><span class="tag ok">通过</span></td><td>hello-from-disk 原样读回</td></tr>
+<tr><td>fsd rm 删除文件并更新计数</td><td><span class="tag ok">通过</span></td><td>[fs] removed 'data.bin' (files=1)</td></tr>
+<tr><td>删除后的空扇区可复用</td><td><span class="tag ok">通过</span></td><td>persist.txt 占用原 data.bin 的 LBA 5</td></tr>
+<tr><td>重启后文件持久存在（断电不丢）</td><td><span class="tag ok">通过</span></td><td>reboot 后 [fs] mounted: 2 files + cat 内容一致</td></tr>
+</tbody>
+</table>
+
+<h2>实现要点与已知限制（诚实说明）</h2>
+<table>
+<colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+<thead><tr><th>项</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>单扇区文件</td><td>每个文件最大 512 字节（1 个数据扇区），mkfile 命令行最多 480 字符。S19/POSIX 阶段可扩展多扇区。</td></tr>
+<tr><td>目录区固定 32 项</td><td>最多 32 个文件（2 扇区 × 16 项/扇区）。满时 mkfile 返回 rc=-12/-14。</td></tr>
+<tr><td>文件名 15 字符</td><td>ASCII 字母/数字/./-，不支持中文/空格（教学简化）。</td></tr>
+<tr><td>无块位图</td><td>空数据扇区用"扫描目录项比对 start_lba"找，文件少时够用；大文件系统会慢。</td></tr>
+<tr><td>测试盘 hd18.img</td><td>S16 的 hd.img 在 Windows 上被残留进程锁（Bochs 强杀后句柄延迟释放），本阶段换全新 hd18.img 绕开；后续阶段建议用内核 reboot 而非强杀 Bochs。</td></tr>
+</tbody>
+</table>
+
+<div class="next">
+<h3 style="margin:0 0 8px;color:var(--fg);">下一阶段预告：S18 用户态库（libc 起步）</h3>
+<p style="font-size:14px;">S17 让内核能持久化存文件，S18 是<b>给用户程序发"标准工具箱"</b>：把 malloc/free（内存分配）、字符串操作、printf 这些 C 库基础函数搬进用户态，让用户程序不再手搓代码，而是像写普通 C 程序一样调用标准函数。这是迈向"能跑真实程序"的一步。</p>
+<p style="font-size:13px;color:var(--muted);margin-top:8px;">路线图节点：S16 硬盘驱动 ✓ → <b>S17 磁盘文件系统 ✓（本次）</b> → S18 用户态库 → S19 POSIX 完善 → S20 真机里程碑。</p>
+</div>
+
+</div>
+</body>
+</html>

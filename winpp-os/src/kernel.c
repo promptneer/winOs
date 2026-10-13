@@ -23,6 +23,7 @@
 #include "tcp.h"
 #include "httpd.h"
 #include "ata.h"
+#include "fs_disk.h"
 #include "vt.h"
 
 u32  g_mem_kb = 0;
@@ -290,6 +291,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[11f] ata hdd ...\r\n");
     vga_printf("[11f] ata hdd ...\n");
     ata_init();
+    serial_puts("[11g] disk fs ...\r\n");
+    vga_printf("[11g] disk fs ...\n");
+    fs_disk_init();
     serial_puts("[12a] vt ...\r\n");
     vga_printf("[12a] vt ...\n");
     vt_init();

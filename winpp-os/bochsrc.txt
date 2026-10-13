@@ -15,5 +15,5 @@ debugger_log: D:\WinPP\winpp-os\dbg.out
 ne2k: enabled=1, ioaddr=0x240, irq=10, mac=52:54:00:12:34:56, ethmod=slirp, script=D:/WinPP/winpp-os/slirp.conf
 # S16 ATA PIO: virtual hard disk (10MB, 20 cyl x 16 heads x 63 spt = 20160 sectors)
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
-ata0-master: type=disk, path="D:/WinPP/winpp-os/hd.img", mode=flat, cylinders=20, heads=16, spt=63
+ata0-master: type=disk, path="D:/WinPP/winpp-os/hd18.img", mode=flat, cylinders=20, heads=16, spt=63
 

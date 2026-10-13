@@ -30,6 +30,7 @@ extern void kernel_poweroff(void);
 #include "dns.h"
 #include "httpd.h"
 #include "ata.h"
+#include "fs_disk.h"
 #include "vt.h"
 
 /* ---------------- 极简 libc ---------------- */
@@ -116,6 +117,7 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  httpd     HTTP server on :8080 (browser: 127.0.0.1:8080)\n");
     vga_printf("  chat      TCP chat server on :7784 (echo to client)\n");
     vga_printf("  hd        hd info|read <lba>|write <lba> <text>|test  ATA PIO disk\n");
+    vga_printf("  fsd       fsd init|mkfile <name> <text>|cat <name>|ls|rm <name>  disk filesystem\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -538,6 +540,50 @@ static void cmd_hd(int argc, char **argv)
         return;
     }
     vga_printf("hd: unknown subcmd '%s'\n", argv[1]);
+}
+
+/* S17: fsd —— 磁盘文件系统（格式化/建文件/读文件/列目录/删除） */
+static void cmd_fsd(int argc, char **argv)
+{
+    static u8 buf[512];
+    int i, n;
+
+    if (argc < 2) {
+        vga_printf("fsd init|mkfile <name> <text>|cat <name>|ls|rm <name>\n");
+        return;
+    }
+    if (k_strcmp(argv[1], "init") == 0) {
+        fs_disk_format();
+        vga_printf("fsd: disk formatted\n");
+        return;
+    }
+    if (k_strcmp(argv[1], "mkfile") == 0 && argc >= 4) {
+        n = 0;
+        for (i = 0; argv[3][i] && i < 480; i++) buf[n++] = (u8)argv[3][i];
+        i = fs_disk_mkfile(argv[2], buf, (u32)n);
+        if (i == 0) vga_printf("fsd: '%s' created (%d bytes)\n", argv[2], n);
+        else        vga_printf("fsd: mkfile failed rc=%d\n", i);
+        return;
+    }
+    if (k_strcmp(argv[1], "cat") == 0 && argc >= 3) {
+        n = fs_disk_cat(argv[2], buf);
+        if (n < 0) { vga_printf("fsd: cat '%s' failed rc=%d\n", argv[2], n); return; }
+        vga_printf("fsd: '%s' (%d bytes): ", argv[2], n);
+        for (i = 0; i < n; i++) vga_printf("%c", buf[i]);
+        vga_printf("\n");
+        return;
+    }
+    if (k_strcmp(argv[1], "ls") == 0) {
+        fs_disk_ls();
+        return;
+    }
+    if (k_strcmp(argv[1], "rm") == 0 && argc >= 3) {
+        i = fs_disk_rm(argv[2]);
+        if (i == 0) vga_printf("fsd: '%s' removed\n", argv[2]);
+        else        vga_printf("fsd: rm failed rc=%d\n", i);
+        return;
+    }
+    vga_printf("fsd: unknown subcmd '%s'\n", argv[1]);
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1377,6 +1423,7 @@ static const cmd_t cmds[] = {
     { "httpd",    "HTTP server on :8080 (browser: 127.0.0.1:8080)", cmd_httpd },
     { "chat",     "TCP chat server on :7784 (echo)", cmd_chat },
     { "hd",       "hd info|read <lba>|write <lba> <text>|test  ATA PIO disk", cmd_hd },
+    { "fsd",      "fsd init|mkfile|cat|ls|rm  disk filesystem", cmd_fsd },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
