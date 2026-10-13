@@ -40,6 +40,12 @@ static void vga_set_mode13h(void)
     for (u8 i = 0; i < 29; i++) {
         outb(0x3D4, i); outb(0x3D5, crtc[i]);
     }
+    /* 回读诊断：确认 VGA 寄存器写入生效（Mode13h: SR4=06, GC6=05, CR14=00） */
+    outb(0x3C4, 0x04); u8 vsr4 = inb(0x3C5);
+    outb(0x3CE, 0x06); u8 vgc6 = inb(0x3CF);
+    outb(0x3D4, 0x14); u8 vcr14 = inb(0x3D5);
+    serial_printf("[gui] vga verify SR4=%02x GC6=%02x CR14=%02x\r\n",
+                  (unsigned)vsr4, (unsigned)vgc6, (unsigned)vcr14);
 }
 
 static void vga_set_mode03(void)
