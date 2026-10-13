@@ -14,6 +14,7 @@
 
 #define NET_IP_PROTO_ICMP 1
 #define NET_IP_PROTO_UDP  17
+#define NET_IP_PROTO_TCP  6   /* S13：与 tcp.h 一致 */
 
 #define NET_ICMP_ECHO     8
 #define NET_ICMP_REPLY    0
@@ -33,6 +34,7 @@ typedef struct udp_ep {
     u16   from_port;
     u8   auto_ack;          /* =1 时收到即回一个 ACK 包（宿主↔内核闭环用） */
     u8   is_cmd;            /* =1 时收到的内容当 shell 命令行执行（远程命令通道） */
+    u8   owner;             /* S14：0=系统，1=sock 层（shell sock 命令），2=DNS 客户端 */
 } udp_ep_t;
 
 /* ---- 协议栈入口 ---- */

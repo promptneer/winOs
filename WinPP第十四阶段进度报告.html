@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十四阶段进度报告（统一 Socket + DNS 客户端）</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1117'/%3E%3Ctext x='32' y='42' font-size='26' text-anchor='middle' fill='%2358a6ff' font-family='Consolas,monospace'%3EWP%3C/text%3E%3C/svg%3E">
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --line:#30363d; --txt:#e6edf3; --dim:#8b949e;
+          --acc:#58a6ff; --ok:#3fb950; --warn:#d29922; --bad:#f85149; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt);
+         font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif; line-height:1.7; }
+  .wrap { max-width:1080px; margin:0 auto; padding:28px 20px 60px; }
+  h1 { font-size:24px; margin:0 0 4px; color:#fff; }
+  .sub { color:var(--dim); margin-bottom:24px; font-size:14px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          padding:20px 22px; margin-bottom:20px; }
+  .card h2 { margin:0 0 12px; font-size:17px; color:var(--acc); }
+  table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  th,td { border:1px solid var(--line); padding:9px 11px; text-align:left;
+          vertical-align:top; font-size:13.5px; word-break:break-word; }
+  th { background:#1c2128; color:var(--dim); font-weight:600; }
+  tr:hover td { background:#1a1f29; }
+  code { background:#22272e; color:#7ee787; padding:1px 6px; border-radius:4px;
+         font-family:Consolas,"Courier New",monospace; font-size:12.5px; }
+  pre { background:#0b0f14; border:1px solid var(--line); border-radius:8px;
+        padding:12px 14px; overflow-x:auto; font-family:Consolas,monospace;
+        font-size:12.5px; color:#c9d1d9; white-space:pre-wrap; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  .badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px;
+           margin-right:6px; }
+  .b-ok { background:#0f2d1a; color:var(--ok); border:1px solid #1f6f3f; }
+  .b-lim { background:#2d2210; color:var(--warn); border:1px solid #7a5b1a; }
+  ul { margin:8px 0 0; padding-left:20px; } li { margin:6px 0; }
+  .foot { color:var(--dim); font-size:12px; margin-top:18px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>S14 · 统一 Socket 抽象层 + DNS 客户端 — 进度报告</h1>
+  <div class="sub">
+    阶段目标：把 S11 UDP + S13 TCP 收敛成一套 <code>sock</code> 命令（open/connect/send/recv/close/list），并让内核自带 DNS 客户端（输入域名→自动解析 A 记录 IP）
+    <br><span class="badge b-ok">已实现并机器实测</span><span class="badge b-lim">Bochs 虚拟网限制 1 项</span>
+  </div>
+
+  <div class="card">
+    <h2>一、完成内容</h2>
+    <table>
+      <colgroup><col style="width:18%"><col style="width:40%"><col style="width:42%"></colgroup>
+      <tr><th>模块</th><th>做了什么</th><th>对应文件</th></tr>
+      <tr><td>统一 Socket 抽象层</td><td>一套 <code>sock</code> 接口收敛 UDP/TCP：open（udp/tcp）、connect（设发送对端/发起 TCP 连接）、send、recv、close、list；一次仅一个活跃 socket</td><td><code>src/sock.h</code> <code>src/sock.c</code>（新建）</td></tr>
+      <tr><td>DNS 客户端</td><td>发 A 记录查询到 10.0.2.3:53（源端口 53535），解析应答：跳过 CNAME/NS 别名，遍历 Answer 区找第一条 A 记录，输出真实 IP</td><td><code>src/dns.h</code> <code>src/dns.c</code>（新建）</td></tr>
+      <tr><td>网络收包分派</td><td>UDP 端点加 <code>owner</code> 字段：0=系统（7777/7778 原逻辑）、1=sock、2=dns，收包按 owner 分派</td><td><code>src/net.c</code> <code>src/net.h</code>（改）</td></tr>
+      <tr><td>Shell 命令</td><td>命令表新增 <code>sock</code>、<code>dns</code> 及 help 说明；TCP 关联 tcp_idx，<code>sock list</code> 打印 socket 表</td><td><code>src/shell.c</code>（改）</td></tr>
+      <tr><td>模拟器端口映射</td><td>新增 <code>hostfwd=udp::7781</code>（sock UDP 演示）与 <code>tcp::7782</code>（sock TCP 演示）</td><td><code>slirp.conf</code>（改）</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>二、机器实测取证（Bochs 2.8 真实运行，串口 serial.out）</h2>
+    <pre>-- sock open udp 7781        UDP SOCKET BOUND: True
+-- windows udp send -> 7781  KERNEL RX LOG: True      ← 宿主→内核 20 字节
+-- sock recv                 RECV CONTENT: True       ← 收到 hi-from-windows-sock
+-- sock connect 10.0.2.2 40001 + send
+                             HOST UDP RECV: timed out ← Bochs slirp 限制（见三）
+-- sock close (udp) then open tcp 7782
+                             SOCK CLOSED: True
+                             TCP SOCK LISTEN: True
+-- windows tcp connect 127.0.0.1:7782
+                             WINDOWS TCP CONNECT: OK
+                             KERNEL ACCEPT: True      ← 三次握手 accept 成功
+-- dns www.baidu.com         DNS RESOLVED: 183.2.172.177 ← 真实 A 记录
+
+[tcp] listen :7782 (socket 0)
+[sock] tcp socket 0 listen :7782
+[tcp] rx :7782<-10.0.2.2:60238 flags=0x2 seq=18880001 ack=0 len=0   ← SYN
+[tcp] accept from 10.0.2.2:60238 (socket 0, SYN+ACK sent)          ← 握手
+[tcp] rx :7782<-10.0.2.2:60238 flags=0x10 seq=18880002 ack=2654429919 len=0
+[tcp] FIN rx -> CLOSE_WAIT -> FIN+ACK sent (LAST_ACK)              ← 正常关闭
+[dns] query www.baidu.com -> 10.0.2.3:53 (pkt 31 B, rc=4294967295)
+[dns] response rx len=256 at tick=8277
+[dns] wait end pending=1 len=256 dt=0
+[dns] www.baidu.com -> 183.2.172.177                               ← 解析成功</pre>
+  </div>
+
+  <div class="card">
+    <h2>三、修复的 bug（3 个，逐个根因定位）</h2>
+    <table>
+      <colgroup><col style="width:20%"><col style="width:42%"><col style="width:38%"></colgroup>
+      <tr><th>Bug</th><th>现象</th><th>根因与修复</th></tr>
+      <tr><td>DNS 永远超时</td><td>响应已到（len=77/256）但 shell 报 timeout</td><td>清零语句在发送之后，毫秒级响应被清零抹掉；<b>把 pending/len 清零移到 net_udp_send 之前</b></td></tr>
+      <tr><td>DNS 报 no A record</td><td>响应里明明有 A 记录</td><td>Answer 记录偏移算错：RDATA 应在 <code>np+10</code>（TYPE2+CLASS2+TTL4+RDLEN2），原写 np+12；跳下一条用 <code>np+10+rdlen</code>。且跳过 CNAME/NS 后才匹配 A</td></tr>
+      <tr><td>Windows 连 TCP 7782 被拒</td><td>内核已 listen 但 connect 报 10061</td><td>slirp.conf 只配了 udp::7781，缺 <code>tcp::7782</code> hostfwd；补上后三次握手 accept 全绿</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>四、验收对照</h2>
+    <table>
+      <colgroup><col style="width:46%"><col style="width:14%"><col style="width:40%"></colgroup>
+      <tr><th>验收项</th><th>结果</th><th>证据</th></tr>
+      <tr><td>sock UDP open/bind/收包/recv</td><td class="ok">通过</td><td>Windows→7781 20B 收到并 recv 显示</td></tr>
+      <tr><td>sock TCP listen + 宿主 connect 握手</td><td class="ok">通过</td><td>accept from 10.0.2.2:60238 + FIN 正常关闭</td></tr>
+      <tr><td>DNS 域名解析（跳过 CNAME 找 A）</td><td class="ok">通过</td><td>www.baidu.com -> 183.2.172.177</td></tr>
+      <tr><td>sock close / list 资源管理</td><td class="ok">通过</td><td>udp socket closed + 可再 open tcp</td></tr>
+      <tr><td>内核主动 UDP 出站到宿主</td><td class="warn">受限</td><td>内核侧 rc=0 帧已上线路（slirp-pktlog 取证）；Bochs slirp 不转发 UDP 出站到宿主，<b>真机无此限制</b></td></tr>
+      <tr><td>构建与回归</td><td class="ok">通过</td><td>zig cc -O2 编译零错误；kernel.bin 139456B / 273 sectors</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>五、下一阶段预告（S15，待用户指令开工）</h2>
+    <ul>
+      <li><b>S15 建议方向：IP 分片重组 + 大缓冲收发</b>——把 UDP 收缓冲从 256B 提到 1.5KB，实现 IP 分片重组，DNS/TCP 大包一次收全。</li>
+      <li>或按路线图继续推进：用户态 socket 库（把 syscall 封装成 libc 风格 API）、socketpair 本地环回、HTTP 客户端。</li>
+    </ul>
+  </div>
+
+  <div class="foot">WinPP OS · S14 进度报告 · Bochs 2.8 实测 · 2026-10-13</div>
+</div>
+</body>
+</html>

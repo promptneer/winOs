@@ -26,6 +26,8 @@ extern void kernel_poweroff(void);
 #include "ne2k.h"
 #include "net.h"
 #include "tcp.h"
+#include "sock.h"
+#include "dns.h"
 #include "vt.h"
 
 /* ---------------- 极简 libc ---------------- */
@@ -391,6 +393,65 @@ static void cmd_tcpstat(int argc, char **argv)
     serial_printf("[tcp] stat: rx=%u tx=%u retx=%u syn=%u\r\n",
                   g_tcp_rx, g_tcp_tx,
                   g_tcp_retx, g_tcp_syn);
+}
+
+/* ================ S14：统一 socket + DNS ================ */
+
+/* sock open udp <port> / sock open tcp <port> */
+static void cmd_sock_open(int argc, char **argv)
+{
+    if (argc != 3) { vga_printf("usage: sock open <udp|tcp> <port>\n"); return; }
+    int port = k_atoi(argv[2]);
+    if (port < 1 || port > 65535) { vga_printf("sock: bad port\n"); return; }
+    if (k_strcmp(argv[1], "udp") == 0)      sock_open_udp((u16)port);
+    else if (k_strcmp(argv[1], "tcp") == 0) sock_open_tcp((u16)port);
+    else vga_printf("sock: bad type (udp|tcp)\n");
+}
+
+/* sock connect <ip> <port> */
+static void cmd_sock_connect(int argc, char **argv)
+{
+    if (argc != 3) { vga_printf("usage: sock connect <a.b.c.d> <port>\n"); return; }
+    u8 ip[4];
+    if (parse_ip(argv[1], ip) != 0) { vga_printf("sock: bad ip\n"); return; }
+    sock_connect(ip, (u16)k_atoi(argv[2]));
+}
+
+/* sock send <text> */
+static void cmd_sock_send(int argc, char **argv)
+{
+    if (argc < 2) { vga_printf("usage: sock send <text>\n"); return; }
+    char text[SOCK_BUF_MAX];
+    int n = 0;
+    for (int a = 1; a < argc && n < SOCK_BUF_MAX - 1; a++) {
+        for (const char *p = argv[a]; *p && n < SOCK_BUF_MAX - 1; p++) text[n++] = *p;
+        if (a + 1 < argc && n < SOCK_BUF_MAX - 1) text[n++] = ' ';
+    }
+    text[n] = 0;
+    sock_send(text);
+}
+
+/* sock <subcmd> —— 分发 */
+static void cmd_sock(int argc, char **argv)
+{
+    if (argc < 2) {
+        vga_printf("usage: sock open udp|tcp <port> | connect <ip> <port> | send <text> | recv | close | list\n");
+        return;
+    }
+    if (k_strcmp(argv[1], "open") == 0)    { cmd_sock_open(argc - 1, argv + 1); return; }
+    if (k_strcmp(argv[1], "connect") == 0) { cmd_sock_connect(argc - 1, argv + 1); return; }
+    if (k_strcmp(argv[1], "send") == 0)    { cmd_sock_send(argc - 1, argv + 1); return; }
+    if (k_strcmp(argv[1], "recv") == 0)    { sock_recv(); return; }
+    if (k_strcmp(argv[1], "close") == 0)   { sock_close(); return; }
+    if (k_strcmp(argv[1], "list") == 0)    { sock_list(); return; }
+    vga_printf("sock: unknown subcommand '%s'\n", argv[1]);
+}
+
+/* dns <hostname> —— DNS A 记录查询（UDP 53 → slirp DNS 10.0.2.3） */
+static void cmd_dns(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: dns <hostname>\n"); return; }
+    dns_query(argv[1]);
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1225,6 +1286,8 @@ static const cmd_t cmds[] = {
     { "tkill",    "reset terminal <id> session",   cmd_tkill },
     { "tcp",      "tcp listen/connect/send/recv",  cmd_tcp },
     { "tcpstat",  "tcp connection state table",    cmd_tcpstat },
+    { "sock",     "unified sock open/connect/send/recv/close/list", cmd_sock },
+    { "dns",      "dns <hostname> A-record lookup", cmd_dns },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },

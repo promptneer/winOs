@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十四阶段测试指令表（统一 Socket + DNS 客户端）</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1117'/%3E%3Ctext x='32' y='42' font-size='26' text-anchor='middle' fill='%2358a6ff' font-family='Consolas,monospace'%3EWP%3C/text%3E%3C/svg%3E">
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --line:#30363d; --txt:#e6edf3; --dim:#8b949e;
+          --acc:#58a6ff; --ok:#3fb950; --warn:#d29922; --bad:#f85149; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt);
+         font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif; line-height:1.7; }
+  .wrap { max-width:1080px; margin:0 auto; padding:28px 20px 60px; }
+  h1 { font-size:24px; margin:0 0 4px; color:#fff; }
+  .sub { color:var(--dim); margin-bottom:24px; font-size:14px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          padding:20px 22px; margin-bottom:20px; }
+  .card h2 { margin:0 0 12px; font-size:17px; color:var(--acc); }
+  table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  colgroup col:nth-child(1){width:5%} colgroup col:nth-child(2){width:16%}
+  colgroup col:nth-child(3){width:22%} colgroup col:nth-child(4){width:45%}
+  colgroup col:nth-child(5){width:12%}
+  th,td { border:1px solid var(--line); padding:10px 12px; text-align:left;
+          vertical-align:top; font-size:14px; word-break:break-word; }
+  th { background:#1c2128; color:var(--dim); font-weight:600; white-space:nowrap; }
+  tr:hover td { background:#1a1f29; }
+  code { background:#22272e; color:#7ee787; padding:2px 7px; border-radius:4px;
+         font-family:Consolas,"Courier New",monospace; font-size:13px; }
+  .check { text-align:center; }
+  .check input { width:22px; height:22px; cursor:pointer; accent-color:var(--ok); }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  .bar { position:sticky; top:0; background:var(--bg); padding:12px 0; z-index:5;
+         border-bottom:1px solid var(--line); margin-bottom:20px; display:flex;
+         align-items:center; gap:14px; flex-wrap:wrap; }
+  .bar b { font-size:15px; }
+  .bar .pct { color:var(--acc); font-weight:700; }
+  .bar button { background:var(--panel); color:var(--txt); border:1px solid var(--line);
+                border-radius:6px; padding:6px 14px; cursor:pointer; font-size:13px; }
+  .bar button:hover { border-color:var(--acc); }
+  .notes li { margin:6px 0; font-size:14px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px;
+           margin-right:6px; }
+  .b-ok { background:#0f2d1a; color:var(--ok); border:1px solid #1f6f3f; }
+  .b-lim { background:#2d2210; color:var(--warn); border:1px solid #7a5b1a; }
+  pre { background:#0b0f14; border:1px solid var(--line); border-radius:8px;
+        padding:12px 14px; overflow-x:auto; font-family:Consolas,monospace;
+        font-size:12.5px; color:#c9d1d9; white-space:pre-wrap; }
+  .foot { color:var(--dim); font-size:12px; margin-top:18px; text-align:center; }
+  @media (max-width:640px){ .card{overflow-x:auto} table{min-width:680px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <b>WinPP 第十四阶段 · 测试指令表</b>
+    <span class="pct" id="pct">0 / 11</span>
+    <span class="badge b-ok">统一 Socket 抽象层</span>
+    <span class="badge b-lim">DNS 客户端</span>
+    <button onclick="resetAll()">重置勾选</button>
+  </div>
+
+  <h1>S14 · 统一 Socket 抽象层 + DNS 客户端</h1>
+  <div class="sub">测试方式：<code>启动WinPP内核.bat</code> 启动内核 → 在 shell 输入命令 → 逐项核对"正常显示"列 → 测试完打勾（自动保存，下次打开不丢）</div>
+
+  <div class="card">
+    <h2>一、逐项测试（共 11 项）</h2>
+    <table>
+      <colgroup><col><col><col><col><col></colgroup>
+      <tr><th>#</th><th>对外命令</th><th>你做什么</th><th>正常显示（以此为准）</th><th>勾选</th></tr>
+      <tr>
+        <td>1</td><td><code>sock</code>（不带参数）</td>
+        <td>输入 sock 回车</td>
+        <td>显示用法：<code>sock open udp &lt;port&gt;</code> / <code>sock open tcp &lt;port&gt;</code> / <code>sock connect &lt;ip&gt; &lt;port&gt;</code> / <code>sock send &lt;text&gt;</code> / <code>sock recv</code> / <code>sock close</code> / <code>sock list</code></td>
+        <td class="check"><input type="checkbox" data-i="0"></td>
+      </tr>
+      <tr>
+        <td>2</td><td><code>sock open udp 7781</code></td>
+        <td>输入后回车</td>
+        <td><code>[sock] udp socket 0 bound :7781</code></td>
+        <td class="check"><input type="checkbox" data-i="1"></td>
+      </tr>
+      <tr>
+        <td>3</td><td>Windows 发 UDP 到 7781</td>
+        <td>在 Windows 终端：<code>python -c "import socket;socket.socket(socket.AF_INET,socket.SOCK_DGRAM).sendto(b'hi-from-windows-sock',('127.0.0.1',7781))"</code></td>
+        <td>内核串口/屏幕出现 <code>[sock] udp rx :7781 &lt;- 10.0.2.2:xxxxx len=20</code></td>
+        <td class="check"><input type="checkbox" data-i="2"></td>
+      </tr>
+      <tr>
+        <td>4</td><td><code>sock recv</code></td>
+        <td>输入后回车</td>
+        <td><code>[sock] recv 20 bytes: hi-from-windows-sock</code>（显示刚收到的内容）</td>
+        <td class="check"><input type="checkbox" data-i="3"></td>
+      </tr>
+      <tr>
+        <td>5</td><td><code>sock connect 10.0.2.2 40001</code></td>
+        <td>输入后回车（把发送目标设为宿主）</td>
+        <td><code>[sock] udp peer set to 10.0.2.2:40001</code></td>
+        <td class="check"><input type="checkbox" data-i="4"></td>
+      </tr>
+      <tr>
+        <td>6</td><td><code>sock send hello-from-kernel-sock</code></td>
+        <td>输入后回车</td>
+        <td><code>[sock] udp tx 22 bytes -&gt; 10.0.2.2:40001 (rc=0)</code>（rc=0 表示已写入网卡发送队列；Bochs 虚拟网不转发出站 UDP 到宿主属模拟器限制，真机无此限制）</td>
+        <td class="check"><input type="checkbox" data-i="5"></td>
+      </tr>
+      <tr>
+        <td>7</td><td><code>sock close</code></td>
+        <td>输入后回车（释放当前 socket）</td>
+        <td><code>[sock] udp socket closed (:port 7781)</code></td>
+        <td class="check"><input type="checkbox" data-i="6"></td>
+      </tr>
+      <tr>
+        <td>8</td><td><code>sock open tcp 7782</code></td>
+        <td>输入后回车</td>
+        <td><code>[tcp] listen :7782 (socket 0)</code><br><code>[sock] tcp socket 0 listen :7782</code></td>
+        <td class="check"><input type="checkbox" data-i="7"></td>
+      </tr>
+      <tr>
+        <td>9</td><td>Windows 连 TCP 7782</td>
+        <td>在 Windows 终端：<code>python -c "import socket;socket.socket().connect(('127.0.0.1',7782));print('OK')"</code></td>
+        <td>打印 OK；内核出现 <code>[tcp] accept from 10.0.2.2:xxxxx</code>（三次握手完成）</td>
+        <td class="check"><input type="checkbox" data-i="8"></td>
+      </tr>
+      <tr>
+        <td>10</td><td><code>dns www.baidu.com</code></td>
+        <td>输入后回车，等待约 1~6 秒</td>
+        <td>屏幕出现 <code>[dns] www.baidu.com -&gt; 183.2.x.x</code>（解析出 A 记录真实 IP）</td>
+        <td class="check"><input type="checkbox" data-i="9"></td>
+      </tr>
+      <tr>
+        <td>11</td><td><code>sock list</code></td>
+        <td>输入后回车</td>
+        <td>打印当前 socket 表（类型/状态/本地端口/远端），TCP 关闭后应显示无活跃 socket 或 closed 状态</td>
+        <td class="check"><input type="checkbox" data-i="10"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>二、小白版一句话：这阶段做了什么</h2>
+    <ul class="notes">
+      <li><b>统一 Socket</b>：以前 UDP 是 UDP、TCP 是 TCP，两套命令；现在收成一个"插座"概念——<code>open / connect / send / recv / close / list</code> 一套命令通吃 UDP 和 TCP。</li>
+      <li><b>DNS 客户端</b>：内核自己会"查号"了——输入域名（如 www.baidu.com），它自己发 DNS 查询包、收应答、跳过 CNAME 别名、找到真正的 IP 地址，不用再手填 183.2.x.x。</li>
+      <li><b>意义</b>：这是"上网能力"从玩具变成真家伙的收尾——既有传输层（UDP/TCP），又有应用层入口（DNS），下一步就能让内核"按域名找服务器、连上去收发数据"。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>三、已知限制（测试前先看，避免误判）</h2>
+    <ul class="notes">
+      <li><span class="warn">Bochs slirp 不转发"内核主动发出的 UDP"到宿主</span>：第 6 项内核侧 <code>rc=0</code> 即"已发出"（帧级可取证），Windows 收不到是模拟器限制；真机（U 盘启动）无此限制。</li>
+      <li>UDP 接收缓冲 256 字节：超过会被截断（DNS 响应通常够用，完整大包接收留给后续阶段）。</li>
+      <li>一次只允许一个活跃 socket：open 新 socket 前必须 <code>sock close</code>（内核会提示 <code>close current socket first</code>）。</li>
+      <li><code>dns</code> 查询时内核忙等约 6 秒，期间不响应新命令，属正常。</li>
+    </ul>
+  </div>
+
+  <div class="foot">WinPP OS · S14 测试指令表 · 勾选状态自动保存在本浏览器（localStorage: winpp_s14_check）</div>
+</div>
+
+<script>
+(function(){
+  var KEY='winpp_s14_check';
+  var boxes=document.querySelectorAll('.check input');
+  function save(){ var a=[]; boxes.forEach(function(b){a.push(b.checked?1:0);}); localStorage.setItem(KEY,a.join('')); upd(); }
+  function upd(){
+    var n=0; boxes.forEach(function(b){ if(b.checked) n++; });
+    document.getElementById('pct').textContent=n+' / '+boxes.length;
+  }
+  try{
+    var v=localStorage.getItem(KEY)||'';
+    boxes.forEach(function(b,i){ if(v.charAt(i)==='1') b.checked=true; });
+  }catch(e){}
+  boxes.forEach(function(b){ b.addEventListener('change',save); });
+  window.resetAll=function(){ if(!confirm('确认清空全部勾选？'))return; boxes.forEach(function(b){b.checked=false;}); save(); };
+  upd();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十三阶段测试指令表</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M7 10l6 6-6 6M17 22h8' stroke='%235ee0c8' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--line:#2a3542;--ink:#e6edf3;--ink2:#c9d1d9;--ink3:#8b949e;--green:#34d399;--yellow:#fbbf24;--cyan:#5ee0c8;--orange:#ff9d5c}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;padding:34px 22px 50px}
+  .wrap{max-width:980px;margin:0 auto}
+  .crumb{font-family:Consolas,monospace;font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:10px}
+  h1{font-size:24px;font-weight:800}
+  h1 .grad{background:linear-gradient(90deg,#5ee0c8,#58a6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:13px;color:var(--ink3);margin:8px 0 18px;line-height:1.7}
+  .bar{display:flex;gap:10px;align-items:center;margin:0 0 14px;font-size:12.5px;color:var(--ink2)}
+  .bar .btn{background:#1f6feb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12.5px;cursor:pointer}
+  .bar .pct{font-weight:700;color:var(--green)}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  colgroup col:nth-child(1){width:5%}colgroup col:nth-child(2){width:17%}
+  colgroup col:nth-child(3){width:32%}colgroup col:nth-child(4){width:36%}
+  colgroup col:nth-child(5){width:10%}
+  th{background:#1c242e;color:var(--ink2);font-size:12px;padding:10px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  td{font-size:12.5px;padding:9px 8px;border-bottom:1px solid #202c3a;color:var(--ink2);vertical-align:top;line-height:1.6}
+  td.cmd{font-family:Consolas,monospace;color:var(--cyan);font-weight:700}
+  td.win{font-family:Consolas,monospace;color:var(--orange);font-size:12px}
+  tr:last-child td{border-bottom:none}
+  input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer}
+  .note{margin-top:14px;font-size:12.5px;color:var(--ink3);line-height:1.8;border-top:1px solid var(--line);padding-top:12px}
+  .tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:10px;margin-left:4px;vertical-align:2px}
+  .tag.pass{background:#103f2e;color:#34d399;border:1px solid #1c7a54}
+  code{background:#1c242e;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-family:Consolas,monospace;font-size:11.5px;color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb">WINPP OS / S13 / TCP STACK / TEST CHECKLIST</div>
+  <h1>S13 TCP 协议栈 <span class="grad">测试指令表</span></h1>
+  <p class="sub">逐项测试 → 打勾自动保存（localStorage）。<span class="tag pass">Bochs 已实测通过</span> 6 项核心链路：三次握手 / 内核→Windows 数据 / Windows→内核数据 / 主动连接 / 正常关闭 / 超时回收。</p>
+
+  <div class="bar">
+    <button class="btn" onclick="reset()">全部重置</button>
+    <span class="pct" id="pct">0 / 10 项已通过</span>
+  </div>
+
+  <table>
+    <colgroup><col><col><col><col><col></colgroup>
+    <thead>
+      <tr><th>#</th><th>命令（内核侧）</th><th>你做什么</th><th>正常显示（看到即通过）</th><th>勾选</th></tr>
+    </thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+  <div class="note">
+    <b>前置：</b>① 启动 Bochs 到 shell（root@kernel:/#）；② Windows 侧打开一个 Python 终端做对端（见第 2 项）。<br>
+    <b>配套 Windows 侧命令</b>（在 cmd/PowerShell 里跑）：<code>python</code> 进入交互后：<br>
+    <code>import socket; s=socket.socket(); s.connect(("127.0.0.1",7779)); s.recv(64)</code> —— 测内核发来的数据。<br>
+    <code>s.sendall(b"hello-from-windows-tcp"); s.close()</code> —— 给内核发数据并关闭。
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  ["tcp listen 7779", "内核侧输入 tcp listen 7779 回车", "屏幕显示 tcp: listening on :7779（内核开始在 7779 端口等待连接）"],
+  ["Windows 发起连接", "Windows 侧执行 socket.connect((\"127.0.0.1\",7779))", "Windows 侧不报错；内核串口出现 [tcp] accept from 10.0.2.2:xxxxx (socket 0, SYN+ACK sent)—— 三次握手完成"],
+  ["tcpstat", "内核侧输入 tcpstat 回车", "表格出现一行 ESTABLISHED 7779 10.0.2.2:xxxxx  snd/una  rcv_nxt  buf 0/0"],
+  ["tcp send hello-from-kernel-v13", "内核侧输入 tcp send hello-from-kernel-v13 回车", "Windows 侧 s.recv(64) 收到 b'hello-from-kernel-v13' —— 内核数据可靠送达主机"],
+  ["Windows 发数据", "Windows 侧执行 s.sendall(b\"hello-from-windows-tcp\")", "内核侧输入 tcp recv 回车，屏幕显示收件内容含 hello-from-windows-tcp 完整 22 字节；串口 [tcp] data +22 -> rbuf (rlen=22)"],
+  ["Windows 关闭连接", "Windows 侧执行 s.close()", "内核串口依次出现 [tcp] FIN rx -> CLOSE_WAIT -> FIN+ACK sent (LAST_ACK)，数秒后 LAST_ACK timeout -> closed —— 连接正常回收"],
+  ["tcpstat（关闭后）", "再输入 tcpstat 回车", "表格中该连接已消失（socket 释放，无残留）"],
+  ["tcp connect 10.0.2.2 7780", "Windows 侧先开监听：socket(); bind((\"127.0.0.1\",7780)); listen(1)，然后内核侧输入 tcp connect 10.0.2.2 7780 回车", "内核串口 [tcp] connect established (ACK sent)；Windows 侧 accept 到来自 127.0.0.1 的连接 —— 主动连接方向握手成功"],
+  ["help", "内核侧输入 help 回车", "命令列表出现 tcp 与 tcpstat 条目"],
+  ["tcpstat retx", "完整跑完一遍收发后看 tcpstat 的统计", "retx=0（无重传）；若对端提前断开触发重发，retx 计数值会增长且数据最终仍可达"]
+];
+const KEY = "winpp_s13_check";
+let st = JSON.parse(localStorage.getItem(KEY) || "{}");
+const tb = document.getElementById("tb");
+ITEMS.forEach((it, i) => {
+  const tr = document.createElement("tr");
+  const cid = "c" + i;
+  tr.innerHTML = `<td>${i+1}</td><td class="cmd">${it[0]}</td><td>${it[1]}</td><td><div>${it[2]}</div></td><td style="text-align:center"><input type="checkbox" id="${cid}" ${st[cid]?"checked":""}></td>`;
+  tb.appendChild(tr);
+});
+function pct(){
+  let n = 0;
+  for (let i=0;i<ITEMS.length;i++) if (st["c"+i]) n++;
+  document.getElementById("pct").textContent = n + " / " + ITEMS.length + " 项已通过";
+}
+document.addEventListener("change", e => {
+  if (e.target.tagName === "INPUT" && e.target.type === "checkbox") {
+    st[e.target.id] = e.target.checked;
+    localStorage.setItem(KEY, JSON.stringify(st));
+    pct();
+  }
+});
+function reset(){
+  if (!confirm("确定清除全部勾选？")) return;
+  st = {}; localStorage.removeItem(KEY);
+  ITEMS.forEach((_, i) => { const el = document.getElementById("c"+i); if (el) el.checked = false; });
+  pct();
+}
+pct();
+</script>
+</body>
+</html>

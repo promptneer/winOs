@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十三阶段(S13)进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M7 10l6 6-6 6M17 22h8' stroke='%235ee0c8' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--line:#2a3542;--ink:#e6edf3;--ink2:#c9d1d9;--ink3:#8b949e;--green:#34d399;--yellow:#fbbf24;--cyan:#5ee0c8;--red:#f97583}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;padding:34px 22px 50px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .crumb{font-family:Consolas,monospace;font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:10px}
+  h1{font-size:24px;font-weight:800}
+  h1 .grad{background:linear-gradient(90deg,#5ee0c8,#58a6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:13px;color:var(--ink3);margin:8px 0 20px;line-height:1.7}
+  h2{font-size:16px;color:var(--cyan);margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:8px}
+  colgroup col:nth-child(1){width:18%}colgroup col:nth-child(2){width:34%}colgroup col:nth-child(3){width:48%}
+  th{background:#1c242e;color:var(--ink2);font-size:12px;padding:9px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  td{font-size:12.5px;padding:8px;border-bottom:1px solid #202c3a;color:var(--ink2);vertical-align:top;line-height:1.6}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:Consolas,monospace}
+  .g{color:var(--green);font-weight:700}
+  .y{color:var(--yellow);font-weight:700}
+  .r{color:var(--red);font-weight:700}
+  .pre{background:#10151b;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-family:Consolas,monospace;font-size:12px;line-height:1.65;color:var(--ink2);overflow-x:auto;white-space:pre-wrap}
+  .note{font-size:12.5px;color:var(--ink3);line-height:1.8;border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb">WINPP OS / S13 / TCP STACK / PROGRESS REPORT</div>
+  <h1>S13 TCP 协议栈 <span class="grad">进度报告</span></h1>
+  <p class="sub">三次握手 · 可靠传输（停等+超时重传）· 面向连接关闭 · tcp/tcpstat 命令 · 内核↔Windows 双向数据实测打通 · <b>Bochs 三重取证</b>（串口+屏幕转储+slirp 抓包）。</p>
+
+  <h2>1. 本阶段完成内容</h2>
+  <table>
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th>模块</th><th>做了什么</th><th>实测证据</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">tcp.h / tcp.c（新增）</td><td>2 个 TCP socket；状态机 LISTEN→SYN_SENT→ESTABLISHED→CLOSE_WAIT/LAST_ACK→CLOSED；停等可靠传输（3s 超时、最多 3 次重传）；TCP 校验和含伪头；接收缓冲 rbuf</td><td class="mono">[tcp] listen :7779 (socket 0) → [tcp] accept from 10.0.2.2:61423 (SYN+ACK sent)</td></tr>
+      <tr><td class="mono">net.c</td><td>ip_send 导出为 net_ip_send；proto==6 分流 tcp_rx；net_init 末尾 tcp_init；IP 数据段长度改用 IP total 字段（修 Ethernet pad 假数据）</td><td class="mono">[net] tcp layer ready</td></tr>
+      <tr><td class="mono">kernel.c</td><td>irq0 每 10 tick 调 tcp_poll()（超时重传 / LAST_ACK 超时回收）</td><td class="mono">[tcp] LAST_ACK timeout -> closed</td></tr>
+      <tr><td class="mono">shell.c</td><td>新增 <span class="mono">tcp</span> 命令（listen/connect/send/recv）+ <span class="mono">tcpstat</span> 状态表</td><td>屏幕表格 ESTABLISHED 7779 10.0.2.2:61423 snd/una rcv_nxt 0/0</td></tr>
+      <tr><td class="mono">slirp.conf</td><td>新增 <span class="mono">hostfwd = tcp::7779-10.0.2.15:7779</span>（Windows 侧连 127.0.0.1:7779 即达内核）</td><td>Windows socket.connect 成功</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. 机器实测（Bochs 三重取证：串口 + 屏幕 + 抓包）</h2>
+  <p class="mono">① 被动握手 + 内核→Windows 数据（serial + Windows recv）：</p>
+  <div class="pre">[tcp] listen :7779 (socket 0)
+[tcp] rx :7779<-10.0.2.2:61423 flags=0x2 seq=10368001 ack=0 len=0   ← Windows 的 SYN
+[tcp] accept from 10.0.2.2:61423 (socket 0, SYN+ACK sent)           ← 三次握手完成
+[tcp] rx :7779<-10.0.2.2:61423 flags=0x10 seq=10368002 ack=2654437185 len=0
+Windows 侧 recv 结果： b'hello-from-kernel-v13'                     ← 内核数据 20 字节可靠送达！</div>
+  <p class="mono">② Windows→内核数据（22 字节完整入缓冲）：</p>
+  <div class="pre">[tcp] rx :7779<-10.0.2.2:61423 flags=0x18 seq=10368002 ack=2654437185 len=22
+[tcp] data +22 -> rbuf (rlen=22)                                    ← 22 字节完整接收，无截断无乱序</div>
+  <p class="mono">③ 主动连接（内核 tcp connect 10.0.2.2 7780 → slirp → Windows 监听）：</p>
+  <div class="pre">[tcp] rx :50607<-10.0.2.2:7780 flags=0x12 seq=28352001 ack=2246833821 len=0
+[tcp] connect established (ACK sent)                                ← 主动方向握手成功
+Windows 侧 accept 到连接：('127.0.0.1', 49726)</div>
+  <p class="mono">④ 关闭流程 + 屏幕 tcpstat：</p>
+  <div class="pre">[tcp] FIN rx -> CLOSE_WAIT -> FIN+ACK sent (LAST_ACK)
+[tcp] LAST_ACK timeout -> closed                                    ← 连接回收干净
+state      lport  rip:rport       snd/una  rcv_nxt  buf
+ESTABLISHED 7779 10.0.2.2:61423  2654437164/0  10368002  0/0        ← 屏幕表格：序号/确认号/接收缓冲正确
+[tcp] stat: rx=8 tx=5 retx=0 syn=1                                  ← 零重传</div>
+
+  <h2>3. 踩坑与修复（3 个关键 bug）</h2>
+  <table>
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th>问题</th><th>症状</th><th>根因与修复</th></tr></thead>
+    <tbody>
+      <tr><td class="r">以太网帧 pad 假数据</td><td>纯 ACK 段(20B)被解析成 len=6 假数据，污染 rbuf 并把 rcv_nxt 推偏 → 真正 22 字节数据被判"乱序"丢弃</td><td>net_rx_ip 用<u>帧长</u>（60B 含 pad）算 TCP 长度；改为读 <span class="mono">IP total 字段</span>（pkt[2..3]）计算，修复后 data +22 完整入缓冲</td></tr>
+      <tr><td class="r">被动握手序号语义</td><td>内核→Windows 数据发不过去（对端按 seq 判坏段）</td><td>SYN+ACK 段应 seq=ISN，发完再把 snd_seq 推进 ISN+1；原代码先推进后发送导致数据段 seq 从 ISN 起发。修复后 Windows ACK 正确推进 snd_una，数据直达</td></tr>
+      <tr><td class="r">serial_printf 不支持 %lu</td><td>tcpstat 输出异常/崩溃风险</td><td>全部 <span class="mono">%lu → %u</span>（u32 直接 %u 打印），并移除多余 (unsigned long) 强制转换</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. 验收结论</h2>
+  <table>
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th>验收项</th><th>结果</th><th>证据</th></tr></thead>
+    <tbody>
+      <tr><td>listen + 被动三次握手</td><td class="g">通过</td><td>Windows connect 成功 + serial accept 日志</td></tr>
+      <tr><td>内核→Windows 数据传输</td><td class="g">通过</td><td>Windows recv 到 b'hello-from-kernel-v13'（20B）</td></tr>
+      <tr><td>Windows→内核数据传输</td><td class="g">通过</td><td>[tcp] data +22 -> rbuf (rlen=22)</td></tr>
+      <tr><td>主动连接 connect</td><td class="g">通过</td><td>[tcp] connect established + Windows accept</td></tr>
+      <tr><td>正常关闭 FIN/LAST_ACK</td><td class="g">通过</td><td>CLOSE_WAIT → FIN+ACK → LAST_ACK timeout → closed</td></tr>
+      <tr><td>可靠传输（无重传）</td><td class="g">通过</td><td>[tcp] stat: retx=0</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <b>构建产物：</b>kernel.bin 131260B / 257 sectors，floppy.img 已更新；已停旧 Bochs 后重建，构建日志全绿。<br>
+    <b>Git：</b>已提交 <span class="mono">13c7e58</span> 并推送 GitHub main（TCP 协议栈 + 修复）。<br>
+    <b>下一步（S14）：</b>socket 层封装（面向应用的 bind/connect/send/recv 简化接口）+ DNS 客户端（A 记录查询，经 UDP 53 端口向 slirp DNS 10.0.2.3 发请求）。测试指令表见《WinPP第十三阶段测试指令表.html》。
+  </div>
+</div>
+</body>
+</html>

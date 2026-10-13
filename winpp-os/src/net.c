@@ -1,6 +1,8 @@
 #include "net.h"
 #include "ne2k.h"
 #include "tcp.h"
+#include "sock.h"
+#include "dns.h"
 #include "io.h"
 #include "serial.h"
 #include "vga.h"
@@ -289,6 +291,10 @@ static void net_rx_ip(const u8 *pkt, u16 len)
         ep->from_port = sport;
         g_udp_rx++;
 
+        /* S14：端口归属分派 —— DNS 响应 / sock 层 UDP socket */
+        if (ep->owner == 2) { dns_rx(dport, src, sport, ep->buf, dlen); return; }
+        if (ep->owner == 1) { sock_udp_rx(dport, src, sport, ep->buf, dlen); return; }
+
         /* 远程命令通道：整行交给 shell 执行（在 shell 上下文里跑，避免中断重入） */
         if (ep->is_cmd) {
             int n = 0;
@@ -520,4 +526,8 @@ void net_init(void)
     /* S13：TCP 层初始化 */
     tcp_init();
     serial_puts("[net] tcp layer ready (proto 6)\r\n");
+
+    /* S14：统一 socket 抽象层 + DNS 客户端（DNS 绑定 :53535 收响应） */
+    sock_init();
+    dns_init();
 }
