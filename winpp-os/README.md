@@ -121,6 +121,23 @@ GUI 交互实测：打开 Bochs → Load 配置 `bochsrc.txt` → Start，用真
    `'\n'`(10)，但 keyboard.h 里 `KEY_ENTER` 误定义为 `13`(CR)，`shell_readline` 判断
    `k == KEY_ENTER` 永不命中 → 命令永远不执行、提示符文本不断累积。修复：
    `#define KEY_ENTER '\n'`。修复后 help/time/uptime/sysinfo/ls/about/demo 全部实机执行成功。
+7. **Mode13h 寄存器组错 + 属性控制器/调色板没编程（GUI 完全看不见画面）**：CRTC 表把 CR08 写成
+   0x28（bit5-6 = 垂直像素平移）、CR0C/0D 起始地址写成 0x0028、CR13 偏移写成 0x40，且 0x3C0
+   属性控制器与 0x3C8/0x3C9 调色板从未写过 → Bochs 报 `vertical pel panning not supported` /
+   `byte panning not implemented`，窗口几何算成 640x271、画面不刷新。修复：改用 VGA BIOS 官方
+   模式表（vgabios vgatables.h）的 Mode13h 组（CR08=0x00、CR13=0x28、SR4=0x0E…）+ 补 21 个 AC
+   寄存器与 16 色 DAC。修复后平移告警 0 条、几何 640x400、4 个窗口正常画出。
+8. **退出图形模式满屏竖条纹（文本字体被写坏）**：Mode13h 的 64KB 帧缓冲在 chain4 下写穿 plane 0-3
+   各 16KB，plane 2 偏移 0-8K 正是文本 8x16 字体；BIOS 切模式会重装字体，内核自己切就得自己存/装。
+   修复：进图形模式前保存整套文本寄存器组（Misc/Sequencer/CRTC/GC/AC/DAC）+ 8KB 字体，退出写回。
+   注意字体访问必须用经典配方 `SR2=04 / SR4=06 / GC4=02 / GC5=00 / GC6=00（A0000 窗口）`，否则
+   文本模式的字母数字模式会把奇/偶地址分流到 plane 0/1，字体只写回一半（字形带条纹）。
+   校验：8KB 字体 saved=restored=`c8dbddd1`，mismatch=0。
+9. **0xB9000 页错误**：分页只映射了 0xB8000 一页，而字体在 0xB8000-0xB9FFF，保存字体时读
+   `0xB9000` 立刻 #PF 挂死（串口 `[pfdbg] cr2=b9000`）。修复：整段映射 0xB8000-0xBFFFF（8 页）；
+   #PF 演示仍打地址 0，不受影响。
+10. **Bochs 退出图形模式后残留图形像素**：win32 前端只重绘"字符有变化"的单元。修复：退出时先用
+   可见字符铺满整屏强制全部变化一次再清屏重绘（实机 CRT 持续扫描显存，无此问题）。
 
 ## 在真实机器上启动
 

@@ -20,53 +20,229 @@ extern void kernel_redraw_shell(void);   /* kernel.c：回文本模式后重绘 
 
 /* ---------------- VGA Mode 13h / Mode 03 ---------------- */
 
-static void vga_set_mode13h(void)
-{
-    /* 关闭输入 + 标准 320x200x256 编程序列（OSDev VGA 参考） */
-    outb(0x3C2, 0x63);                    /* Misc Output */
-    outb(0x3C4, 0x01); outb(0x3C5, 0x01); /* SR1 */
-    outb(0x3C4, 0x04); outb(0x3C5, 0x06); /* SR4: 0xA0000 */
-    outb(0x3CE, 0x05); outb(0x3CF, 0x40); /* GC5: read map 0 */
-    outb(0x3CE, 0x06); outb(0x3CF, 0x05); /* GC6: 图形模式 */
-    outb(0x3C4, 0x02); outb(0x3C5, 0x0F); /* SR2: 全平面 */
-    outb(0x3D4, 0x14); outb(0x3D5, 0x00); /* CRTC: 解除保护 */
+/* 寄存器组取值来自 VGA BIOS 官方模式表（vgabios vgatables.h）：
+ *   Mode 13h = misc 0x63 / sequencer model 06 / CRTC model 09 / GC model 05 / AC model 08
+ *   Mode 03h = misc 0x67 / sequencer model 01 / CRTC model 01 / GC model 00 / AC model 00
+ * 注意：CR0-CR7 受 CR11 bit7 写保护，必须先解锁；AC 需先读 0x3DA 复位触发器，
+ * 最后写 index 0x20(PAS) 打开显示。旧表把 CR08 写成 0x28（bit5-6=垂直像素平移）、
+ * CR0C/0D 起始地址写成 0x28、CR13 偏移写成 0x40，Bochs 直接报
+ * "vertical pel panning / byte panning not implemented" 且画面不刷新。 */
 
-    static const u8 crtc[32] = {
-        0x5F,0x3F,0x3F,0x00,0x41,0x9C,0x0E,0x8F,
-        0x28,0x40,0x9C,0x8F,0x28,0x00,0x3F,0xA3,
-        0x9C,0x8F,0x28,0x40,0x9C,0x0E,0x8F,0x28,
-        0x1F,0x03,0x0D,0x0B,0x0E
-    };
-    for (u8 i = 0; i < 29; i++) {
-        outb(0x3D4, i); outb(0x3D5, crtc[i]);
-    }
-    /* 回读诊断：确认 VGA 寄存器写入生效（Mode13h: SR4=06, GC6=05, CR14=00） */
-    outb(0x3C4, 0x04); u8 vsr4 = inb(0x3C5);
-    outb(0x3CE, 0x06); u8 vgc6 = inb(0x3CF);
-    outb(0x3D4, 0x14); u8 vcr14 = inb(0x3D5);
-    serial_printf("[gui] vga verify SR4=%02x GC6=%02x CR14=%02x\r\n",
-                  (unsigned)vsr4, (unsigned)vgc6, (unsigned)vcr14);
+static const u8 seq_13h[5]  = {0x03,0x01,0x0F,0x00,0x0E};   /* SR0-4: SR4=0E (chain4, 线性帧缓冲) */
+static const u8 crtc_13h[25] = {
+    0x5F,0x4F,0x50,0x82,0x54,0x80,0xBF,0x1F,0x00,0x41,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x9C,0x8E,0x8F,0x28,0x40,0x96,0xB9,0xA3,0xFF
+};
+static const u8 gc_13h[9]   = {0x00,0x00,0x00,0x00,0x00,0x40,0x05,0x0F,0xFF};
+static const u8 ac_13h[21]  = {
+    0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,
+    0x0D,0x0E,0x0F,0x41,0x00,0x0F,0x00,0x00
+};
+
+/* 回文本模式不再硬编码寄存器组：开机时 VGA BIOS 已经把 80x25 文本模式配好了，
+ * 进图形模式前把当前整套寄存器（Misc/Sequencer/CRTC/GC/AC/DAC）存下来，
+ * 退出时原样写回。这样恢复的一定是"本机真正在用的"文本模式参数。 */
+
+/* 标准 EGA 16 色（VGA BIOS mode 13h 调色板的前 16 项）。GUI 只用到 0-15 号色。 */
+static const u8 pal16[16][3] = {
+    {0x00,0x00,0x00}, {0x00,0x00,0x2A}, {0x00,0x2A,0x00}, {0x00,0x2A,0x2A},
+    {0x2A,0x00,0x00}, {0x2A,0x00,0x2A}, {0x2A,0x15,0x00}, {0x2A,0x2A,0x2A},
+    {0x15,0x15,0x15}, {0x15,0x15,0x3F}, {0x15,0x3F,0x15}, {0x15,0x3F,0x3F},
+    {0x3F,0x15,0x15}, {0x3F,0x15,0x3F}, {0x3F,0x3F,0x15}, {0x3F,0x3F,0x3F}
+};
+
+static void vga_write_seq(const u8 *r)
+{
+    for (u8 i = 0; i < 5; i++) { outb(0x3C4, i); outb(0x3C5, r[i]); }
 }
 
-static void vga_set_mode03(void)
+static void vga_write_crtc(const u8 *r)
 {
-    /* 回 80x25 文本模式 */
-    outb(0x3C2, 0x63);
-    outb(0x3C4, 0x01); outb(0x3C5, 0x01); /* SR1 */
-    outb(0x3C4, 0x04); outb(0x3C5, 0x02); /* SR4: 文本 */
-    outb(0x3CE, 0x06); outb(0x3CF, 0x04); /* GC6: 文本 */
-    outb(0x3C4, 0x02); outb(0x3C5, 0x0F);
-    outb(0x3D4, 0x14); outb(0x3D5, 0x00); /* 解除保护 */
+    outb(0x3D4, 0x11); outb(0x3D5, (u8)(r[0x11] & 0x7F));   /* 解锁 CR0-CR7 */
+    for (u8 i = 0; i < 25; i++) { outb(0x3D4, i); outb(0x3D5, r[i]); }
+}
 
-    static const u8 crtc[32] = {
-        0x5F,0x3F,0x3F,0x00,0x41,0x9C,0x0E,0x8F,
-        0x28,0x0F,0x9C,0x8F,0x28,0x00,0x3F,0xA3,
-        0x9C,0x8F,0x28,0x1F,0x00,0x00,0x00,0x00,
-        0x00,0x00,0x00,0x00,0x00
-    };
-    for (u8 i = 0; i < 29; i++) {
-        outb(0x3D4, i); outb(0x3D5, crtc[i]);
+static void vga_write_gc(const u8 *r)
+{
+    for (u8 i = 0; i < 9; i++) { outb(0x3CE, i); outb(0x3CF, r[i]); }
+}
+
+static void vga_write_ac(const u8 *r)
+{
+    (void)inb(0x3DA);                                        /* 复位 AC 索引/数据触发器 */
+    for (u8 i = 0; i < 21; i++) { outb(0x3C0, i); outb(0x3C0, r[i]); }
+    outb(0x3C0, 0x20);                                       /* PAS：打开显示 */
+}
+
+static void vga_write_pal16(void)
+{
+    outb(0x3C8, 0x00);
+    for (u8 i = 0; i < 16; i++) {
+        outb(0x3C9, pal16[i][0]);
+        outb(0x3C9, pal16[i][1]);
+        outb(0x3C9, pal16[i][2]);
     }
+}
+
+static void vga_set_mode13h(void)
+{
+    outb(0x3C2, 0x63);                    /* Misc Output：0x3D4/0x3DA 端口组 + 25MHz */
+    vga_write_seq(seq_13h);
+    vga_write_crtc(crtc_13h);
+    vga_write_gc(gc_13h);
+    vga_write_ac(ac_13h);
+    vga_write_pal16();
+
+    /* 回读诊断：CR08 应为 00（无像素平移）、CR13=28（每行 40 字）、SR4=0E（chain4） */
+    outb(0x3C4, 0x04); u8 vsr4 = inb(0x3C5);
+    outb(0x3CE, 0x06); u8 vgc6 = inb(0x3CF);
+    outb(0x3D4, 0x08); u8 vcr08 = inb(0x3D5);
+    outb(0x3D4, 0x13); u8 vcr13 = inb(0x3D5);
+    serial_printf("[gui] vga verify SR4=%02x GC6=%02x CR08=%02x CR13=%02x\r\n",
+                  (unsigned)vsr4, (unsigned)vgc6, (unsigned)vcr08, (unsigned)vcr13);
+}
+
+/* ---------------- 文本模式状态保存 / 恢复 ---------------- */
+
+static u8  sv_misc;
+static u8  sv_seq[5], sv_crtc[25], sv_gc[9], sv_ac[21], sv_dac[16 * 3];
+static int sv_valid = 0;
+
+static void vga_save_text_state(void)
+{
+    sv_misc = inb(0x3CC);                                    /* Misc Output（只读端口） */
+    for (u8 i = 0; i < 5; i++) { outb(0x3C4, i); sv_seq[i] = inb(0x3C5); }
+    for (u8 i = 0; i < 25; i++) { outb(0x3D4, i); sv_crtc[i] = inb(0x3D5); }
+    for (u8 i = 0; i < 9; i++) { outb(0x3CE, i); sv_gc[i] = inb(0x3CF); }
+    (void)inb(0x3DA);                                        /* 复位 AC 触发器 */
+    for (u8 i = 0; i < 21; i++) { outb(0x3C0, i); sv_ac[i] = inb(0x3C1); }
+    (void)inb(0x3DA); outb(0x3C0, 0x20);                     /* 恢复 PAS：打开显示 */
+    outb(0x3C7, 0x00);
+    for (u16 i = 0; i < (u16)sizeof(sv_dac); i++) sv_dac[i] = inb(0x3C9);
+
+    sv_valid = 1;
+    serial_printf("[gui] text state saved: misc=%02x SR1=%02x SR4=%02x CR08=%02x CR13=%02x AC10=%02x\r\n",
+                  (unsigned)sv_misc, (unsigned)sv_seq[1], (unsigned)sv_seq[4],
+                  (unsigned)sv_crtc[0x08], (unsigned)sv_crtc[0x13], (unsigned)sv_ac[0x10]);
+}
+
+static void vga_restore_text_state(void)
+{
+    outb(0x3C2, sv_misc);
+    vga_write_seq(sv_seq);
+    vga_write_crtc(sv_crtc);
+    vga_write_gc(sv_gc);
+    vga_write_ac(sv_ac);
+    outb(0x3C8, 0x00);
+    for (u16 i = 0; i < (u16)sizeof(sv_dac); i++) outb(0x3C9, sv_dac[i]);
+
+    outb(0x3C4, 0x04); u8 vsr4 = inb(0x3C5);
+    outb(0x3CE, 0x06); u8 vgc6 = inb(0x3CF);
+    outb(0x3D4, 0x08); u8 vcr08 = inb(0x3D5);
+    outb(0x3D4, 0x13); u8 vcr13 = inb(0x3D5);
+    serial_printf("[gui] text state restored: SR4=%02x GC6=%02x CR08=%02x CR13=%02x\r\n",
+                  (unsigned)vsr4, (unsigned)vgc6, (unsigned)vcr08, (unsigned)vcr13);
+}
+
+/* ---------------- 字符发生器（文本字体）保存 / 恢复 ----------------
+ * mode 13h 的 64KB 线性帧缓冲在 chain4 下会写穿 plane 0-3 各 16KB，
+ * 而 plane 2 偏移 0-8K 正是文本模式用的 8x16 字体（256 字符 × 32B）。
+ * VGA BIOS 每次切模式都会重装字体，我们绕过 BIOS 自己切模式，就必须自己存/装，
+ * 否则退出图形模式后字体已被画坏，回文本模式满屏乱码。
+ * 访问字体要用经典配方（VGA BIOS 装字体同款）：
+ *   SR2=0x04 只选 plane 2；SR4=0x06 顺序访问；GC4=0x02 读 plane 2；
+ *   GC5=0x00 写模式 0 且关 odd/even/移位；GC6=0x00 改用 A0000 窗口并关掉字母数字模式。
+ * 实测（Bochs 逐组比对）：只有这一组能做到 8192 字节写读完全一致；若沿用文本模式的
+ * GC6=0x0E，字母数字模式会把奇/偶地址自动分流到 plane 0/1，写 plane 2 会丢一半字节，
+ * 表现就是"字形回来了但被竖条纹贯穿"。另外 VGA 读锁存延迟一拍，故每字节读两次取第二次。 */
+
+#define VGA_FONT_BYTES 8192
+static u8 font_save[VGA_FONT_BYTES];
+
+#define FNV_SEED  2166136261u
+#define FNV_MUL   16777619u
+
+#define VGA_FONT_BASE ((volatile u8 *)0xA0000)
+
+static void vga_font_setup(void)
+{
+    outb(0x3C4, 0x02); outb(0x3C5, 0x04);
+    outb(0x3C4, 0x04); outb(0x3C5, 0x06);
+    outb(0x3CE, 0x04); outb(0x3CF, 0x02);
+    outb(0x3CE, 0x05); outb(0x3CF, 0x00);
+    outb(0x3CE, 0x06); outb(0x3CF, 0x00);
+}
+
+/* 回读 plane 2 与参考数据比对，返回不一致字节数；同时打印前 16 字节便于定位 */
+static u32 vga_font_verify(const u8 *ref, const char *tag)
+{
+    volatile u8 *p = VGA_FONT_BASE;
+    u32 bad = 0;
+    for (u16 i = 0; i < VGA_FONT_BYTES; i++) {
+        (void)p[i];
+        if (p[i] != ref[i]) bad++;
+    }
+    serial_printf("[gui] font %s mismatch=%u first16:", tag, (unsigned)bad);
+    for (u8 i = 0; i < 16; i++) {
+        (void)p[i];
+        serial_printf(" %02x", (unsigned)p[i]);
+    }
+    serial_puts("\r\n");
+    return bad;
+}
+
+static void vga_save_font(void)
+{
+    outb(0x3C4, 0x02); u8 sr2 = inb(0x3C5);
+    outb(0x3C4, 0x04); u8 sr4 = inb(0x3C5);
+    outb(0x3CE, 0x04); u8 gc4 = inb(0x3CF);
+    outb(0x3CE, 0x05); u8 gc5 = inb(0x3CF);
+    outb(0x3CE, 0x06); u8 gc6 = inb(0x3CF);
+
+    vga_font_setup();
+    volatile u8 *p = VGA_FONT_BASE;
+    u32 sum = FNV_SEED;
+    for (u16 i = 0; i < VGA_FONT_BYTES; i++) {
+        (void)p[i];                          /* 第一次读丢弃（锁存延迟一拍） */
+        u8 v = p[i];
+        font_save[i] = v;
+        sum = (sum ^ (u32)v) * FNV_MUL;
+    }
+    (void)vga_font_verify(font_save, "saved");
+
+    outb(0x3C4, 0x02); outb(0x3C5, sr2);
+    outb(0x3C4, 0x04); outb(0x3C5, sr4);
+    outb(0x3CE, 0x04); outb(0x3CF, gc4);
+    outb(0x3CE, 0x05); outb(0x3CF, gc5);
+    outb(0x3CE, 0x06); outb(0x3CF, gc6);
+    serial_printf("[gui] font saved 8KB sum=%08x\r\n", (unsigned)sum);
+}
+
+static void vga_restore_font(void)
+{
+    outb(0x3C4, 0x02); u8 sr2 = inb(0x3C5);
+    outb(0x3C4, 0x04); u8 sr4 = inb(0x3C5);
+    outb(0x3CE, 0x04); u8 gc4 = inb(0x3CF);
+    outb(0x3CE, 0x05); u8 gc5 = inb(0x3CF);
+    outb(0x3CE, 0x06); u8 gc6 = inb(0x3CF);
+
+    vga_font_setup();
+    volatile u8 *p = VGA_FONT_BASE;
+    for (u16 i = 0; i < VGA_FONT_BYTES; i++) p[i] = font_save[i];
+
+    u32 sum = FNV_SEED;                      /* 回读校验：应与 saved 的 sum 一致 */
+    for (u16 i = 0; i < VGA_FONT_BYTES; i++) {
+        (void)p[i];
+        sum = (sum ^ (u32)p[i]) * FNV_MUL;
+    }
+    (void)vga_font_verify(font_save, "restored");
+
+    outb(0x3C4, 0x02); outb(0x3C5, sr2);
+    outb(0x3C4, 0x04); outb(0x3C5, sr4);
+    outb(0x3CE, 0x04); outb(0x3CF, gc4);
+    outb(0x3CE, 0x05); outb(0x3CF, gc5);
+    outb(0x3CE, 0x06); outb(0x3CF, gc6);
+    serial_printf("[gui] font restored sum=%08x\r\n", (unsigned)sum);
 }
 
 /* ---------------- 帧缓冲绘制 ---------------- */
@@ -429,6 +605,7 @@ static void gw_activate(int idx)
 void gui_run(void)
 {
     serial_puts("[gui] enter graphics mode (13h 320x200)\r\n");
+    if (!sv_valid) { vga_save_text_state(); vga_save_font(); }   /* 先记住 BIOS 留下的文本模式 */
     gui_active = 1;
     vga_set_mode13h();
 
@@ -444,7 +621,6 @@ void gui_run(void)
     status_update();
 
     int last_redraw = -100;
-    int mouse_ok = 0;
 
     for (;;) {
         /* 等待下一个 tick（约 10ms）：避免忙等占满 CPU。
@@ -490,9 +666,13 @@ void gui_run(void)
         }
     }
 
-    /* 退出：回文本模式 */
-    vga_set_mode03();
+    /* 退出：写回文本模式寄存器组 + 重新装回被图形模式写坏的字体 */
+    vga_restore_text_state();
+    vga_restore_font();
     gui_active = 0;
     serial_puts("[gui] exit to text mode\r\n");
+    /* Bochs 的 win32 前端只在"字符"变化时重绘该单元（只改属性不算），先把整屏用可见字符
+     * 写一遍，保证每个单元都变化一次，再交给 kernel_redraw_shell 清屏重绘。 */
+    vga_fill(0, 0, VGA_COLS, VGA_ROWS, '.', 0x07);
     kernel_redraw_shell();
 }

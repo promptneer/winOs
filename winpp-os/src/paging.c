@@ -78,10 +78,13 @@ void paging_init(u32 mem_kb)
     }
     serial_puts("[pg] step3 vga pt\r\n");
 
-    /* 3) VGA 文本页 0xB8000：补进 PD[0] 的恒等页表（低 1MB 其余保持不映射 -> #PF 演示）。
-     *    绝不能替换 PD[0]，否则低 4MB 恒等映射丢失 -> triple fault。 */
+    /* 3) VGA 文本窗口 0xB8000-0xBFFFF（32KB，8 页）：文本缓冲 + plane 2 的 8KB 字体。
+     *    S10 的 gui 退出时要存/装字体（0xB8000-0xB9FFF），只映射一页会在 0xB9000 #PF。
+     *    低 1MB 其余保持不映射 -> 留给 #PF 演示（pfault 打地址 0）。 */
     u32 pd0_pt = ((volatile u32 *)pd_phys)[0] & 0xFFFFF000u;
-    ((volatile u32 *)pd0_pt)[0xB8] = 0xB8000 | PAGE_PRESENT | PAGE_WRITE;
+    for (u32 pg = 0; pg < 8; pg++) {
+        ((volatile u32 *)pd0_pt)[0xB8 + pg] = (0xB8000 + pg * 0x1000) | PAGE_PRESENT | PAGE_WRITE;
+    }
     /* 3b) S10 VGA 图形帧缓冲 0xA0000-0xAFFFF（Mode13h 320x200 = 64KB，16 页）。
      *     补进同一恒等页表。 */
     for (u32 pg = 0; pg < 16; pg++) {

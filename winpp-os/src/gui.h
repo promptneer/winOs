@@ -1,5 +1,5 @@
-#ifndef GUI_H
-#define GUI_H
+#ifndef WINPP_GUI_H
+#define WINPP_GUI_H
 
 #include "io.h"
 

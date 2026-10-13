@@ -151,12 +151,15 @@
 
   <div class="sec">
     <h2>串口铁证（COM1）</h2>
-    <div class="hsub">Bochs 2.8 实机，GUI 完整生命周期 + 窗口操作全部由键盘事件驱动命中。</div>
+    <div class="hsub">Bochs 2.8 实机，GUI 完整生命周期 + 窗口操作全部由键盘事件驱动命中（2026-10-13 复查后重新取证）。</div>
 
     <div class="ev">
-      <div class="eh"><span class="tag3">进入图形模式 + 创建 4 窗口</span><span>PAGE_FAULT = 0</span></div>
+      <div class="eh"><span class="tag3">进入图形模式：存文本状态 + 装 Mode13h + 存字体</span><span>PAGE_FAULT = 0</span></div>
       <pre>[gui] cmd gui
-[gui] enter graphics mode (13h 320x200)   <span class="c"># Mode13h 寄存器序列切换完成</span>
+[gui] enter graphics mode (13h 320x200)
+[gui] text state saved: misc=67 SR1=0 SR4=2 CR08=0 CR13=28 AC10=c   <span class="c"># 记住 BIOS 的文本模式寄存器组</span>
+[gui] font saved 8KB sum=c8dbddd1        <span class="c"># 8KB 文本字体已存（回读 mismatch=0）</span>
+[gui] vga verify SR4=e GC6=5 CR08=0 CR13=28   <span class="c"># Mode13h 寄存器组回读（CR08=0 无像素平移）</span>
 [gui] windows created: 4                 <span class="c"># CLOCK / SYSINFO / DEMO / WINPP</span></pre>
     </div>
 
@@ -169,17 +172,30 @@
     </div>
 
     <div class="ev">
-      <div class="eh"><span class="tag3">鼠标驱动初始化（独立版本验证）</span><span>IRQ12</span></div>
-      <pre>[5b] mouse ...
-[gui] mouse init: PS/2 enabled           <span class="c"># 8042 辅助设备启用 + 数据报告使能</span></pre>
+      <div class="eh"><span class="tag3">退出图形模式：写回寄存器组 + 装回字体</span><span>校验一致</span></div>
+      <pre>[gui] text state restored: SR4=2 GC6=e CR08=0 CR13=28
+[gui] font restored sum=c8dbddd1         <span class="c"># 与 saved 完全相同（mismatch=0）</span>
+[gui] exit to text mode</pre>
+    </div>
+
+    <div class="ev">
+      <div class="eh"><span class="tag3">Bochs 侧交叉核对</span><span>0 告警 / 0 页错误</span></div>
+      <pre>bochs.log 中 "CRTC: ... panning ... not ..." 计数 = 0     <span class="c"># 旧版这里是两条不支持告警 + 画面冻结</span>
+bochs.log 中 WINGUI dimension update x=640 y=400 bpp=8     <span class="c"># 320x200 二倍缩放，几何正确</span>
+serial.out 中 [pfdbg]（页错误）计数 = 0</pre>
     </div>
   </div>
 
   <div class="sec">
     <h2>实测截图</h2>
+    <div class="hsub">全部为本机 Bochs 2.8 窗口实拍（PrintWindow 抓取），文件均为真 PNG。</div>
     <div class="shots">
-      <div class="shot"><img src="assets/s10-01-shell.png" alt="文本 shell"><div class="cap">文本模式 shell（root@kernel:/# 输入 gui 前）</div></div>
-      <div class="shot"><img src="assets/s10-02-gui-desktop.png" alt="GUI 图形桌面"><div class="cap">Mode13h 图形桌面：深蓝渐变 + 窗口（PrintWindow 图形帧）</div></div>
+      <div class="shot"><img src="assets/s10-11-boot-shell.png" alt="文本 shell"><div class="cap">① 开机进入文本 shell（gui 之前）</div></div>
+      <div class="shot"><img src="assets/s10-12-gui-desktop.png" alt="GUI 桌面"><div class="cap">② <b>gui</b> 进入 Mode13h：深蓝条纹桌面 + 4 个窗口（CLOCK/SYSINFO/DEMO/WINPP）</div></div>
+      <div class="shot"><img src="assets/s10-13-gui-new-win.png" alt="n 新建窗口"><div class="cap">③ <b>n</b> 新建第 5 个窗口，底部状态栏 WINS:05/06</div></div>
+      <div class="shot"><img src="assets/s10-14-gui-close-win.png" alt="x 关闭窗口"><div class="cap">④ <b>x</b> 关闭新建窗口</div></div>
+      <div class="shot"><img src="assets/s10-15-back-to-text.png" alt="q 回文本"><div class="cap">⑤ <b>q</b> 回 80x25 文本模式：字体与提示符完好（旧版这里是满屏竖条纹）</div></div>
+      <div class="shot"><img src="assets/s10-16-help-after-gui.png" alt="help"><div class="cap">⑥ 回文本后 <b>help</b> 正常执行</div></div>
     </div>
   </div>
 
@@ -200,6 +216,44 @@
   </div>
 
   <div class="sec">
+    <h2>2026-10-13 复查修正：三个真 Bug，以及一次错误的"验证通过"</h2>
+    <div class="hsub">用户反馈"屏幕上根本没出现图形界面、退出后花屏"，复查后确认：内核逻辑没错，但<b>显示链路是坏的</b>，而上一轮只看了串口和三个寄存器回读，把"没画出来"当成了通过。</div>
+
+    <div class="bug">
+      <h4>为什么上一轮会误判</h4>
+      <p>自检只回读了 <span class="term">SR4 / GC6 / CR14</span> —— 这三个寄存器恰好是代码里单独写过的那三个，当然读得回来；而真正决定画面是否刷新的 CRTC 时序/平移位与属性控制器从未被检查。串口日志只能证明"内核以为自己在画"，证明不了"屏幕上有东西"。当时的所谓 GUI 截图，实际内容是<b>冻结的文本画面</b>或<b>竖条纹垃圾</b>。</p>
+    </div>
+
+    <div class="bug">
+      <h4>Bug 4：Mode13h 寄存器组错 + 属性控制器/调色板根本没编程</h4>
+      <p>原表把 <span class="term">CR08</span> 写成 0x28（bit5-6 恰好打开"垂直像素平移"）、<span class="term">CR0C/0D</span> 起始地址写成 0x0028、<span class="term">CR13</span> 偏移写成 0x40，且 <span class="term">0x3C0</span> 属性控制器与 <span class="term">0x3C8/0x3C9</span> 调色板从未写过。后果：Bochs 直接报 <span class="term">CRTC: vertical pel panning not supported</span> / <span class="term">byte panning not implemented</span>，窗口几何被算成 640x271，画面<b>完全不刷新</b>。修复：<span class="fx">改用 VGA BIOS 官方模式表（vgabios vgatables.h）的 Mode13h 寄存器组</span>（CR08=0x00、CR13=0x28、SR4=0x0E…），并补上属性控制器 21 个寄存器 + 16 色 DAC 编程。修复后 Bochs 平移告警 <b>0 条</b>、几何 640x400。</p>
+    </div>
+
+    <div class="bug">
+      <h4>Bug 5：退出图形模式时文本字体已被写坏（满屏竖条纹的真因）</h4>
+      <p>Mode13h 的 64KB 线性帧缓冲在 chain4 下会写穿 plane 0-3 各 16KB，而 <b>plane 2 偏移 0-8K 正是文本模式用的 8x16 字体</b>。VGA BIOS 每次切模式都会重装字体，内核自己切模式却没人装，于是回文本模式后每个字符都用坏掉的字体点阵渲染 → 竖条纹。修复：<span class="fx">进图形模式前保存整套文本寄存器组（Misc/Sequencer/CRTC/GC/AC/DAC）+ 8KB 字体，退出时原样写回</span>（不再硬编码回归表）。</p>
+      <p>附带踩到的一个坑：存取字体必须用经典配方 <span class="term">SR2=0x04（只选 plane 2）/ SR4=0x06 / GC4=0x02 / GC5=0x00 / GC6=0x00（A0000 窗口）</span>；若沿用文本模式的 <span class="term">GC6=0x0E</span>，字母数字模式会把奇/偶地址自动分流到 plane 0/1，写 plane 2 会丢掉一半字节——表现正是"字形回来了但被竖条纹贯穿"。最终以 8KB 字体校验和验证：<span class="fx">saved = restored = c8dbddd1，mismatch=0</span>。</p>
+    </div>
+
+    <div class="bug">
+      <h4>Bug 6：分页只映射 0xB8000 一页 → 存/装字体时 0xB9000 页错误</h4>
+      <p>字体在 0xB8000-0xB9FFF，而分页只映射了 0xB8000 一页，保存字体时读到 <span class="term">0xB9000</span> 立刻 <span class="term">#PF</span>，内核当场挂死（串口留下 <span class="term">[pfdbg] cr2=b9000</span>）。修复：<span class="fx">整段映射文本窗口 0xB8000-0xBFFFF（8 页）</span>；#PF 演示仍用地址 0，不受影响。</p>
+    </div>
+
+    <div class="bug">
+      <h4>Bug 7（模拟器观感）：Bochs 只重绘"字符有变化"的单元</h4>
+      <p>退出图形模式后内容本来就相同（都还是空格）的格子不会重绘，于是残留图形模式的像素。修复：<span class="fx">退出时先用可见字符铺满整屏强制全部变化一次，再清屏重绘</span>。实机 CRT 持续扫描显存，本无此问题。</p>
+    </div>
+
+    <div class="bug">
+      <h4>证据订正</h4>
+      <p>1) <span class="term">winpp-os/shots/</span> 里有 <b>56 个 "*.png" 其实是 BMP 改了扩展名</b>（文件头 42 4D），已全部转成真 PNG；另有 3 个文件本身是坏的/截断的 BMP（<span class="term">17-run-ok.png</span>、<span class="term">_s10-ps7.png</span>、<span class="term">_s10-console.png</span>）保留原样。<br>
+      2) 报告原先引用的 <span class="term">assets/s10-01-shell.png</span> 与 <span class="term">s10-02-gui-desktop.png</span> 内容与标签对不上（后者其实是花屏画面），已替换为本轮真实截图。<br>
+      3) 本轮新增 6 张真 PNG 证据：<span class="term">assets/s10-11…s10-16</span>。</p>
+    </div>
+  </div>
+
+  <div class="sec">
     <h2>开发时间线</h2>
     <div class="tl">
       <div class="node done"><b>S1</b><span>软盘引导</span></div><span class="arrow">→</span>
@@ -216,7 +270,7 @@
     </div>
   </div>
 
-  <div class="foot">WinPP OS · 第十阶段进度报告 · 2026-10-13 · Bochs 实机 + COM1 串口 + 截图双通道取证</div>
+  <div class="foot">WinPP OS · 第十阶段进度报告 · 2026-10-13（含当晚复查修正）· Bochs 实机 + COM1 串口 + 真 PNG 截图三通道取证</div>
 </div>
 </body>
 </html>
