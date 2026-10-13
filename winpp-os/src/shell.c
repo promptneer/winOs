@@ -98,6 +98,11 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  udptest   UDP loopback self-test\n");
     vga_printf("  chatd <port> [echo|cmd]  UDP chat/cmd server\n");
     vga_printf("  netstat   addr/ARP/endpoints/stats\n");
+    vga_printf("  vt [id]   list / switch virtual terminals\n");
+    vga_printf("  msg <id> <text>  send msg to terminal\n");
+    vga_printf("  msgs      show my terminal inbox\n");
+    vga_printf("  ts        terminal status table\n");
+    vga_printf("  tkill <id>  reset terminal session\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -231,6 +236,52 @@ static void cmd_vt(int argc, char **argv)
         return;
     }
     vt_list();
+}
+
+/* S12-3：msg <id> <text> —— 发消息到另一个终端 */
+static void cmd_msg(int argc, char **argv)
+{
+    if (argc < 3) { vga_printf("usage: msg <id> <text>\n"); return; }
+    int id = k_atoi(argv[1]);
+    char text[VT_MSG_LEN];
+    int n = 0;
+    for (int a = 2; a < argc && n < VT_MSG_LEN - 1; a++) {
+        for (const char *p = argv[a]; *p && n < VT_MSG_LEN - 1; p++) text[n++] = *p;
+        if (a + 1 < argc && n < VT_MSG_LEN - 1) text[n++] = ' ';
+    }
+    text[n] = 0;
+    if (vt_msg_send((u8)id, text) == 0) {
+        vga_printf("msg sent to VT%d: %s\n", id, text);
+    } else {
+        vga_printf("msg: bad id (1..%d)\n", VT_MAX);
+    }
+}
+
+/* S12-3：msgs —— 查看当前终端收件箱 */
+static void cmd_msgs(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    vt_msg_show();
+}
+
+/* S12-4：ts —— 终端状态表 */
+static void cmd_ts(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    vt_list();
+}
+
+/* S12-4：tkill <id> —— 重置（关闭）非活动终端会话 */
+static void cmd_tkill(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: tkill <id>\n"); return; }
+    int id = k_atoi(argv[1]);
+    if (!vt_killable((u8)id)) {
+        vga_printf("tkill: cannot kill active terminal (or bad id)\n");
+        return;
+    }
+    vt_reset((u8)id);
+    vga_printf("VT%d reset (clean session)\n", id);
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1059,6 +1110,10 @@ static const cmd_t cmds[] = {
     { "chatd",    "UDP chat server (bind/view/echo)", cmd_chatd },
     { "netstat",  "addr/ARP/endpoints/stats",   cmd_netstat },
     { "vt",       "list/switch virtual terminals", cmd_vt },
+    { "msg",      "send msg to terminal <id>",     cmd_msg },
+    { "msgs",     "show my terminal inbox",        cmd_msgs },
+    { "ts",       "terminal status table",         cmd_ts },
+    { "tkill",    "reset terminal <id> session",   cmd_tkill },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
@@ -1073,12 +1128,16 @@ static const cmd_t cmds[] = {
 
 static void shell_readline(char *buf, int max)
 {
-    int i = 0;
+    /* S12-2: 输入缓冲挂在当前终端上——切走再切回，半行输入不丢 */
+    vt_t *v = vt_active_ptr();
+    int i = v->ilen;
+    if (i >= max) i = 0;
     for (;;) {
         /* 远程命令通道（宿主 UDP 发来的整行命令）：直接当一行输入返回 */
         if (net_cmd_take(buf, max)) {
             vga_puts(buf);
             vga_putc('\n');
+            v->ilen = 0;
             return;
         }
         /* 非阻塞轮询：键盘 + 串口（S10 自动化测试通道）双输入源 */
@@ -1090,19 +1149,27 @@ static void shell_readline(char *buf, int max)
         }
         serial_printf("[key %d]\r\n", k);
         /* 串口/键盘统一：CR(13) 与 LF(10) 都当回车（宿主发的一般是 CR） */
-        if (k == KEY_ENTER || k == '\r' || k == '\n') { vga_putc('\n'); buf[i] = 0; return; }
+        if (k == KEY_ENTER || k == '\r' || k == '\n') {
+            vga_putc('\n');
+            for (int j = 0; j < i; j++) buf[j] = v->ibuf[j];   /* 半行 -> 命令行 */
+            buf[i] = 0;
+            v->ilen = 0;
+            return;
+        }
         if (k == KEY_BACKSP || k == 127) {
-            if (i > 0) { i--; vga_putc('\b'); }
+            if (i > 0) { i--; vga_putc('\b'); v->ilen = (u8)i; }
             continue;
         }
-        /* S12-1: F1/F2/F3 直接切换虚拟终端（跳过字符输入） */
-        if (k == KEY_F1) { vt_switch(1); continue; }
-        if (k == KEY_F2) { vt_switch(2); continue; }
-        if (k == KEY_F3) { vt_switch(3); continue; }
+        /* S12-1: F1/F2/F3 直接切换虚拟终端（半行输入随终端保留） */
+        if (k == KEY_F1) { vt_switch(1); v = vt_active_ptr(); i = v->ilen; continue; }
+        if (k == KEY_F2) { vt_switch(2); v = vt_active_ptr(); i = v->ilen; continue; }
+        if (k == KEY_F3) { vt_switch(3); v = vt_active_ptr(); i = v->ilen; continue; }
         if (k == KEY_TAB || k == KEY_ESC) continue;
         if (k >= 32 && k < 127 && i < max - 1) {
-            buf[i++] = (char)k;
+            v->ibuf[i] = (char)k;
+            v->ilen = (u8)(i + 1);
             vga_putc((char)k);
+            i++;
         }
     }
 }

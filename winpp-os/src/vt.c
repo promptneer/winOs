@@ -2,11 +2,9 @@
 #include "vga.h"
 #include "serial.h"
 #include "fs.h"
+#include "user.h"
 
-/* ============ S12-1 虚拟终端实现 ============
- * 方案：每个终端保存一份 25x80 屏幕快照 + 光标 + 当前目录。
- * 切换 = 保存当前屏到旧终端 → 载入新终端屏 → 恢复 fs_cwd 与光标。
- * 各终端显示互相独立，互不串扰。 */
+/* ============ S12 虚拟终端实现 ============ */
 
 static vt_t g_vts[VT_MAX];
 static u8   g_active = 1;   /* 当前活动终端 id（1..VT_MAX） */
@@ -51,7 +49,8 @@ void vt_init(void)
         v->name[0] = 'V'; v->name[1] = 'T';
         v->name[2] = (char)('1' + i); v->name[3] = 0;
         v->cwd[0] = '/'; v->cwd[1] = 0;
-        v->msgs = 0;
+        v->nmsg = 0; v->msg_head = 0;
+        v->ilen = 0;
         if (i == 0) {
             vt_screen_save(v);          /* VT1 = 当前屏幕（引导后 shell 屏） */
         } else {
@@ -84,19 +83,85 @@ int vt_switch(u8 id)
     fs_cwd[15] = 0;
     g_active = id;
 
-    serial_printf("[vt] switch -> VT%d (cwd=%s)\r\n", id, fs_cwd);
+    serial_printf("[vt] switch -> VT%d (cwd=%s, ibuf_len=%d, nmsg=%d)\r\n",
+                  id, fs_cwd, (int)new->ilen, (int)new->nmsg);
     return 0;
 }
 
 void vt_list(void)
 {
-    vga_printf("id  name  status   cwd        msgs\r\n");
+    vga_printf("id  name  status   cwd        msgs  input\r\n");
     for (int i = 0; i < VT_MAX; i++) {
         vt_t *v = &g_vts[i];
-        vga_printf("%d   VT%d   %s   %s      %u\r\n",
+        vga_printf("%d   VT%d   %s   %s      %u    %d\r\n",
                    v->id, v->id,
                    (v->id == g_active) ? "ACTIVE" : "idle  ",
-                   v->cwd, (unsigned)v->msgs);
+                   v->cwd, (unsigned)v->nmsg, (int)v->ilen);
     }
     serial_printf("[vt] list: active=VT%d\r\n", g_active);
 }
+
+/* ---------- S12-3 终端间消息 ---------- */
+
+int vt_msg_send(u8 dst_id, const char *text)
+{
+    vt_t *v = vt_get(dst_id);
+    if (!v) return -1;
+    int n = 0;
+    for (; text[n] && n < VT_MSG_LEN - 1; n++) v->msgs[v->msg_head][n] = text[n];
+    v->msgs[v->msg_head][n] = 0;
+    v->msg_head = (u8)((v->msg_head + 1) % VT_MSG_MAX);
+    if (v->nmsg < VT_MSG_MAX) v->nmsg++;
+    serial_printf("[vt] msg -> VT%d: %s\r\n", dst_id, text);
+
+    /* 目标终端是当前活动终端：消息直接实时显示在屏幕 */
+    if (v->id == g_active) {
+        vga_printf("\n[msg] %s\n", text);
+    } else {
+        /* 非活动终端：在它的屏幕快照输入区上方打一行（切换过去即见） */
+        for (int c = 0; c < 80; c++) v->screen[23 * 80 + c] = 0x0700 | ' ';
+        int c = 0;
+        const char *p = "[msg] ";
+        while (*p && c < 79) v->screen[23 * 80 + c++] = 0x0E00 | (u8)*p++;
+        p = text;
+        while (*p && c < 79) v->screen[23 * 80 + c++] = 0x0E00 | (u8)*p++;
+    }
+    return 0;
+}
+
+void vt_msg_show(void)
+{
+    vt_t *v = vt_active_ptr();
+    if (v->nmsg == 0) { vga_printf("(no messages)\n"); return; }
+    vga_printf("VT%d inbox (%u):\r\n", v->id, (unsigned)v->nmsg);
+    for (int k = 0; k < VT_MSG_MAX; k++) {
+        int idx = (v->msg_head + VT_MSG_MAX - 1 - k) % VT_MSG_MAX;  /* 最新的在前 */
+        if (v->msgs[idx][0])
+            vga_printf("  [%d] %s\n", k + 1, v->msgs[idx]);
+    }
+    serial_printf("[vt] msgs shown: VT%d nmsg=%u\r\n", v->id, (unsigned)v->nmsg);
+}
+
+/* ---------- S12-4 会话管理 ---------- */
+
+int vt_killable(u8 id) { return (id >= 1 && id <= VT_MAX && id != g_active); }
+
+void vt_reset(u8 id)
+{
+    vt_t *v = vt_get(id);
+    if (!v || id == g_active) return;
+    vt_blank(v);
+    v->cwd[0] = '/'; v->cwd[1] = 0;
+    v->nmsg = 0; v->msg_head = 0;
+    v->ilen = 0;
+    /* 重置后打一个提示符快照（切过去就是干净的新终端） */
+    int row = 1, col = 0;
+    const char *prompt = "root@kernel:/# ";
+    for (const char *p = prompt; *p; p++) v->screen[row * 80 + col++] = 0x0A00 | (u8)*p;
+    v->cur_x = (u8)col;
+    v->cur_y = (u8)row;
+    serial_printf("[vt] reset VT%d (killed, back to clean state)\r\n", id);
+}
+
+/* readline 辅助：活动终端半行输入指针 */
+void vt_buf_restore(void) { /* 占位：shell 直接读写 vt_active_ptr()->ibuf */ }
