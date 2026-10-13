@@ -2,6 +2,7 @@
 #include "ne2k.h"
 #include "io.h"
 #include "serial.h"
+#include "vga.h"
 
 /* ============ 协议栈实现 ============ */
 
@@ -308,6 +309,12 @@ static void net_rx_ip(const u8 *pkt, u16 len)
         serial_printf("[net] udp recv :%u <- ", (unsigned)dport);
         ip_print(src);
         serial_printf(":%u len=%u\r\n", (unsigned)sport, (unsigned)dlen);
+
+        /* 屏幕实时显示：宿主消息直接打出来，不用敲 chatd 查看 */
+        vga_printf("\n[msg] ");
+        for (int i = 0; i < 4; i++) vga_printf("%u.", (unsigned)src[i]);
+        vga_printf("\b:%u> ", (unsigned)sport);
+        for (u16 i = 0; i < dlen && i < 60; i++) vga_putc((char)ep->buf[i]);
 
         /* auto_ack（chatd <port> echo）：收到就立刻回一个 ACK，
          * 让宿主侧"发一句 → 收到内核回包"，形成可验证的双向闭环。 */

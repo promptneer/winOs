@@ -1,0 +1,4 @@
+serial.out
+bochs.log
+slirp-pktlog.txt
+_*.py
