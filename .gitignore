@@ -14,3 +14,5 @@
 /winpp-os/bochs.log
 /winpp-os/serial.out
 /winpp-os/test_printf.pdb
+/winpp-os/slirp-pktlog.txt
+/winpp-os/serial.prev.out

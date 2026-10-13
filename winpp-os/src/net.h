@@ -31,6 +31,8 @@ typedef struct udp_ep {
     u16  len;
     ip4_t from;             /* 最近来源 IP */
     u16   from_port;
+    u8   auto_ack;          /* =1 时收到即回一个 ACK 包（宿主↔内核闭环用） */
+    u8   is_cmd;            /* =1 时收到的内容当 shell 命令行执行（远程命令通道） */
 } udp_ep_t;
 
 /* ---- 协议栈入口 ---- */
@@ -64,8 +66,33 @@ extern volatile u32 g_arp_rx;
 
 /* 本机配置 */
 extern u8 g_local_ip[4];       /* 本机 IPv4 */
+extern u8 g_local_gw[4];       /* 网关 = 宿主侧（slirp 下为 10.0.2.2） */
 extern u8 g_local_mac[6];
 extern u16 g_eth_hdr_buf[3];   /* 预留 */
+
+/* 运行时改地址（shell 的 ip / gw 命令用） */
+void net_set_ip(const u8 *ip);
+void net_set_gw(const u8 *gw);
+
+/* ARP：主动请求 + 待发帧补发（无 ARP 条目时先暂存，回复到了自动补发） */
+void net_arp_request(ip4_t target);
+void net_arp_announce(void);            /* 广播自己的 IP/MAC，让 slirp 记住本机 */
+int  net_pending(void);                 /* 是否有等 ARP 的待发帧 */
+extern volatile u32 g_arp_req;          /* 发出 ARP 请求计数 */
+extern volatile u32 g_arp_rep;          /* 收到 ARP 回复计数 */
+extern volatile u32 g_pend_tx;          /* 待发帧补发成功计数 */
+
+/* 宿主通讯默认端口（内核 → 宿主 的 UDP 目的端口；宿主侧工具监听它） */
+#define NET_HOST_PORT_DEFAULT 40001
+extern u16 g_host_port;
+
+/* ---- 远程命令通道（chatd <port> cmd）----
+ * 宿主把一整行命令用 UDP 发到这个端口，内核在 shell 上下文里执行，
+ * 执行完把 25x80 文本屏分片回传，宿主就能"远程操作 + 远程看屏"。 */
+#define NET_CMD_MAX 120
+int  net_cmd_take(char *out, int max);   /* shell 取走待执行命令；1=取到 */
+int  net_cmd_active(void);               /* 上一条命令是否来自网络 */
+void net_send_dump(void);                /* 把当前文本屏回传给命令来源 */
 
 /* 工具 */
 void ip_print(const u8 *ip);   /* serial 打印 IP */

@@ -5,9 +5,12 @@
 
 /* ============ 协议栈实现 ============ */
 
-u8 g_local_ip[4] = { 192, 168, 0, 10 };
+/* 默认地址按 Bochs slirp 网段配置（net=10.0.2.0/24，网关/宿主=10.0.2.2，
+ * dhcpstart=10.0.2.15）——写错网段时 slirp 既不回 ARP 也不转发，是"通讯不通"的头号原因。 */
+u8 g_local_ip[4] = { 10, 0, 2, 15 };
 u8 g_local_mac[6];
-u8 g_local_gw[4] = { 192, 168, 0, 1 };
+u8 g_local_gw[4] = { 10, 0, 2, 2 };
+u16 g_host_port = NET_HOST_PORT_DEFAULT;   /* 宿主侧通讯台监听端口 */
 
 static arp_ent_t g_arp[ARP_MAX];
 static udp_ep_t  g_udp[UDP_EP_MAX];
@@ -15,16 +18,72 @@ static udp_ep_t  g_udp[UDP_EP_MAX];
 volatile u32 g_arp_rx = 0;
 volatile u32 g_ping_rx = 0;
 volatile u32 g_udp_rx = 0;
+volatile u32 g_arp_req = 0;
+volatile u32 g_arp_rep = 0;
+volatile u32 g_pend_tx = 0;
 static u32 s_udp_sent = 0;
 
 static u8 s_eth_buf[1600];     /* 网卡收包缓冲 */
 static u8 s_tx_buf[1600];      /* 发送缓冲（以太网帧） */
 static u8 s_rx_ep_buf[1600];   /* 环回接收暂存 */
 
+/* 等 ARP 的待发帧：没有 ARP 条目时先把 IP 包存下来，等 ARP 回复到了自动补发 */
+static u8  s_pend_used = 0;
+static u8  s_pend_ip[4];
+static u8  s_pend_payload[1500];
+static u16 s_pend_len = 0;
+
+int net_pending(void) { return s_pend_used; }
+
+/* ---- 远程命令通道（chatd <port> cmd）---- */
+static char s_cmd_buf[NET_CMD_MAX];
+static volatile u8 s_cmd_pending = 0;
+static u8  s_cmd_active = 0;
+static u8  s_cmd_from[4];
+static u16 s_cmd_port = 0;        /* 内核侧端口（回传源端口） */
+static u16 s_cmd_from_port = 0;
+
+int net_cmd_take(char *out, int max)
+{
+    if (!s_cmd_pending) return 0;
+    int i = 0;
+    for (; s_cmd_buf[i] && i < max - 1; i++) out[i] = s_cmd_buf[i];
+    out[i] = 0;
+    s_cmd_pending = 0;
+    s_cmd_active = 1;
+    return 1;
+}
+
+int net_cmd_active(void) { return s_cmd_active; }
+
+/* 把 25x80 文本屏分 5 片回传（每片 5 行，约 420 字节，稳在一个 UDP 报内） */
+void net_send_dump(void)
+{
+    volatile u16 *vbuf = (volatile u16 *)0xB8000;
+    if (!s_cmd_active) return;
+    for (int chunk = 0; chunk < 5; chunk++) {
+        char buf[440];
+        int n = 0;
+        buf[n++] = (char)('1' + chunk);
+        buf[n++] = '/'; buf[n++] = '5'; buf[n++] = '\n';
+        for (int row = chunk * 5; row < chunk * 5 + 5; row++) {
+            for (int col = 0; col < 80; col++) {
+                u8 ch = (u8)(vbuf[row * 80 + col] & 0xFF);
+                buf[n++] = (ch >= 32 && ch < 127) ? (char)ch : '.';
+            }
+            buf[n++] = '\n';
+        }
+        net_udp_send(s_cmd_from, s_cmd_port, s_cmd_from_port, (const u8 *)buf, (u16)n);
+    }
+    s_cmd_active = 0;
+}
+
 u8 *net_rx_buf(void) { return s_eth_buf; }
 
 /* 前向声明（net_rx_ip 先于定义使用） */
 void net_ping_send_reply(ip4_t dst, const u8 *icmp, u16 plen);
+static int eth_send(const u8 *dstmac, u16 etype, const u8 *payload, u16 plen);
+static int ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen);
 
 void ip_print(const u8 *ip)
 {
@@ -75,6 +134,59 @@ void arp_clear(void)
     for (int i = 0; i < ARP_MAX; i++) g_arp[i].used = 0;
 }
 
+/* ---------- ARP 请求 / 公告 / 待发帧补发 ---------- */
+
+static const u8 s_bcast_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+void net_arp_request(ip4_t target)
+{
+    u8 *a = s_tx_buf + 14;
+    a[0] = 0x00; a[1] = 0x01; a[2] = 0x08; a[3] = 0x00;   /* 以太网/IPv4 */
+    a[4] = 0x06; a[5] = 0x04; a[6] = 0x00; a[7] = 0x01;   /* 6/4 字节, op=request */
+    for (int i = 0; i < 6; i++) a[8 + i] = g_local_mac[i];  /* sha */
+    for (int i = 0; i < 4; i++) a[14 + i] = g_local_ip[i];  /* spa */
+    for (int i = 0; i < 6; i++) a[18 + i] = 0x00;           /* tha */
+    for (int i = 0; i < 4; i++) a[24 + i] = target[i];      /* tpa */
+    eth_send(s_bcast_mac, NET_ETH_TYPE_ARP, a, 28);
+    g_arp_req++;
+}
+
+/* 广播自己的 IP/MAC：slirp 记下"这个 MAC 对应 10.0.2.15"，
+ * 之后宿主侧转发进来的包才知道该发给谁。 */
+void net_arp_announce(void)
+{
+    net_arp_request(g_local_ip);
+}
+
+/* ARP 回复到了：把等着的那一帧补发出去 */
+static void net_flush_pending(void)
+{
+    if (!s_pend_used) return;
+    arp_ent_t *e = arp_lookup(s_pend_ip);
+    if (!e) return;
+    u8 *f = s_tx_buf;
+    for (int i = 0; i < 6; i++) f[i] = e->mac[i];
+    for (int i = 0; i < 6; i++) f[i + 6] = g_local_mac[i];
+    f[12] = 0x08; f[13] = 0x00;
+    for (u16 i = 0; i < s_pend_len; i++) f[14 + i] = s_pend_payload[i];
+    ne2k_tx(f, 14 + s_pend_len);
+    s_pend_used = 0;
+    g_pend_tx++;
+}
+
+/* ---------- 运行时改地址 ---------- */
+
+void net_set_ip(const u8 *ip)
+{
+    for (int i = 0; i < 4; i++) g_local_ip[i] = ip[i];
+    arp_clear();
+}
+
+void net_set_gw(const u8 *gw)
+{
+    for (int i = 0; i < 4; i++) g_local_gw[i] = gw[i];
+}
+
 /* ---------- UDP 端点 ---------- */
 udp_ep_t *udp_bind(u16 port)
 {
@@ -86,6 +198,8 @@ udp_ep_t *udp_bind(u16 port)
             g_udp[i].used = 1;
             g_udp[i].port = port;
             g_udp[i].len  = 0;
+            g_udp[i].auto_ack = 0;
+            g_udp[i].is_cmd = 0;
             return &g_udp[i];
         }
     }
@@ -172,6 +286,39 @@ static void net_rx_ip(const u8 *pkt, u16 len)
         for (int i = 0; i < 4; i++) ep->from[i] = src[i];
         ep->from_port = sport;
         g_udp_rx++;
+
+        /* 远程命令通道：整行交给 shell 执行（在 shell 上下文里跑，避免中断重入） */
+        if (ep->is_cmd) {
+            int n = 0;
+            for (u16 i = 0; i < dlen && n < NET_CMD_MAX - 1; i++) {
+                char c = (char)ep->buf[i];
+                if (c == '\r' || c == '\n') continue;
+                s_cmd_buf[n++] = c;
+            }
+            s_cmd_buf[n] = 0;
+            for (int i = 0; i < 4; i++) s_cmd_from[i] = src[i];
+            s_cmd_from_port = sport;
+            s_cmd_port = dport;
+            s_cmd_pending = 1;
+            serial_printf("[net] cmd recv len=%u: %s\r\n", (unsigned)dlen, s_cmd_buf);
+            return;
+        }
+
+        /* 收到就写串口：宿主发来的每条消息都进证据链 */
+        serial_printf("[net] udp recv :%u <- ", (unsigned)dport);
+        ip_print(src);
+        serial_printf(":%u len=%u\r\n", (unsigned)sport, (unsigned)dlen);
+
+        /* auto_ack（chatd <port> echo）：收到就立刻回一个 ACK，
+         * 让宿主侧"发一句 → 收到内核回包"，形成可验证的双向闭环。 */
+        if (ep->auto_ack) {
+            u8 msg[80];
+            int n = 0;
+            const char *pre = "WINPP-ACK from kernel: ";
+            while (*pre) msg[n++] = (u8)*pre++;
+            for (u16 i = 0; i < dlen && n < 76; i++) msg[n++] = ep->buf[i];
+            net_udp_send((u8 *)src, ep->port, sport, msg, (u16)n);
+        }
     }
 }
 
@@ -210,6 +357,8 @@ void net_rx_eth(const u8 *frame, u16 len)
             }
         } else if (op == 2) {
             arp_add((u8 *)a + 14, (u8 *)a + 8);
+            g_arp_rep++;
+            net_flush_pending();          /* 有等 ARP 的帧就补发 */
         }
     } else if (etype == NET_ETH_TYPE_IP) {
         net_rx_ip(frame + 14, len - 14);
@@ -257,23 +406,20 @@ static int ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen)
         return 0;
     }
 
-    /* 非环回：ARP 解析目标 MAC */
+    /* 非环回：查 ARP；没有条目就暂存这一帧 + 发 ARP 请求，
+     * ARP 回复到了（ne2k_irq → net_rx_eth → net_flush_pending）自动补发。 */
     arp_ent_t *e = arp_lookup(dst);
     if (e) {
         eth_send(e->mac, NET_ETH_TYPE_IP, p, total);
         return 0;
     }
-    /* 无 ARP 条目：发 ARP 请求（广播），返回 -1 提示待回复 */
-    u8 *a = s_tx_buf + 14;
-    a[0] = 0x00; a[1] = 0x01; a[2] = 0x08; a[3] = 0x00;
-    a[4] = 0x06; a[5] = 0x04; a[6] = 0x00; a[7] = 0x01;
-    for (int i = 0; i < 6; i++) a[8 + i] = g_local_mac[i];
-    for (int i = 0; i < 4; i++) a[14 + i] = g_local_ip[i];
-    for (int i = 0; i < 6; i++) a[18 + i] = 0x00;
-    for (int i = 0; i < 4; i++) a[24 + i] = dst[i];
-    u8 bcast[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-    eth_send(bcast, NET_ETH_TYPE_ARP, a, 28);
-    return -1;
+    for (u16 i = 0; i < total && i < (u16)sizeof(s_pend_payload); i++)
+        s_pend_payload[i] = p[i];
+    s_pend_len = total;
+    for (int i = 0; i < 4; i++) s_pend_ip[i] = dst[i];
+    s_pend_used = 1;
+    net_arp_request(dst);
+    return -1;      /* -1 = 已暂存，等 ARP 回复后自动发出 */
 }
 
 /* ---------- 发送 ICMP echo ---------- */
@@ -325,11 +471,32 @@ void net_init(void)
 {
     ne2k_get_mac(g_local_mac);
     arp_clear();
-    for (int i = 0; i < UDP_EP_MAX; i++) g_udp[i].used = 0;
+    for (int i = 0; i < UDP_EP_MAX; i++) {
+        g_udp[i].used = 0; g_udp[i].auto_ack = 0; g_udp[i].is_cmd = 0;
+    }
     g_arp_rx = 0; g_ping_rx = 0; g_udp_rx = 0; s_udp_sent = 0;
+    g_arp_req = 0; g_arp_rep = 0; g_pend_tx = 0;
+    s_pend_used = 0;
     serial_printf("[net] stack init: IP=");
     ip_print(g_local_ip);
+    serial_printf(" GW=");
+    ip_print(g_local_gw);
     serial_printf(" MAC=%02X:%02X:%02X:%02X:%02X:%02X\r\n",
                   g_local_mac[0], g_local_mac[1], g_local_mac[2],
                   g_local_mac[3], g_local_mac[4], g_local_mac[5]);
+
+    /* 上线即公告自己 + 预解析网关，宿主方向第一包就不会因为没 ARP 而丢 */
+    net_arp_announce();
+    net_arp_request(g_local_gw);
+    serial_puts("[net] arp announce + gw ");
+    ip_print(g_local_gw);
+    serial_puts(" requested\r\n");
+
+    /* 主机通讯端点开机就绑好，Windows 侧工具连上即可用：
+     *   :7777 消息口（收到自动回 ACK）  :7778 远程命令口（执行 + 回传屏幕） */
+    udp_ep_t *ep_msg = udp_bind(7777);
+    if (ep_msg) ep_msg->auto_ack = 1;
+    udp_ep_t *ep_cmd = udp_bind(7778);
+    if (ep_cmd) ep_cmd->is_cmd = 1;
+    serial_puts("[net] comms endpoints: :7777 echo, :7778 cmd\r\n");
 }

@@ -1,0 +1,17 @@
+[dev]   ne2k major=5 type=1 irq=10 r=1 w=1 io=0
+[11d] ne2k ...
+[ne2k] init ok: IO=0x240 IRQ=10 MAC=52:54:0:12:34:56
+[net] stack init: IP=10.0.2.15 GW=10.0.2.2 MAC=52:54:0:12:34:56
+[net] arp announce + gw 10.0.2.2 requested
+[net] comms endpoints: :7777 echo, :7778 cmd
+[net] udp recv :7777 <- 10.0.2.2:40002 len=14
+[net] cmd recv len=7: netstat
+[net] netstat: sent=1 recv=2 arp_rep=1 arp_req=2
+[net] udp recv :7777 <- 10.0.2.2:40002 len=18
+[net] chatd recv :7777 from 10.0.2.2:40002 len=18
+[net] chatd recv :7778 from 10.0.2.2:40003 len=7
+[net] cmd recv len=7: netstat
+[net] netstat: sent=7 recv=4 arp_rep=1 arp_req=2
+[net] cmd recv len=7: sysinfo
+[net] host send ok len=17 port=40001
+[net] host send ok len=17 port=40001

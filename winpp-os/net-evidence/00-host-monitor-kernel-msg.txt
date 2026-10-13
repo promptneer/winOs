@@ -1,0 +1,4 @@
+﻿=== WinPP host console: monitor (kernel -> Windows) ===
+(listening 0.0.0.0:40001 ; kernel side: host <text> -> 10.0.2.2:40001)
+
+[13:20:34] <- kernel 127.0.0.1:54544 (17 bytes): hello-from-kernel
