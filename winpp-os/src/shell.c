@@ -25,6 +25,7 @@ extern void kernel_poweroff(void);
 #include "gui.h"
 #include "ne2k.h"
 #include "net.h"
+#include "vt.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -211,8 +212,25 @@ static void cmd_cd(int argc, char **argv)
 {
     if (argc != 2) { vga_printf("usage: cd <path>\n"); return; }
     int r = fs_chdir(argv[1]);
-    if (r == 0) vga_printf("cd ok: %s\n", fs_cwd);
+    if (r == 0) {
+        vga_printf("cd ok: %s\n", fs_cwd);
+        vt_save_cwd();              /* S12-1: 把新 cwd 存回当前终端 */
+    }
     else vga_printf("cd failed: %s\n", argv[1]);
+}
+
+/* S12-1：vt [id] —— 列出虚拟终端 / 切换终端 */
+static void cmd_vt(int argc, char **argv)
+{
+    if (argc >= 2) {
+        int id = k_atoi(argv[1]);
+        if (vt_switch((u8)id) == 0)
+            serial_printf("[vt] cmd switch -> VT%d\r\n", id);
+        else
+            vga_printf("vt: bad id (1..%d)\n", VT_MAX);
+        return;
+    }
+    vt_list();
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1040,6 +1058,7 @@ static const cmd_t cmds[] = {
     { "udptest",  "UDP loopback self-test",     cmd_udptest },
     { "chatd",    "UDP chat server (bind/view/echo)", cmd_chatd },
     { "netstat",  "addr/ARP/endpoints/stats",   cmd_netstat },
+    { "vt",       "list/switch virtual terminals", cmd_vt },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
@@ -1076,6 +1095,10 @@ static void shell_readline(char *buf, int max)
             if (i > 0) { i--; vga_putc('\b'); }
             continue;
         }
+        /* S12-1: F1/F2/F3 直接切换虚拟终端（跳过字符输入） */
+        if (k == KEY_F1) { vt_switch(1); continue; }
+        if (k == KEY_F2) { vt_switch(2); continue; }
+        if (k == KEY_F3) { vt_switch(3); continue; }
         if (k == KEY_TAB || k == KEY_ESC) continue;
         if (k >= 32 && k < 127 && i < max - 1) {
             buf[i++] = (char)k;

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十二阶段(S12-1)测试指令表</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M7 10l6 6-6 6M17 22h8' stroke='%235ee0c8' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--line:#2a3542;--ink:#e6edf3;--ink2:#c9d1d9;--ink3:#8b949e;--green:#34d399;--yellow:#fbbf24;--cyan:#5ee0c8}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;padding:34px 22px 50px}
+  .wrap{max-width:960px;margin:0 auto}
+  .crumb{font-family:Consolas,monospace;font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:10px}
+  h1{font-size:24px;font-weight:800}
+  h1 .grad{background:linear-gradient(90deg,#5ee0c8,#58a6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:13px;color:var(--ink3);margin:8px 0 18px;line-height:1.7}
+  .bar{display:flex;gap:10px;align-items:center;margin:0 0 14px;font-size:12.5px;color:var(--ink2)}
+  .bar .btn{background:#1f6feb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12.5px;cursor:pointer}
+  .bar .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink2)}
+  .bar .pct{font-weight:700;color:var(--green)}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  colgroup col:nth-child(1){width:8%}colgroup col:nth-child(2){width:16%}
+  colgroup col:nth-child(3){width:32%}colgroup col:nth-child(4){width:32%}
+  colgroup col:nth-child(5){width:12%}
+  th{background:#1c242e;color:var(--ink2);font-size:12px;padding:10px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  td{font-size:12.5px;padding:9px 8px;border-bottom:1px solid #202c3a;color:var(--ink2);vertical-align:top}
+  td.cmd{font-family:Consolas,monospace;color:var(--cyan);font-weight:700}
+  tr:last-child td{border-bottom:none}
+  .ok{color:var(--green);font-weight:700}
+  .fail{color:#f85149;font-weight:700}
+  input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer}
+  .note{margin-top:14px;font-size:12.5px;color:var(--ink3);line-height:1.8;border-top:1px solid var(--line);padding-top:12px}
+  .exp{background:#10151b;border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:8px;padding:8px 10px;margin-top:6px;font-family:Consolas,monospace;font-size:11.5px;color:var(--ink2);white-space:pre-wrap;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb">WINPP OS / S12-1 / TEST CHECKLIST</div>
+  <h1>S12-1 虚拟终端框架 <span class="grad">测试指令表</span></h1>
+  <p class="sub">逐项测试 → 打勾自动保存（localStorage）。全部打勾才算 S12-1 验收通过。判据：<b>每个命令都有"正常显示"对照</b>，看到预期输出即 ✓。</p>
+
+  <div class="bar">
+    <button class="btn" onclick="reset()">全部重置</button>
+    <span class="pct" id="pct">0 / 9 项已通过</span>
+  </div>
+
+  <table>
+    <colgroup><col><col><col><col><col></colgroup>
+    <thead>
+      <tr><th>#</th><th>命令</th><th>你做什么</th><th>正常显示（看到即通过）</th><th>勾选</th></tr>
+    </thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+  <div class="note">
+    <b>说明：</b>F1/F2/F3 快捷键在 Bochs 自动化注入中无法模拟（Bochs 窗口拦截 F 键），
+    需在你的<b>真机键盘</b>上按 F1/F2/F3 验证（键盘驱动已实现：扫描码 0x3B/0x3C/0x3D → KEY_F1/F2/F3 → vt_switch）。
+    其余命令均已在 Bochs 机器实测通过（串口取证）。
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  ["vt",            "开机后输入 vt 回车", "显示终端表：3 行（VT1 ACTIVE / VT2 idle / VT3 idle），cwd 均为 /，msgs 均为 0"],
+  ["vt 2",          "输入 vt 2 回车",     "屏幕瞬间切换成空白终端（顶部浅色 VT2 标识），串口出现 [vt] switch -> VT2"],
+  ["mkdir /docs",   "在 VT2 里输入 mkdir /docs", "显示 mkdir ok: /docs"],
+  ["cd /docs",      "输入 cd /docs",       "显示 cd ok: /docs（提示符变成 root@kernel:/docs#）"],
+  ["vt",            "再输入 vt 回车",      "表格中 VT2 变成 ACTIVE 且 cwd=/docs，VT1/VT3 仍是 / —— 每终端目录独立"],
+  ["vt 1",          "输入 vt 1 回车",      "屏幕切回原 shell（VT1 之前的历史还在，没有丢失）"],
+  ["pwd",           "在 VT1 里输入 pwd",   "显示 / （VT1 的目录没被 VT2 的 /docs 影响）"],
+  ["F1 / F2 / F3",  "真机键盘按 F1/F2/F3", "在 VT1/VT2/VT3 之间来回切换，各终端画面独立保留"],
+  ["ps / netstat",  "任选一终端执行 ps",   "命令正常执行——各终端 shell 互不干扰、可独立跑命令"]
+];
+const KEY = "winpp_s12_1_check";
+let st = JSON.parse(localStorage.getItem(KEY) || "{}");
+const tb = document.getElementById("tb");
+ITEMS.forEach((it, i) => {
+  const tr = document.createElement("tr");
+  const cid = "c" + i;
+  tr.innerHTML = `<td>${i+1}</td><td class="cmd">${it[0]}</td><td>${it[1]}</td><td><div>${it[2]}</div><div class="exp"></div></td><td style="text-align:center"><input type="checkbox" id="${cid}" ${st[cid]?"checked":""}></td>`;
+  tb.appendChild(tr);
+});
+function pct(){
+  let n = 0;
+  for (let i=0;i<ITEMS.length;i++) if (st["c"+i]) n++;
+  document.getElementById("pct").textContent = n + " / " + ITEMS.length + " 项已通过";
+}
+document.addEventListener("change", e => {
+  if (e.target.tagName === "INPUT" && e.target.type === "checkbox") {
+    st[e.target.id] = e.target.checked;
+    localStorage.setItem(KEY, JSON.stringify(st));
+    pct();
+  }
+});
+function reset(){
+  if (!confirm("确定清除全部勾选？")) return;
+  st = {}; localStorage.removeItem(KEY);
+  ITEMS.forEach((_, i) => { const el = document.getElementById("c"+i); if (el) el.checked = false; });
+  pct();
+}
+pct();
+</script>
+</body>
+</html>

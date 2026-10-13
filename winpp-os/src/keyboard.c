@@ -67,6 +67,9 @@ void keyboard_handle_irq(void)
     switch (code) {
     case 0x2A: case 0x36: shift = make; return;  /* Shift */
     case 0x3A: if (make) caps = !caps;  return;  /* CapsLock */
+    case 0x3B: if (make) push((u8)KEY_F1); return;   /* S12: F1 切 VT1 */
+    case 0x3C: if (make) push((u8)KEY_F2); return;   /* S12: F2 切 VT2 */
+    case 0x3D: if (make) push((u8)KEY_F3); return;   /* S12: F3 切 VT3 */
     default: break;
     }
 

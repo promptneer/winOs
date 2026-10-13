@@ -12,6 +12,9 @@
 #define KEY_TAB     9
 #define KEY_ENTER   '\n'    /* 键盘驱动把 Enter 扫描码 0x1C 映射为 '\n'(10) */
 #define KEY_BACKSP  '\b'
+#define KEY_F1      0x81    /* S12: 虚拟终端切换快捷键（扫描码 0x3B/0x3C/0x3D） */
+#define KEY_F2      0x82
+#define KEY_F3      0x83
 
 void keyboard_init(void);
 void keyboard_handle_irq(void);

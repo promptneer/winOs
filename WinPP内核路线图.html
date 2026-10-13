@@ -23,7 +23,7 @@
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
   .flow-scroll{overflow-x:auto;padding-bottom:8px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
-  .flow{display:flex;align-items:stretch;gap:6px;min-width:1760px;padding:18px 16px}
+  .flow{display:flex;align-items:stretch;gap:6px;min-width:2800px;padding:18px 16px}
   .node{flex:0 0 122px;border:1px solid var(--line);border-top:3px solid var(--gray);border-radius:10px;background:#10151b;padding:10px 11px;display:flex;flex-direction:column;gap:6px;min-height:132px}
   .node .sn{font-family:Consolas,'Courier New',monospace;font-size:10.5px;font-weight:700;letter-spacing:.06em}
   .node .nm{font-size:13.5px;font-weight:700;line-height:1.4}
@@ -55,9 +55,9 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="crumb">WINPP OS / ROADMAP / S1 → S12</div>
+  <div class="crumb">WINPP OS / ROADMAP / S1 → S20</div>
   <h1>WinPP 内核开发<span class="grad">路线图</span></h1>
-  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S11 已实机取证并推 GitHub</b>，<b>S12 是当前战场</b>，后续为规划（可裁剪、可调序）。</p>
+  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S11 已实机取证并推 GitHub</b>，<b>S12 是当前战场</b>，<b>S13–S20 为规划</b>（可裁剪、可调序）。</p>
 
   <div class="legend">
     <span><span class="sw" style="background:var(--green)"></span>已完成</span>
@@ -152,6 +152,62 @@
         <div class="st">下一步 · 我们在这里</div>
       </div>
       <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S13</div>
+        <div class="nm">TCP 协议栈</div>
+        <div class="ds">三次握手 · 可靠传输 · 面向连接</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S14</div>
+        <div class="nm">socket + DNS</div>
+        <div class="ds">socket 抽象 · 域名解析 · 网络 API 化</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S15</div>
+        <div class="nm">网络服务</div>
+        <div class="ds">跨机聊天服务 · 简单 HTTP 服务器</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S16</div>
+        <div class="nm">硬盘驱动</div>
+        <div class="ds">ATA/IDE · 块设备 · 真实磁盘读写</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S17</div>
+        <div class="nm">磁盘文件系统</div>
+        <div class="ds">文件落盘 · 重启不丢 · 目录持久化</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S18</div>
+        <div class="nm">用户态库</div>
+        <div class="ds">简易 libc · 动态链接 · 标准程序入口</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S19</div>
+        <div class="nm">POSIX 完善</div>
+        <div class="ds">信号完整 · 系统调用面 · 兼容层</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node plan">
+        <div class="sn">S20</div>
+        <div class="nm">真机里程碑</div>
+        <div class="ds">U 盘引导 · 真实硬件 · 完整版目标达成</div>
+        <div class="st">规划</div>
+      </div>
+      <div class="arrow">→</div>
       <div class="node goal">
         <div class="sn">终点</div>
         <div class="nm">完整版内核</div>
@@ -162,20 +218,21 @@
   </div>
 
   <div class="note">
-    <b>当前位置：</b>S1–S11 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径 → 设备驱动 → 用户与权限 → 信号同步 → 图形界面窗口系统 → 网络协议栈），推送 GitHub。下一战场 <b>S12 多终端会话系统</b>。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
+    <b>当前位置：</b>S1–S11 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径 → 设备驱动 → 用户与权限 → 信号同步 → 图形界面窗口系统 → 网络协议栈），推送 GitHub。下一战场 <b>S12 多终端会话系统</b>；<b>S13 起</b>：TCP 可靠传输 → socket/DNS 网络 API → 跨机聊天/HTTP 服务 → 硬盘驱动 → 磁盘持久化文件系统 → 用户态库 → POSIX 完善 → U 盘真机启动里程碑。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
   </div>
 
   <div class="card">
     <div class="it">
-      <h4>S7 · 设备驱动</h4>
-      把键盘、定时器、串口这些"外设"从散落的代码整理成正式的设备驱动层（device table + 统一接口），中断处理按设备分发。
+      <h4>S13–S15 · 网络进阶</h4>
+      TCP 可靠传输（三次握手/重传）→ socket + DNS 网络 API → 跨机聊天服务与 HTTP 服务器：把 S11 的 UDP 通讯升级成"真·网络"。
     </div>
     <div class="it">
-      <h4>S8 · 用户与权限</h4>      新增 root 用户（UID 0）、普通用户、文件属主与 rwx 权限位；root 提示符 #、普通用户 $。为 S10 GUI 登录打地基。
+      <h4>S16–S17 · 持久化</h4>
+      ATA/IDE 硬盘驱动（块设备）→ 磁盘文件系统：文件真正落盘，重启不丢，向"真电脑"迈进。
     </div>
     <div class="it">
-      <h4>S9 · 信号与同步</h4>
-      sleep / wait / 信号量 / 互斥锁，让多个进程学会"排队等资源"，不再抢作一团。
+      <h4>S18–S20 · 完善与真机</h4>
+      用户态简易 libc 与动态链接 → POSIX 信号/系统调用完善 → U 盘引导真实硬件，达成"迷你 Linux"里程碑。
     </div>
   </div>
 </div>

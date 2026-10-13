@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十二阶段(S12-1)进度报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M7 10l6 6-6 6M17 22h8' stroke='%235ee0c8' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--line:#2a3542;--ink:#e6edf3;--ink2:#c9d1d9;--ink3:#8b949e;--green:#34d399;--yellow:#fbbf24;--cyan:#5ee0c8}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;padding:34px 22px 50px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .crumb{font-family:Consolas,monospace;font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:10px}
+  h1{font-size:24px;font-weight:800}
+  h1 .grad{background:linear-gradient(90deg,#5ee0c8,#58a6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:13px;color:var(--ink3);margin:8px 0 20px;line-height:1.7}
+  h2{font-size:16px;color:var(--cyan);margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:8px}
+  colgroup col:nth-child(1){width:18%}colgroup col:nth-child(2){width:34%}colgroup col:nth-child(3){width:48%}
+  th{background:#1c242e;color:var(--ink2);font-size:12px;padding:9px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  td{font-size:12.5px;padding:8px;border-bottom:1px solid #202c3a;color:var(--ink2);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:Consolas,monospace}
+  .g{color:var(--green);font-weight:700}
+  .y{color:var(--yellow);font-weight:700}
+  .pre{background:#10151b;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-family:Consolas,monospace;font-size:12px;line-height:1.65;color:var(--ink2);overflow-x:auto;white-space:pre-wrap}
+  .note{font-size:12.5px;color:var(--ink3);line-height:1.8;border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb">WINPP OS / S12-1 / PROGRESS REPORT</div>
+  <h1>S12-1 虚拟终端框架 <span class="grad">进度报告</span></h1>
+  <p class="sub">多虚拟终端 · 每终端独立屏幕快照/光标/当前目录 · vt 命令切换 · F1-F3 快捷键 · <b>Bochs 机器实测通过</b>（串口取证）。</p>
+
+  <h2>1. 本阶段完成内容</h2>
+  <table>
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th>模块</th><th>做了什么</th><th>实测证据</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">vt.h / vt.c</td><td>3 个虚拟终端结构：每终端独立 25x80 屏幕快照、光标位置、当前目录、消息计数；切换=保存旧屏→载入新屏→恢复 cwd</td><td class="mono">[vt] init: 3 virtual terminals (VT1..VT3), active=VT1</td></tr>
+      <tr><td class="mono">keyboard.c</td><td>F1/F2/F3 扫描码(0x3B/0x3C/0x3D) → KEY_F1/F2/F3 键码</td><td>键盘驱动已就位（真机按键路径），Bochs 窗口拦截 F 键无法注入</td></tr>
+      <tr><td class="mono">shell.c</td><td>新增 <span class="mono">vt</span> 命令（列表/切换）；readline 里 F1-F3 直接切终端；cd 成功后把目录存回当前终端</td><td class="mono">[vt] cmd switch -> VT2</td></tr>
+      <tr><td class="mono">kernel.c</td><td>开机初始化 <span class="mono">[12a] vt_init()</span>（VT1=当前屏，VT2/VT3=空白终端）</td><td class="mono">[vt] init ... active=VT1</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. 机器实测（Bochs 串口取证）</h2>
+  <div class="pre">[vt] init: 3 virtual terminals (VT1..VT3), active=VT1
+[vt] switch -> VT2 (cwd=/)          ← vt 2 命令切换成功
+[vt] cmd switch -> VT2
+mkdir ok: /docs                      ← 在 VT2 里建目录
+cd ok: /docs                         ← 在 VT2 里 cd（提示符变 /docs#）
+[vt] list: active=VT2                ← VT2 的终端表</div>
+  <p style="margin-top:6px" class="mono">屏幕转储（VT2 里执行 vt 的表格）：</p>
+  <div class="pre">id  name  status   cwd        msgs
+1   VT1   idle     /      0
+2   VT2   ACTIVE   /docs      0     ← 只有 VT2 的目录变了
+3   VT3   idle     /      0
+root@kernel:/docs# pwd
+/docs                              ← VT2 里 pwd 确认</div>
+
+  <h2>3. 验收结论</h2>
+  <table>
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th>验收项</th><th>结果</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>3 个独立虚拟终端</td><td class="g">通过</td><td>init 日志 + vt 列表 3 行</td></tr>
+      <tr><td>vt 命令切换</td><td class="g">通过</td><td>vt 2 → 屏幕切到空白 VT2；vt 1 → 切回原 shell</td></tr>
+      <tr><td>每终端独立目录</td><td class="g">通过</td><td>VT2 cwd=/docs，VT1/VT3 保持 /</td></tr>
+      <tr><td>切换后屏幕保留</td><td class="g">通过</td><td>VT1 历史命令在切回后原样显示</td></tr>
+      <tr><td>F1-F3 快捷键</td><td class="y">待真机验证</td><td>键盘驱动已实现；Bochs 自动化注入无法模拟 F 键</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <b>构建产物：</b>kernel.bin 123068B / 241 sectors，floppy.img 更新；已停旧 Bochs 后重建，构建日志全绿。<br>
+    <b>下一步：</b>S12-2 终端切换强化（快捷键切换完善 + 每终端独立输入缓冲/历史）。测试指令表见《WinPP第十二阶段测试指令表.html》。
+  </div>
+</div>
+</body>
+</html>

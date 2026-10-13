@@ -20,6 +20,7 @@
 #include "mouse.h"
 #include "ne2k.h"
 #include "net.h"
+#include "vt.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -276,6 +277,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[11e] net ...\r\n");
     vga_printf("[11e] net ...\n");
     net_init();
+    serial_puts("[12a] vt ...\r\n");
+    vga_printf("[12a] vt ...\n");
+    vt_init();
     serial_puts("[12] all init ok, drawing UI ...\r\n");
     vga_printf("[12] all init ok, drawing UI ...\n");
 
