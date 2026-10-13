@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十六阶段进度报告</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0883e'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%230d1117'%3EW%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--fg:#e6edf3;--muted:#8b949e;--accent:#f0883e;--ok:#3fb950;--warn:#d29922;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","PingFang SC",sans-serif;line-height:1.7;padding:32px 16px 80px;}
+.wrap{max-width:1080px;margin:0 auto;}
+h1{font-size:28px;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+h2{font-size:21px;margin:30px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;margin:16px 0 8px;color:var(--accent);}
+table{width:100%;border-collapse:collapse;table-layout:fixed;margin:10px 0;}
+th,td{border:1px solid var(--border);padding:9px 11px;font-size:13px;text-align:left;vertical-align:top;overflow-wrap:break-word;}
+th{background:#21262d;}
+code{font-family:Consolas,monospace;background:#21262d;padding:1px 6px;border-radius:4px;font-size:12.5px;color:#58a6ff;}
+pre{background:#161b22;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:Consolas,monospace;font-size:12.5px;color:#7ee787;line-height:1.55;}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-right:6px;}
+.tag.ok{background:rgba(63,185,80,.15);color:var(--ok);}
+.tag.warn{background:rgba(210,153,34,.15);color:var(--warn);}
+.note{background:#1f2430;border-left:4px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--muted);margin:10px 0;}
+.next{background:linear-gradient(135deg,rgba(240,136,62,.12),rgba(240,136,62,.04));border:1px solid rgba(240,136,62,.35);border-radius:10px;padding:18px 20px;margin-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>WinPP 第十六阶段 · 进度报告</h1>
+<div class="sub">阶段：S16 硬盘驱动（ATA PIO） ｜ 2026-10-13 ｜ 实测全绿，源码已提交推送</div>
+
+<h2>一句话总结</h2>
+<div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+<p>S1-S15 的内核一直活在"内存和软盘"里，S16 让内核第一次<b>接上真正的硬盘</b>：通过 ATA PIO 接口读出硬盘身份证（型号/容量）、<b>读扇区</b>、<b>写扇区</b>，并自动做"写进去再读出来比对"的回验。这是 S17 磁盘文件系统（文件真存进硬盘、断电不丢）的地基。</p>
+</div>
+
+<h2>本阶段完成内容</h2>
+<table>
+<colgroup><col style="width:6%"><col style="width:22%"><col style="width:14%"><col style="width:58%"></colgroup>
+<thead><tr><th>#</th><th>模块</th><th>类型</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>src/ata.h + ata.c</td><td>新增</td><td>ATA PIO 硬盘驱动：主通道 0x1F0-0x1F7（数据/扇区数/LBA 低中高/驱动器/状态命令寄存器）；ata_init 软复位探测 + IDENTIFY（0xEC）读 256 个 16 位字，解析型号（word 27-46）、序列号（word 10-19）、CHS、容量；ata_read_sector / ata_write_sector 用 LBA28 寻址 + PIO 读（0x20）/写（0x30），等待 BSY/DRQ 状态位。</td></tr>
+<tr><td>2</td><td>src/shell.c</td><td>修改</td><td>新增 cmd_hd 命令：hd info（显示 IDENTIFY 参数）、hd read &lt;lba&gt;（十六进制 dump 前 64 字节）、hd write &lt;lba&gt; &lt;text&gt;（写前 64 字节其余补零）、hd test（写签名→读回→逐字节比对 PASS）；命令表 + help 文案。</td></tr>
+<tr><td>3</td><td>src/kernel.c</td><td>修改</td><td>初始化序列新增 [11f] ata hdd → ata_init()，开机自动探测硬盘。</td></tr>
+<tr><td>4</td><td>bochsrc.txt</td><td>修改</td><td>新增 ata0（0x1F0/0x3F0/IRQ14）+ ata0-master（10MB 虚拟硬盘，20 cyl × 16 heads × 63 spt = 20160 扇区）。</td></tr>
+<tr><td>5</td><td>hd.img + _mk_hdimg.py</td><td>新增</td><td>10MB 虚拟硬盘镜像（20160 扇区），扇区 0 预写 WINPP-HD-IMAGE-V1 签名 + MBR 55AA，便于实测 hd read 0。</td></tr>
+<tr><td>6</td><td>构建产物</td><td>更新</td><td>kernel.bin 297 sectors（约 148 KB），floppy.img 可启动镜像，构建 0 error（仅历史遗留 1 个 unused-function warning）。</td></tr>
+</tbody>
+</table>
+
+<h2>Bochs 机器实测取证（serial.out 关键行）</h2>
+<pre>[ata] IDENTIFY ok: 20 cyl 16 head 63 spt, 20160 sectors (9 MB)   ← 开机识别硬盘 ✓
+[hd] rw test PASS lba=200 sig=S16-DISK-RW-TEST                     ← 写读回验 ✓
+
+Windows 侧自动化断言（_s16_test.py）：
+  HD INFO MODEL      : True   ← hd info 显示型号
+  HD READ0 SIG       : True   ← hd read 0 读到 WINPP-HD-IMAGE-V1 签名
+  HD WRITE           : True   ← hd write 0 hello-s16 → wrote 9 bytes
+  HD READ BACK       : True   ← 再读 LBA 0 看到 68 65 6c 6c 6f（hello-s16）
+  HD TEST PASS       : True   ← hd test 写 LBA 200 签名串并逐字节比对通过</pre>
+
+<h2>验收清单</h2>
+<table>
+<colgroup><col style="width:60%"><col style="width:14%"><col style="width:26%"></colgroup>
+<thead><tr><th>验收项</th><th>结果</th><th>证据</th></tr></thead>
+<tbody>
+<tr><td>开机自动探测硬盘（ATA IDENTIFY）</td><td><span class="tag ok">通过</span></td><td>serial [ata] IDENTIFY ok: 20 cyl 16 head 63 spt, 20160 sectors</td></tr>
+<tr><td>hd info 显示型号/序列号/CHS/容量</td><td><span class="tag ok">通过</span></td><td>model 显示、20160 sectors = 9 MB</td></tr>
+<tr><td>hd read 0 读回预写签名与 MBR</td><td><span class="tag ok">通过</span></td><td>57 49 4e 50 50…（WINPP-HD-IMAGE-V1）命中</td></tr>
+<tr><td>hd write 写扇区落盘</td><td><span class="tag ok">通过</span></td><td>wrote 9 bytes to LBA 0</td></tr>
+<tr><td>写后回读一致</td><td><span class="tag ok">通过</span></td><td>68 65 6c 6c 6f（hello-s16）命中</td></tr>
+<tr><td>hd test 写读回验</td><td><span class="tag ok">通过</span></td><td>rw test PASS lba=200 sig=S16-DISK-RW-TEST</td></tr>
+<tr><td>越界扇区被拒绝不崩溃</td><td><span class="tag ok">通过</span></td><td>lba &gt;= total_sectors 返回 rc=-2</td></tr>
+</tbody>
+</table>
+
+<h2>实现要点与已知限制（诚实说明）</h2>
+<table>
+<colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+<thead><tr><th>项</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>PIO 模式（无 IRQ/DMA）</td><td>教学级实现：轮询状态寄存器（BSY/DRQ）而非中断或 DMA，一次读写一个扇区（512B）。真机也可用，只是速度慢。</td></tr>
+<tr><td>LBA28 寻址</td><td>支持最大 128GB 的盘（28 位 LBA）；Bochs 这个 10MB 测试盘绰绰有余。未实现 LBA48。</td></tr>
+<tr><td>单盘主通道</td><td>只探测主通道主盘（ata0-master），未做从盘/第二通道枚举。</td></tr>
+<tr><td>hd write 只写 64 字节</td><td>命令参数只取前 64 字节文本，其余 448 字节补零——教学演示足够，S17 磁盘文件系统会用完整 512 字节组织扇区。</td></tr>
+<tr><td>显示容量 9 MB</td><td>20160 扇区 × 512B = 10,321,920B ≈ 9.84MiB，内核按"扇区数/2048"取整显示为 9 MB（诚实口径）。</td></tr>
+</tbody>
+</table>
+
+<div class="next">
+<h3 style="margin:0 0 8px;color:var(--fg);">下一阶段预告：S17 磁盘文件系统</h3>
+<p style="font-size:14px;">S16 让内核能读写硬盘扇区，S17 就在这块硬盘上<b>设计自己的文件系统</b>：把硬盘分成"超级块 + 目录区 + 数据区"，实现文件<b>真正落盘</b>（断电不丢）——这是从"玩具内核"走向"迷你 Linux"的关键一步。</p>
+<p style="font-size:13px;color:var(--muted);margin-top:8px;">路线图节点：S15 网络服务 ✓ → <b>S16 硬盘驱动 ✓（本次）</b> → S17 磁盘文件系统 → S18 用户态库 → S19 POSIX 完善 → S20 真机里程碑。</p>
+</div>
+
+</div>
+</body>
+</html>

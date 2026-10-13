@@ -29,6 +29,7 @@ extern void kernel_poweroff(void);
 #include "sock.h"
 #include "dns.h"
 #include "httpd.h"
+#include "ata.h"
 #include "vt.h"
 
 /* ---------------- 极简 libc ---------------- */
@@ -114,6 +115,7 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  dns <hostname>  A-record lookup (via 10.0.2.3:53)\n");
     vga_printf("  httpd     HTTP server on :8080 (browser: 127.0.0.1:8080)\n");
     vga_printf("  chat      TCP chat server on :7784 (echo to client)\n");
+    vga_printf("  hd        hd info|read <lba>|write <lba> <text>|test  ATA PIO disk\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -471,6 +473,71 @@ static void cmd_chat(int argc, char **argv)
 {
     (void)argc; (void)argv;
     chat_start(7784);
+}
+
+/* S16: hd —— ATA 硬盘识别 / 读扇区 / 写扇区 / 读写回验 */
+static void cmd_hd(int argc, char **argv)
+{
+    int i, rc;
+    static u8 sec[512];
+
+    if (argc < 2) {
+        vga_printf("hd info|read <lba>|write <lba> <text>|test\n");
+        return;
+    }
+    if (k_strcmp(argv[1], "info") == 0) {
+        if (!g_ata.present) { vga_printf("hd: no drive\n"); return; }
+        vga_printf("ATA IDENTIFY:\n");
+        vga_printf("  model : %s\n", g_ata.model);
+        vga_printf("  serial: %s\n", g_ata.serial);
+        vga_printf("  CHS   : %u cyl / %u heads / %u spt\n",
+                   (unsigned)g_ata.cylinders, (unsigned)g_ata.heads, (unsigned)g_ata.sectors);
+        vga_printf("  size  : %u sectors = %u MB\n",
+                   (unsigned)g_ata.total_sectors, (unsigned)g_ata.capacity_mb);
+        return;
+    }
+    if (k_strcmp(argv[1], "read") == 0 && argc >= 3) {
+        u32 lba = (u32)k_atoi(argv[2]);
+        rc = ata_read_sector(lba, sec);
+        if (rc) { vga_printf("hd: read LBA %u failed (rc=%d)\n", lba, rc); return; }
+        vga_printf("hd: LBA %u (%u bytes):\n", lba, (unsigned)sizeof(sec));
+        for (i = 0; i < 64; i++) {
+            if (i % 16 == 0) vga_printf("  %04x: ", i);
+            vga_printf("%02x ", sec[i]);
+            if (i % 16 == 15) vga_printf("\n");
+        }
+        return;
+    }
+    if (k_strcmp(argv[1], "write") == 0 && argc >= 4) {
+        u32 lba = (u32)k_atoi(argv[2]);
+        for (i = 0; i < 512; i++) sec[i] = 0;
+        for (i = 0; argv[3][i] && i < 64; i++) sec[i] = (u8)argv[3][i];
+        rc = ata_write_sector(lba, sec);
+        if (rc) { vga_printf("hd: write LBA %u failed (rc=%d)\n", lba, rc); return; }
+        vga_printf("hd: wrote %d bytes to LBA %u\n", i, lba);
+        return;
+    }
+    if (k_strcmp(argv[1], "test") == 0) {
+        /* 读写回验：写签名串 -> 读回 -> 逐字节比对 */
+        const char *sig = "S16-DISK-RW-TEST";
+        for (i = 0; i < 512; i++) sec[i] = 0;
+        for (i = 0; sig[i]; i++) sec[i] = (u8)sig[i];
+        rc = ata_write_sector(200, sec);
+        if (rc) { vga_printf("hd test: write fail rc=%d\n", rc); return; }
+        for (i = 0; i < 512; i++) sec[i] = 0xAA;
+        rc = ata_read_sector(200, sec);
+        if (rc) { vga_printf("hd test: read fail rc=%d\n", rc); return; }
+        for (i = 0; sig[i]; i++) {
+            if (sec[i] != (u8)sig[i]) {
+                vga_printf("hd test: MISMATCH at %d (got %02x)\n", i, sec[i]);
+                return;
+            }
+        }
+        vga_printf("hd test: PASS (LBA 200 write+read verified, %d bytes)\n", i);
+        serial_printf("[hd] rw test PASS lba=200 sig=%s\r\n", sig);
+        return;
+    }
+    vga_printf("hd: unknown subcmd '%s'\n", argv[1]);
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1309,6 +1376,7 @@ static const cmd_t cmds[] = {
     { "dns",      "dns <hostname> A-record lookup", cmd_dns },
     { "httpd",    "HTTP server on :8080 (browser: 127.0.0.1:8080)", cmd_httpd },
     { "chat",     "TCP chat server on :7784 (echo)", cmd_chat },
+    { "hd",       "hd info|read <lba>|write <lba> <text>|test  ATA PIO disk", cmd_hd },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },

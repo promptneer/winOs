@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十六阶段测试指令表</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0883e'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%230d1117'%3EW%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--fg:#e6edf3;--muted:#8b949e;--accent:#f0883e;--ok:#3fb950;--warn:#d29922;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","PingFang SC",sans-serif;line-height:1.6;padding:24px 16px 60px;}
+.wrap{max-width:1100px;margin:0 auto;}
+h1{font-size:26px;margin-bottom:4px;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:20px;}
+h2{font-size:20px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;margin:18px 0 8px;color:var(--accent);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:8px;}
+th,td{border:1px solid var(--border);padding:8px 10px;font-size:13px;text-align:left;vertical-align:top;overflow-wrap:break-word;}
+th{background:#21262d;color:var(--fg);}
+td.cmd{font-family:Consolas,monospace;font-size:13px;color:#58a6ff;white-space:pre-wrap;}
+code{font-family:Consolas,monospace;background:#21262d;padding:2px 6px;border-radius:4px;font-size:13px;color:#58a6ff;}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+.mono{font-family:Consolas,monospace;font-size:12px;color:#7ee787;}
+.note{background:#1f2430;border-left:4px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--muted);margin-top:8px;}
+.progress{position:fixed;bottom:16px;right:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px;z-index:99;}
+.progress b{color:var(--accent);}
+.btn{background:var(--accent);color:#0d1117;border:0;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:13px;}
+.btn.sec{background:#21262d;color:var(--fg);}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>WinPP 第十六阶段 · 测试指令表</h1>
+<div class="sub">阶段主题：硬盘驱动（ATA PIO）—— 认识硬盘、读扇区、写扇区 ｜ 逐项实测勾选，全部通过后才能进入 S17</div>
+
+<div class="card">
+<h3>本阶段是什么（一句话）</h3>
+<p>S16 让你的内核第一次"摸到真正的硬盘"：通过 <b>ATA PIO</b> 接口读取硬盘身份信息（型号/容量），<b>读扇区</b>（512 字节一块）和<b>写扇区</b>，并做读写回验。S1-S15 的文件系统是内存里模拟的（断电就没），S16 打地基，S17 才能把文件真正存进硬盘。</p>
+</div>
+
+<h2>测试方法（先读这一段）</h2>
+<div class="card">
+<p><b>第 1 步</b>：双击 <code>D:\WinPP\启动WinPP内核.bat</code> 启动内核（本次启动会自动探测硬盘并显示 [ata] IDENTIFY ok）。</p>
+<p><b>第 2 步</b>：在 WinPP shell 里输入 <code>hd</code> 开头的命令，回车执行。</p>
+<p><b>第 3 步</b>：每测完一项，点该项右侧的 <b>☐ 勾选框</b>打勾。勾选会保存在本机浏览器（localStorage）。</p>
+<div class="note">提示：hd 命令的完整用法是 <code>hd info|read &lt;lba&gt;|write &lt;lba&gt; &lt;text&gt;|test</code>。LBA 就是"扇区编号"，0 是第一块扇区。写扇区会真实改到 hd.img 文件，写坏了重跑 <code>python D:\WinPP\winpp-os\_mk_hdimg.py</code> 就能还原空盘。</div>
+</div>
+
+<h2>测试项（共 10 项）</h2>
+<div class="card">
+<table>
+<colgroup><col style="width:5%"><col style="width:17%"><col style="width:14%"><col style="width:33%"><col style="width:24%"><col style="width:7%"></colgroup>
+<thead><tr><th>#</th><th>命令 / 操作</th><th>在哪端操作</th><th>你做什么</th><th>正常显示（什么算通过）</th><th>勾选</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+
+<h2>测试记录</h2>
+<div class="card">
+<div class="row">
+<button class="btn" onclick="saveAll()">保存全部勾选</button>
+<button class="btn sec" onclick="clearAll()">清空全部勾选</button>
+</div>
+<p style="font-size:13px;color:var(--muted);margin-top:10px;">每勾一项会自动保存；点"保存全部勾选"可以强制刷新存储。</p>
+</div>
+
+<h2>失败排查速查</h2>
+<div class="card">
+<table>
+<colgroup><col style="width:38%"><col style="width:62%"></colgroup>
+<thead><tr><th>现象</th><th>原因与处理</th></tr></thead>
+<tbody>
+<tr><td class="cmd">开机没有 [ata] IDENTIFY ok</td><td>确认 bochsrc.txt 里有 ata0 和 ata0-master 两行配置（本次已加）；确认 hd.img 存在（D:\WinPP\winpp-os\hd.img，10MB）。删除 hd.img 后重新 python D:\WinPP\winpp-os\_mk_hdimg.py 生成。</td></tr>
+<tr><td class="cmd">hd info 显示 0 容量</td><td>Bochs 的 IDENTIFY 不报 LBA28 总数时内核自动用 CHS 推算（20 cyl × 16 × 63 = 20160 扇区 ≈ 9MB）。显示 0 说明探测失败，重启内核再试。</td></tr>
+<tr><td class="cmd">hd read 0 全是 00</td><td>说明扇区 0 被清空过（比如之前 write 过别的内容）。用 python D:\WinPP\winpp-os\_mk_hdimg.py 重建空盘（含 WINPP-HD-IMAGE-V1 签名）再看。</td></tr>
+<tr><td class="cmd">hd write 后 hd read 看不到内容</td><td>确认 write 命令格式：hd write 0 hello（只写前 64 字节，其余补零）；read 0 看前 64 字节十六进制：hello 对应 68 65 6c 6c 6f。</td></tr>
+<tr><td class="cmd">hd test 显示 MISMATCH</td><td>读写链路有问题：先确认 [ata] IDENTIFY ok；重启内核重试；仍失败把屏幕截图给我。</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="progress">已勾选 <b id="cnt">0</b> / <b>10</b> 项</div>
+</div>
+
+<script>
+(function(){
+var ROWS=[
+["开机自检","WinPP 内核","直接观察启动过程（无需输入命令）","启动日志出现 [ata] IDENTIFY ok: 20 cyl 16 head 63 spt, 20160 sectors (9 MB)——内核认识到了硬盘"],
+["hd info","WinPP 内核","输入 hd info","显示 ATA IDENTIFY：model（型号）、serial（序列号）、CHS（20 cyl / 16 heads / 63 spt）、size（20160 sectors = 9 MB）"],
+["hd read 0","WinPP 内核","输入 hd read 0","显示 LBA 0 前 64 字节十六进制：开头是 57 49 4e 50 50 2d 48 44（即 WINPP-HD-IMAGE-V1 签名），说明能读回硬盘内容"],
+["hd read 5","WinPP 内核","输入 hd read 5","显示 LBA 5 的内容（空盘为全 00），不报错、不崩溃，说明任意扇区都能读"],
+["hd write 0 hello","WinPP 内核","输入 hd write 0 hello","显示 wrote 5 bytes to LBA 0，说明写扇区命令执行成功"],
+["hd read 0（写后回读）","WinPP 内核","再输入 hd read 0","前 64 字节开头变成 68 65 6c 6c 6f（hello 的十六进制）——写入的数据真实落盘并能读回"],
+["hd test","WinPP 内核","输入 hd test","显示 hd test: PASS (LBA 200 write+read verified)——内核自己完成"写签名→读回→逐字节比对"全流程"],
+["hd write 9999 xxx（越界）","WinPP 内核","输入 hd write 9999 xxx","显示 hd: write LBA 9999 failed (rc=-2)——超出 20160 扇区范围被拒绝，不崩溃"],
+["help 命令","WinPP 内核","输入 help","帮助列表出现 hd 一行：hd info|read <lba>|write <lba> <text>|test ATA PIO disk"],
+["连续读写稳定性","WinPP 内核","连续执行：hd read 0、hd read 5、hd write 5 data5、hd read 5、hd test","全部正常返回，无卡死、无乱码、无崩溃"]
+];
+var KEY="winpp_s16_check";
+var tbody=document.getElementById("rows");
+ROWS.forEach(function(r,i){
+  var tr=document.createElement("tr");
+  tr.innerHTML='<td>'+(i+1)+'</td><td class="cmd">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td><input type="checkbox" data-i="'+i+'" title="测试完成打勾"></td>';
+  tbody.appendChild(tr);
+});
+function save(){var s={};document.querySelectorAll('input[type=checkbox]').forEach(function(c){s[c.dataset.i]=c.checked;});localStorage.setItem(KEY,JSON.stringify(s));update();}
+function update(){var n=document.querySelectorAll('input[type=checkbox]:checked').length;document.getElementById('cnt').textContent=n;}
+document.querySelectorAll('input[type=checkbox]').forEach(function(c){c.addEventListener('change',save);});
+try{var saved=JSON.parse(localStorage.getItem(KEY)||"{}");document.querySelectorAll('input[type=checkbox]').forEach(function(c){if(saved[c.dataset.i])c.checked=true;});}catch(e){}
+update();
+window.saveAll=function(){save();alert("已保存 "+document.querySelectorAll('input[type=checkbox]:checked').length+" 项");};
+window.clearAll=function(){document.querySelectorAll('input[type=checkbox]').forEach(function(c){c.checked=false;});localStorage.removeItem(KEY);update();};
+})();
+</script>
+</body>
+</html>

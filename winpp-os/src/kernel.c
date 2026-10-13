@@ -22,6 +22,7 @@
 #include "net.h"
 #include "tcp.h"
 #include "httpd.h"
+#include "ata.h"
 #include "vt.h"
 
 u32  g_mem_kb = 0;
@@ -286,6 +287,9 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[11e] net ...\r\n");
     vga_printf("[11e] net ...\n");
     net_init();
+    serial_puts("[11f] ata hdd ...\r\n");
+    vga_printf("[11f] ata hdd ...\n");
+    ata_init();
     serial_puts("[12a] vt ...\r\n");
     vga_printf("[12a] vt ...\n");
     vt_init();
