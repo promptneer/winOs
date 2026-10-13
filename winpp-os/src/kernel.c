@@ -20,6 +20,7 @@
 #include "mouse.h"
 #include "ne2k.h"
 #include "net.h"
+#include "tcp.h"
 #include "vt.h"
 
 u32  g_mem_kb = 0;
@@ -123,6 +124,8 @@ void irq_handler(regs_t *r)
         /* 多任务：每个时间片强制重新调度 */
         if (sched_running() && (timer_ticks() % SCHED_QUANTUM) == 0)
             sched_need_resched();
+        /* S13：TCP 超时重传/清理（每 10 tick 一次，省开销） */
+        if (timer_ticks() % 10 == 0) tcp_poll();
     }
     if (irq >= 8) outb(0xA0, 0x20);   /* 从片 EOI */
     outb(0x20, 0x20);                 /* 主片 EOI */

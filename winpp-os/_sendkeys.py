@@ -70,7 +70,10 @@ def type_seq(chars):
          '3': (0x33, 0x04), '4': (0x34, 0x05), '5': (0x35, 0x06),
          '6': (0x36, 0x07), '7': (0x37, 0x08), '8': (0x38, 0x09),
          '9': (0x39, 0x0A), ' ': (0x20, 0x39), '\n': (0x0D, 0x1C),
-         '/': (0xBF, 0x35), '.': (0xBE, 0x34)}
+         '/': (0xBF, 0x35), '.': (0xBE, 0x34),
+         '-': (0xBD, 0x0C), '_': (0xBD, 0x0C),  # _ 用 - 扫描码（shift 状态由上层保证；shell 只取字符）
+         '+': (0xBB, 0x0D), '=': (0xBB, 0x0D),
+         ':': (0xBA, 0x27), ';': (0xBA, 0x27), ',': (0xBC, 0x33)}
     for ch in chars:
         if ch not in m:
             print('skip', repr(ch))
@@ -83,6 +86,8 @@ def type_seq(chars):
 
 if __name__ == '__main__':
     cmd = sys.argv[1]
+    if len(sys.argv) > 2:
+        H = int(sys.argv[2])   # 支持外部传当前句柄
     ok = force_foreground(H)
     print('foreground ok:', ok, 'fg=', get_fg())
     if not ok:

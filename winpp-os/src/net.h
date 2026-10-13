@@ -42,6 +42,8 @@ u8  *net_rx_buf(void);                     /* 网卡收包缓冲 */
 
 /* 发送 UDP 数据报：dst_ip 为本机则环回 */
 int net_udp_send(ip4_t dst, u16 src_port, u16 dst_port, const u8 *data, u16 len);
+/* 发送 IPv4 包（S13 TCP 用；proto=6 时 payload 是 TCP 段） */
+int net_ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen);
 /* 发送 ICMP echo request */
 int net_ping(ip4_t dst);
 /* ICMP echo 回复（供 ping 自己） */

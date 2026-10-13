@@ -1,5 +1,6 @@
 #include "net.h"
 #include "ne2k.h"
+#include "tcp.h"
 #include "io.h"
 #include "serial.h"
 #include "vga.h"
@@ -84,7 +85,7 @@ u8 *net_rx_buf(void) { return s_eth_buf; }
 /* 前向声明（net_rx_ip 先于定义使用） */
 void net_ping_send_reply(ip4_t dst, const u8 *icmp, u16 plen);
 static int eth_send(const u8 *dstmac, u16 etype, const u8 *payload, u16 plen);
-static int ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen);
+int net_ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen);
 
 void ip_print(const u8 *ip)
 {
@@ -326,6 +327,15 @@ static void net_rx_ip(const u8 *pkt, u16 len)
             for (u16 i = 0; i < dlen && n < 76; i++) msg[n++] = ep->buf[i];
             net_udp_send((u8 *)src, ep->port, sport, msg, (u16)n);
         }
+    } else if (proto == NET_IP_PROTO_TCP) {
+        /* S13：TCP 段交给 TCP 层。
+         * 长度必须用 IP total 字段（pkt[2..3]），不能信任外层帧长——
+         * 以太网帧会 pad 到 60 字节，纯 ACK 段(20B)会多出 6 字节假数据。 */
+        u16 total = ((u16)pkt[2] << 8) | pkt[3];
+        if (total < ihl + 20) return;
+        u16 tcp_len = total - ihl;
+        if (tcp_len > len - ihl) tcp_len = (u16)(len - ihl);
+        tcp_rx(pkt + ihl, tcp_len, (u8 *)src);
     }
 }
 
@@ -384,7 +394,7 @@ static int eth_send(const u8 *dstmac, u16 etype, const u8 *payload, u16 plen)
 }
 
 /* 发送 IPv4 包（校验和自动计算） */
-static int ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen)
+int net_ip_send(ip4_t dst, u8 proto, const u8 *payload, u16 plen)
 {
     u8 *p = s_tx_buf + 14;
     u16 total = 20 + plen;
@@ -442,13 +452,13 @@ static void icmp_echo_send(ip4_t dst)
     c[8] = 'W'; c[9] = 'P'; c[10] = 'P'; c[11] = '!';
     u16 cs = net_checksum(c, plen);
     c[2] = cs >> 8; c[3] = cs & 0xFF;
-    ip_send(dst, NET_IP_PROTO_ICMP, c, plen);
+    net_ip_send(dst, NET_IP_PROTO_ICMP, c, plen);
 }
 
 /* 回复 ICMP echo（ping 回复） */
 void net_ping_send_reply(ip4_t dst, const u8 *icmp, u16 plen)
 {
-    ip_send(dst, NET_IP_PROTO_ICMP, icmp, plen);
+    net_ip_send(dst, NET_IP_PROTO_ICMP, icmp, plen);
 }
 
 int net_ping(ip4_t dst)
@@ -468,7 +478,7 @@ int net_udp_send(ip4_t dst, u16 src_port, u16 dst_port, const u8 *data, u16 len)
     u[4] = ulen >> 8;   u[5] = ulen & 0xFF;
     u[6] = 0; u[7] = 0;          /* 校验和可为 0（IPv4 UDP 允许） */
     for (u16 i = 0; i < len; i++) u[8 + i] = data[i];
-    int rc = ip_send(dst, NET_IP_PROTO_UDP, u, ulen);
+    int rc = net_ip_send(dst, NET_IP_PROTO_UDP, u, ulen);
     if (rc == 0) s_udp_sent++;
     return rc;
 }
@@ -506,4 +516,8 @@ void net_init(void)
     udp_ep_t *ep_cmd = udp_bind(7778);
     if (ep_cmd) ep_cmd->is_cmd = 1;
     serial_puts("[net] comms endpoints: :7777 echo, :7778 cmd\r\n");
+
+    /* S13：TCP 层初始化 */
+    tcp_init();
+    serial_puts("[net] tcp layer ready (proto 6)\r\n");
 }

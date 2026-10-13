@@ -25,6 +25,7 @@ extern void kernel_poweroff(void);
 #include "gui.h"
 #include "ne2k.h"
 #include "net.h"
+#include "tcp.h"
 #include "vt.h"
 
 /* ---------------- 极简 libc ---------------- */
@@ -103,6 +104,9 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  msgs      show my terminal inbox\n");
     vga_printf("  ts        terminal status table\n");
     vga_printf("  tkill <id>  reset terminal session\n");
+    vga_printf("  tcp listen <port> / connect <ip> <port>\n");
+    vga_printf("  tcp send <text> / tcp recv\n");
+    vga_printf("  tcpstat   TCP connection state table\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -282,6 +286,111 @@ static void cmd_tkill(int argc, char **argv)
     }
     vt_reset((u8)id);
     vga_printf("VT%d reset (clean session)\n", id);
+}
+
+/* ---------- S13 TCP ---------- */
+
+static int parse_ip(const char *s, u8 *out);   /* S11 网络命令区定义 */
+
+static tcp_sock_t *tcp_first_established(void)
+{
+    tcp_sock_t *s = tcp_first();
+    while (s && s->state != TCP_ESTABLISHED) s = tcp_next(s);
+    return s;
+}
+
+/* tcp listen <port> —— 监听端口（收到 SYN 自动完成握手） */
+static void cmd_tcp_listen(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: tcp listen <port>\n"); return; }
+    int port = k_atoi(argv[1]);
+    if (port < 1 || port > 65535) { vga_printf("tcp: bad port\n"); return; }
+    if (tcp_listen((u16)port))
+        vga_printf("tcp: listening on :%d\n", port);
+    else
+        vga_printf("tcp: listen failed (port busy or table full)\n");
+}
+
+/* tcp connect <ip> <port> —— 主动连接（三次握手） */
+static void cmd_tcp_connect(int argc, char **argv)
+{
+    if (argc != 3) { vga_printf("usage: tcp connect <a.b.c.d> <port>\n"); return; }
+    u8 ip[4];
+    if (parse_ip(argv[1], ip) != 0) { vga_printf("tcp: bad ip\n"); return; }
+    int port = k_atoi(argv[2]);
+    if (tcp_connect(ip, (u16)port))
+        vga_printf("tcp: connecting to %u.%u.%u.%u:%d (SYN sent)\n",
+                   ip[0], ip[1], ip[2], ip[3], port);
+    else
+        vga_printf("tcp: connect failed (table full)\n");
+}
+
+/* tcp send <text> —— 在第一条已建立连接上发数据 */
+static void cmd_tcp_send(int argc, char **argv)
+{
+    if (argc < 2) { vga_printf("usage: tcp send <text>\n"); return; }
+    tcp_sock_t *s = tcp_first_established();
+    if (!s) { vga_printf("tcp: no established connection\n"); return; }
+    char text[TCP_BUF_MAX];
+    int n = 0;
+    for (int a = 1; a < argc && n < TCP_BUF_MAX - 1; a++) {
+        for (const char *p = argv[a]; *p && n < TCP_BUF_MAX - 1; p++) text[n++] = *p;
+        if (a + 1 < argc && n < TCP_BUF_MAX - 1) text[n++] = ' ';
+    }
+    text[n] = 0;
+    if (tcp_send(s, text, (u16)n) == 0)
+        vga_printf("tcp: sent %d bytes\n", n);
+    else
+        vga_printf("tcp: send failed (busy or not established)\n");
+}
+
+/* tcp recv —— 打印接收缓冲 */
+static void cmd_tcp_recv(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    tcp_sock_t *s = tcp_first_established();
+    if (!s) { vga_printf("tcp: no established connection\n"); return; }
+    if (s->rlen == 0) { vga_printf("tcp: (no data received)\n"); return; }
+    vga_printf("tcp: %u bytes:\n", (unsigned)s->rlen);
+    for (u16 i = 0; i < s->rlen; i++) vga_putc((char)s->rbuf[i]);
+    vga_putc('\n');
+    s->rlen = 0;
+}
+
+/* tcp <subcmd> —— 分发 */
+static void cmd_tcp(int argc, char **argv)
+{
+    if (argc < 2) {
+        vga_printf("usage: tcp listen <port> | connect <ip> <port> | send <text> | recv\n");
+        return;
+    }
+    if (k_strcmp(argv[1], "listen") == 0)      { cmd_tcp_listen(argc - 1, argv + 1); return; }
+    if (k_strcmp(argv[1], "connect") == 0)     { cmd_tcp_connect(argc - 1, argv + 1); return; }
+    if (k_strcmp(argv[1], "send") == 0)        { cmd_tcp_send(argc - 1, argv + 1); return; }
+    if (k_strcmp(argv[1], "recv") == 0)        { cmd_tcp_recv(argc - 1, argv + 1); return; }
+    vga_printf("tcp: unknown subcommand '%s'\n", argv[1]);
+}
+
+/* tcpstat —— 连接状态表 */
+static void cmd_tcpstat(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    vga_printf("state      lport  rip:rport       snd/una  rcv_nxt  buf\n");
+    tcp_sock_t *s = tcp_first();
+    while (s) {
+        vga_printf("%-10s %-5u ", tcp_state_name(s->state), (unsigned)s->lport);
+        if (s->rport)
+            vga_printf("%u.%u.%u.%u:%u  ", s->rip[0], s->rip[1], s->rip[2], s->rip[3], (unsigned)s->rport);
+        else
+            vga_printf("(any)          ");
+        vga_printf("%u/%u  %u  %u/%u\n",
+                   s->snd_seq, s->snd_una,
+                   s->rcv_nxt, (unsigned)s->slen, (unsigned)s->rlen);
+        s = tcp_next(s);
+    }
+    serial_printf("[tcp] stat: rx=%u tx=%u retx=%u syn=%u\r\n",
+                  g_tcp_rx, g_tcp_tx,
+                  g_tcp_retx, g_tcp_syn);
 }
 
 /* S6-2：pwd —— 显示当前目录 */
@@ -1114,6 +1223,8 @@ static const cmd_t cmds[] = {
     { "msgs",     "show my terminal inbox",        cmd_msgs },
     { "ts",       "terminal status table",         cmd_ts },
     { "tkill",    "reset terminal <id> session",   cmd_tkill },
+    { "tcp",      "tcp listen/connect/send/recv",  cmd_tcp },
+    { "tcpstat",  "tcp connection state table",    cmd_tcpstat },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
