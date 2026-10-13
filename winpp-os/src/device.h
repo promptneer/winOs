@@ -16,6 +16,7 @@
 #define DEV_MAJOR_KBD    1
 #define DEV_MAJOR_TIMER  2
 #define DEV_MAJOR_COM1   3
+#define DEV_MAJOR_NE2K   5   /* S11: NE2000 网卡 */
 
 /* 设备 ioctl 命令号 */
 #define DEV_IOCTL_TICKS      1   /* timer: 返回 tick 计数 */
@@ -43,5 +44,6 @@ int  device_count(void);
 device_t *keyboard_device(void);
 device_t *timer_device(void);
 device_t *serial_device(void);
+device_t *ne2k_device(void);   /* S11: NE2000 网卡 */
 
 #endif

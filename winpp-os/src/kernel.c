@@ -18,6 +18,8 @@
 #include "sem.h"
 #include "gui.h"
 #include "mouse.h"
+#include "ne2k.h"
+#include "net.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -268,6 +270,12 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[11c] sem ...\r\n");
     vga_printf("[11c] sem ...\n");
     sem_init();
+    serial_puts("[11d] ne2k ...\r\n");
+    vga_printf("[11d] ne2k ...\n");
+    ne2k_init();
+    serial_puts("[11e] net ...\r\n");
+    vga_printf("[11e] net ...\n");
+    net_init();
     serial_puts("[12] all init ok, drawing UI ...\r\n");
     vga_printf("[12] all init ok, drawing UI ...\n");
 

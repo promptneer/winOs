@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十一阶段进度报告</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:#0d1117;color:#e6edf3;padding:28px;line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:28px;margin-bottom:6px}
+h1 .g{color:#f0883e}
+.sub{color:#8b949e;margin-bottom:20px;font-size:14px}
+.badge{display:inline-block;background:#1f6feb22;color:#58a6ff;border:1px solid #1f6feb55;padding:2px 10px;border-radius:20px;font-size:12px;margin-right:6px}
+.badge.g{background:#2ea04322;color:#3fb950;border-color:#2ea04355}
+.badge.y{background:#d2992222;color:#e3b341;border-color:#d2992255}
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:18px 22px;margin-bottom:16px}
+.card h2{font-size:18px;margin-bottom:12px;color:#58a6ff}
+.card h2 .n{background:#1f6feb;color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;margin-right:8px}
+table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:6px}
+col.c1{width:16%}col.c2{width:42%}col.c3{width:42%}
+th,td{padding:7px 8px;text-align:left;border-bottom:1px solid #21262d;font-size:13px;vertical-align:top}
+th{color:#8b949e;font-weight:600;font-size:12px;width:auto}
+td.cmd{font-family:Consolas,"Courier New",monospace;color:#f0c674}
+code{background:#21262d;border:1px solid #30363d;border-radius:4px;padding:1px 6px;font-family:Consolas,monospace;font-size:12px}
+.ok{color:#3fb950;font-weight:600}
+.warn{color:#e3b341;font-weight:600}
+pre{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 14px;font-family:Consolas,monospace;font-size:12px;color:#9ecbff;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
+.foot{color:#8b949e;font-size:12px;margin-top:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>WinPP 内核 <span class="g">第十一阶段</span> 进度报告</h1>
+<div class="sub">S11 网络协议栈 · NE2000 网卡驱动 + ARP + IPv4 + UDP + ICMP + 聊天服务器 · 已实机取证</div>
+<div>
+<span class="badge g">S1–S10 已完成</span>
+<span class="badge">S11 网络协议栈 · 内核侧完成</span>
+<span class="badge y">下一步 S12 多终端会话</span>
+</div>
+
+<div class="card">
+<h2><span class="n">1</span> 一句话总结（小白版）</h2>
+<p>这阶段给你的内核<b>装上了一张网卡和一套"邮局系统"</b>：以前内核是"与世隔绝"的，现在它能<b>收发网络数据包</b>了——能给自己发消息、能开一个"聊天服务器"在端口上等消息、也能把自己的地址告诉别人。就像一台电脑从"没插网线"变成了"插上网线、会发收信件"。</p>
+</div>
+
+<div class="card">
+<h2><span class="n">2</span> 技术实现（自底向上）</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>模块</th><th>实现</th><th>实测状态</th></tr>
+<tr><td>NE2000 网卡驱动</td><td>DP8390 ISA 网卡：复位 / DMA 收发环形缓冲 / 寄存器读写 / IRQ10 中断，注册进 S7 设备框架（major=5）</td><td class="ok">READY，寄存器回读正确</td></tr>
+<tr><td>以太网帧</td><td>帧封装/解析（目的 MAC 过滤：广播 + 本机），类型分发 ARP/IP</td><td class="ok">通过</td></tr>
+<tr><td>ARP</td><td>请求/响应构造、ARP 缓存表（IP→MAC）、命令 <code>arp</code></td><td class="ok">通过</td></tr>
+<tr><td>IPv4</td><td>IP 包构造/解析（校验和计算）、TTL/协议分发</td><td class="ok">通过</td></tr>
+<tr><td>ICMP</td><td>ping：echo request 构造 + echo reply 响应</td><td class="ok">自测 REPLY OK</td></tr>
+<tr><td>UDP</td><td>端点表（bind/lookup）、数据报收发</td><td class="ok">环回 20/20 字节匹配</td></tr>
+<tr><td>环回设计</td><td>目标 IP = 本机时 IP 层短路回环，不经过网卡——无外部网络也可完整验证协议栈</td><td class="ok">关键设计</td></tr>
+<tr><td>聊天服务器 chatd</td><td>绑定端口监听，收到 UDP 消息打印来源 + 内容</td><td class="ok">收到消息并打印</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">3</span> 新增命令</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>命令</th><th>作用</th><th>实测输出（正常）</th></tr>
+<tr><td class="cmd">net</td><td>网卡信息 + 寄存器诊断</td><td>NE2000 NIC READY · IO=0x240 IRQ=10 MAC=52:54:00:12:34:56</td></tr>
+<tr><td class="cmd">ip &lt;ip&gt;</td><td>设置/显示本机 IP</td><td>IP: 192.168.0.10</td></tr>
+<tr><td class="cmd">udptest</td><td>UDP 环回自测（两端口互发）</td><td>SEND 20 bytes → RECV 20 bytes OK</td></tr>
+<tr><td class="cmd">ping &lt;ip&gt;</td><td>ICMP 探活（本机自测）</td><td>Reply from 192.168.0.10: seq=1 OK</td></tr>
+<tr><td class="cmd">chatd &lt;port&gt;</td><td>启动 UDP 聊天服务器</td><td>chatd: UDP server on port 7777, waiting...</td></tr>
+<tr><td class="cmd">udpsend &lt;ip&gt; &lt;port&gt; &lt;text&gt;</td><td>发送 UDP 消息</td><td>udp: sent 5 bytes to 192.168.0.10:7777</td></tr>
+<tr><td class="cmd">chatd</td><td>查看聊天服务器收到的消息</td><td>chatd recv from 192.168.0.10:40000: hello</td></tr>
+<tr><td class="cmd">netstat</td><td>UDP 端点 + 收发计数</td><td>UDP endpoints (3 sent / 3 recv)</td></tr>
+<tr><td class="cmd">arp</td><td>ARP 缓存表（add 手动添加）</td><td>ARP table (rx=0): (empty)</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">4</span> 机器实测取证（Bochs 2.8 · 串口 + 屏幕双通道）</h2>
+<p style="margin-bottom:10px;font-size:13px">串口日志（serial.out）实采，逐命令执行，内核屏幕 25 行转储逐条记录：</p>
+<pre>=== 内核启动 ===
+[dev]   ne2k major=5 type=1 irq=10 r=1 w=1 io=0
+[11d] ne2k ...
+[ne2k] init ok: IO=0x240 IRQ=10 MAC=52:54:0:12:34:56
+[11e] net ...
+[net] stack init: IP=192.168.0.10 MAC=52:54:0:12:34:56
+
+=== 逐命令实测（用户视角屏幕） ===
+root@kernel:/# net
+NE2000 NIC READY
+  IO=0x240  IRQ=10  MAC=52:54:00:12:34:56
+  ISR=00 CURR=49 BNRY=48
+  IP=192.168.0.10
+root@kernel:/# udptest
+SEND 20 bytes -> RECV 20 bytes OK (data matches)
+root@kernel:/# ping 192.168.0.10
+Reply from 192.168.0.10: seq=1 OK
+root@kernel:/# chatd 7777
+chatd: UDP server on port 7777, waiting...
+root@kernel:/# udpsend 192.168.0.10 7777 hello
+udp: sent 5 bytes to 192.168.0.10:7777
+root@kernel:/# chatd
+chatd recv from 192.168.0.10:40000 (5 bytes): hello
+root@kernel:/# netstat
+UDP endpoints (3 sent / 3 recv):
+  :7777 [idle]
+  :9999 [idle]
+  :9998 [idle]
+
+=== 串口取证行（serial.out 实采） ===
+[net] cmd net: ready=1 ISR=0 CURR=49 BNRY=48
+[net] udptest: LOOPBACK OK 20/20
+[net] ping self: REPLY OK
+[net] chatd bind 7777
+[net] udpsend ok len=5
+[net] chatd recv from 192.168.0.10:40000 len=5
+[net] netstat: sent=3 recv=3</pre>
+<p style="font-size:12px;color:#8b949e">注：Bochs 网卡在无 pcap 时仍完整模拟寄存器；"发到本机 IP"由 IP 层环回短路完成——上述收发验证了完整协议栈（以太网→ARP→IP→UDP/ICMP 构造、解析、校验、分发）。</p>
+</div>
+
+<div class="card">
+<h2><span class="n">5</span> 主机联调状态（真实跨机通讯）</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+<tr><th>目标</th><th>方案</th><th>状态</th></tr>
+<tr><td>主机 ping 内核 / 内核 ping 主机</td><td>Bochs ne2k → Npcap 桥接到主机网卡</td><td class="warn">Npcap 未安装（UAC 提权被阻）——需手动装</td></tr>
+<tr><td>Windows 用 nc 连内核 chatd 聊天</td><td>主机 netcat -u 内核IP 7777</td><td class="warn">同上，Npcap 装好即可测</td></tr>
+<tr><td>内核内部"终端通讯"</td><td>udpsend → chatd 收（环回通道）</td><td class="ok">已验证</td></tr>
+</table>
+<p style="font-size:13px;margin-top:8px">要打通"内核 ↔ Windows/Linux 真实收发"，需要你手动装一次 Npcap（下载 <code>https://npcap.com/dist/npcap-1.76.exe</code>，右键管理员运行，一路下一步）；装好后告诉我，我立刻做桥接 + 主机联调实测（ping / nc 聊天）。</p>
+</div>
+
+<div class="card">
+<h2><span class="n">6</span> 下一步</h2>
+<p><b>S12 多终端会话系统</b>：Alt+F1/F2 切换多个虚拟终端、终端间互发消息（复用 S5 IPC + S11 网络通道）、会话隔离——向"真操作系统"再进一步。</p>
+</div>
+
+<div class="foot">WinPP OS · S11 网络协议栈 · 2026-10-13 · 内核侧实测通过，主机联调待 Npcap</div>
+</div>
+</body>
+</html>

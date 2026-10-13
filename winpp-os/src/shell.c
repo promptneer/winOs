@@ -23,6 +23,8 @@ extern void kernel_poweroff(void);
 #include "device.h"
 #include "user.h"
 #include "gui.h"
+#include "ne2k.h"
+#include "net.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -84,6 +86,14 @@ static void cmd_help(int argc, char **argv)
     vga_printf("  ps        list process table\n");
     vga_printf("  kill <pid>  terminate a user process\n");
     vga_printf("  stop      stop scheduler, back to shell\n");
+    vga_printf("  net       NIC info + registers\n");
+    vga_printf("  ip <ip>   set/show local IP\n");
+    vga_printf("  arp       show/add ARP table\n");
+    vga_printf("  ping <ip> ICMP echo (self-loop)\n");
+    vga_printf("  udpsend <ip> <port> <text>  send UDP\n");
+    vga_printf("  udptest   UDP loopback self-test\n");
+    vga_printf("  chatd <port>  UDP chat server\n");
+    vga_printf("  netstat   UDP endpoints + stats\n");
     vga_printf("  reboot    restart machine\n");
     vga_printf("  poweroff  ACPI power off (QEMU)\n");
 }
@@ -297,6 +307,227 @@ static void cmd_gui(int argc, char **argv)
     serial_puts("[gui] cmd gui\r\n");
     gui_run();
     vga_printf("back to text mode\n");
+}
+
+/* ============ S11 网络命令 ============ */
+
+static int parse_ip(const char *s, u8 *out)
+{
+    int part[4];
+    const char *p = s;
+    for (int i = 0; i < 4; i++) {
+        part[i] = k_atoi(p);
+        if (part[i] < 0 || part[i] > 255) return -1;
+        while (*p >= '0' && *p <= '9') p++;
+        if (i < 3) { if (*p == '.') p++; else return -1; }
+    }
+    for (int i = 0; i < 4; i++) out[i] = (u8)part[i];
+    return 0;
+}
+
+static int parse_mac(const char *s, u8 *out)
+{
+    for (int i = 0; i < 6; i++) {
+        int hi = -1, lo = -1;
+        char c = s[0];
+        if (c >= '0' && c <= '9') hi = c - '0';
+        else if (c >= 'a' && c <= 'f') hi = c - 'a' + 10;
+        else if (c >= 'A' && c <= 'F') hi = c - 'A' + 10;
+        c = s[1];
+        if (c >= '0' && c <= '9') lo = c - '0';
+        else if (c >= 'a' && c <= 'f') lo = c - 'a' + 10;
+        else if (c >= 'A' && c <= 'F') lo = c - 'A' + 10;
+        if (hi < 0 || lo < 0) return -1;
+        out[i] = (u8)((hi << 4) | lo);
+        s += 2;
+        if (i < 5) { if (*s == ':') s++; else return -1; }
+    }
+    return 0;
+}
+
+/* net：网卡信息 + 寄存器诊断 */
+static void cmd_net(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    u8 isr, curr, bnry;
+    u8 ready = ne2k_regs_diag(&isr, &curr, &bnry);
+    vga_printf("NE2000 NIC %s\n", ready ? "READY" : "NOT READY");
+    vga_printf("  IO=0x%X  IRQ=%d  MAC=%02X:%02X:%02X:%02X:%02X:%02X\n",
+               NE2K_IO, NE2K_IRQ,
+               g_local_mac[0], g_local_mac[1], g_local_mac[2],
+               g_local_mac[3], g_local_mac[4], g_local_mac[5]);
+    vga_printf("  ISR=%02X CURR=%02X BNRY=%02X\n", isr, curr, bnry);
+    vga_printf("  IP=%u.%u.%u.%u\n",
+               g_local_ip[0], g_local_ip[1], g_local_ip[2], g_local_ip[3]);
+    serial_printf("[net] cmd net: ready=%u ISR=%02X CURR=%02X BNRY=%02X\r\n",
+                  ready, isr, curr, bnry);
+}
+
+/* ip [a.b.c.d]：设置/显示本机 IP */
+static void cmd_ip(int argc, char **argv)
+{
+    if (argc == 2) {
+        u8 ip[4];
+        if (parse_ip(argv[1], ip)) { vga_printf("bad ip\n"); return; }
+        for (int i = 0; i < 4; i++) g_local_ip[i] = ip[i];
+        serial_printf("[net] ip set\r\n");
+    }
+    vga_printf("IP: %u.%u.%u.%u  MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
+               g_local_ip[0], g_local_ip[1], g_local_ip[2], g_local_ip[3],
+               g_local_mac[0], g_local_mac[1], g_local_mac[2],
+               g_local_mac[3], g_local_mac[4], g_local_mac[5]);
+}
+
+/* arp：显示 ARP 表；arp add <ip> <mac> 手动加 */
+static void cmd_arp(int argc, char **argv)
+{
+    if (argc >= 4 && k_strcmp(argv[1], "add") == 0) {
+        u8 ip[4], mac[6];
+        if (parse_ip(argv[2], ip) || parse_mac(argv[3], mac)) {
+            vga_printf("usage: arp add <ip> <mac>\n"); return;
+        }
+        arp_add(ip, mac);
+        vga_printf("arp: added\n");
+        return;
+    }
+    vga_printf("ARP table (rx=%u):\n", (u32)g_arp_rx);
+    arp_ent_t *e;
+    u8 idx = 0;
+    extern arp_ent_t *net_arp_table(int *n);
+    int n = 0;
+    e = net_arp_table(&n);
+    for (int i = 0; i < n; i++) {
+        if (!e[i].used) continue;
+        vga_printf("  %u.%u.%u.%u -> %02X:%02X:%02X:%02X:%02X:%02X\n",
+                   e[i].ip[0], e[i].ip[1], e[i].ip[2], e[i].ip[3],
+                   e[i].mac[0], e[i].mac[1], e[i].mac[2],
+                   e[i].mac[3], e[i].mac[4], e[i].mac[5]);
+        idx++;
+    }
+    if (idx == 0) vga_printf("  (empty)\n");
+}
+
+/* ping <ip>：ICMP echo（本机 IP 环回自测；其他 IP 发 ARP 请求） */
+static void cmd_ping(int argc, char **argv)
+{
+    if (argc != 2) { vga_printf("usage: ping <ip>\n"); return; }
+    u8 ip[4];
+    if (parse_ip(argv[1], ip)) { vga_printf("bad ip\n"); return; }
+    vga_printf("ping %u.%u.%u.%u ...\n", ip[0], ip[1], ip[2], ip[3]);
+    g_ping_rx = 0;
+    net_ping(ip);
+    /* 环回场景同步完成；外部场景等待中断收包 */
+    if (ip[0] == g_local_ip[0] && ip[1] == g_local_ip[1] &&
+        ip[2] == g_local_ip[2] && ip[3] == g_local_ip[3]) {
+        if (g_ping_rx > 0) {
+            vga_printf("Reply from %u.%u.%u.%u: seq=1 OK\n", ip[0], ip[1], ip[2], ip[3]);
+            serial_puts("[net] ping self: REPLY OK\r\n");
+        } else {
+            vga_printf("no reply\n");
+        }
+    } else {
+        vga_printf("sent (await ARP/echo on wire)\n");
+        serial_puts("[net] ping external sent\r\n");
+    }
+}
+
+/* udpsend <ip> <port> <text>：发送 UDP 数据报 */
+static void cmd_udpsend(int argc, char **argv)
+{
+    if (argc < 4) { vga_printf("usage: udpsend <ip> <port> <text>\n"); return; }
+    u8 ip[4];
+    int port = k_atoi(argv[2]);
+    if (parse_ip(argv[1], ip) || port < 1 || port > 65535) {
+        vga_printf("bad arg\n"); return;
+    }
+    const char *txt = argv[3];
+    int len = 0;
+    while (txt[len] && len < 500) len++;
+    int rc = net_udp_send(ip, 40000, (u16)port, (const u8 *)txt, (u16)len);
+    if (rc == 0) {
+        vga_printf("udp: sent %d bytes to %u.%u.%u.%u:%d\n",
+                   len, ip[0], ip[1], ip[2], ip[3], port);
+        serial_printf("[net] udpsend ok len=%d\r\n", len);
+    } else if (rc == -1) {
+        vga_printf("udp: no ARP entry, ARP request sent (wait)\n");
+    } else {
+        vga_printf("udp: send failed rc=%d\n", rc);
+    }
+}
+
+/* udptest：内核内 UDP 环回自测（两端口互发，验证协议栈收发） */
+static void cmd_udptest(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    udp_ep_t *a = udp_bind(9999);
+    udp_ep_t *b = udp_bind(9998);
+    if (!a || !b) { vga_printf("udptest: bind fail\n"); return; }
+    u8 data[20];
+    for (int i = 0; i < 20; i++) data[i] = (u8)('A' + (i % 26));
+    a->len = 0; b->len = 0;
+    int rc = net_udp_send(g_local_ip, 9999, 9998, data, 20);
+    if (rc != 0) { vga_printf("udptest: send rc=%d\n", rc); return; }
+    if (b->len == 20) {
+        int ok = 1;
+        for (int i = 0; i < 20; i++) if (b->buf[i] != data[i]) ok = 0;
+        if (ok) {
+            vga_printf("SEND 20 bytes -> RECV 20 bytes OK (data matches)\n");
+            serial_puts("[net] udptest: LOOPBACK OK 20/20\r\n");
+        } else {
+            vga_printf("recv data mismatch\n");
+        }
+    } else {
+        vga_printf("udptest: recv len=%u (expect 20)\n", b->len);
+    }
+}
+
+/* chatd [port]：UDP 聊天服务器（绑定端口；无参数时查看最近消息） */
+static u16 s_chatd_port = 0;
+static void cmd_chatd(int argc, char **argv)
+{
+    if (argc == 2) {
+        int port = k_atoi(argv[1]);
+        if (port < 1 || port > 65535) { vga_printf("bad port\n"); return; }
+        udp_ep_t *ep = udp_bind((u16)port);
+        if (!ep) { vga_printf("chatd: bind fail\n"); return; }
+        s_chatd_port = (u16)port;
+        vga_printf("chatd: UDP server on port %d, waiting...\n", port);
+        serial_printf("[net] chatd bind %d\r\n", port);
+        return;
+    }
+    if (s_chatd_port == 0) { vga_printf("chatd: not started (chatd <port>)\n"); return; }
+    udp_ep_t *ep = udp_lookup(s_chatd_port);
+    if (!ep) { vga_printf("chatd: endpoint lost\n"); return; }
+    if (ep->len == 0) {
+        vga_printf("chatd: no message yet\n");
+        return;
+    }
+    vga_printf("chatd recv from %u.%u.%u.%u:%u (%u bytes): ",
+               ep->from[0], ep->from[1], ep->from[2], ep->from[3],
+               ep->from_port, ep->len);
+    for (u16 i = 0; i < ep->len; i++) vga_putc(ep->buf[i]);
+    vga_putc('\n');
+    serial_printf("[net] chatd recv from ");
+    ip_print(ep->from);
+    serial_printf(":%u len=%u\r\n", ep->from_port, ep->len);
+    ep->len = 0;   /* 已读，清空 */
+}
+
+/* netstat：UDP 端点 + 收发计数 */
+static void cmd_netstat(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    u32 sent, recv;
+    udp_stats(&sent, &recv);
+    vga_printf("UDP endpoints (%u sent / %u recv):\n", (u32)sent, (u32)recv);
+    udp_ep_t *ep = udp_first();
+    if (!ep) { vga_printf("  (none)\n"); return; }
+    while (ep) {
+        vga_printf("  :%u %s%s\n", ep->port,
+                   ep->len ? "[pending]" : "[idle]", "");
+        ep = udp_next(ep);
+    }
+    serial_printf("[net] netstat: sent=%u recv=%u\r\n", (u32)sent, (u32)recv);
 }
 
 static void cmd_demo(int argc, char **argv)
@@ -673,6 +904,14 @@ static const cmd_t cmds[] = {
     { "fs11",     "permission demo (user11)",   cmd_fs11 },
     { "syncdemo", "sem/mutex/sleep demo (user12)", cmd_syncdemo },
     { "gui",      "graphics window system (13h)",  cmd_gui },
+    { "net",      "NIC info + regs",            cmd_net },
+    { "ip",       "set/show local IP",          cmd_ip },
+    { "arp",      "show/add ARP table",         cmd_arp },
+    { "ping",     "ICMP echo (self-loop test)", cmd_ping },
+    { "udpsend",  "send UDP datagram",          cmd_udpsend },
+    { "udptest",  "UDP loopback self-test",     cmd_udptest },
+    { "chatd",    "UDP chat server (bind/view)", cmd_chatd },
+    { "netstat",  "UDP endpoints + stats",      cmd_netstat },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },

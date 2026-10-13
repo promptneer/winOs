@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinPP 第十一阶段测试指令表</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:#0d1117;color:#e6edf3;padding:24px;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:26px;margin-bottom:4px}
+h1 .g{color:#f0883e}
+.sub{color:#8b949e;margin-bottom:16px;font-size:14px}
+.badge{display:inline-block;background:#1f6feb22;color:#58a6ff;border:1px solid #1f6feb55;padding:2px 10px;border-radius:20px;font-size:12px;margin-right:6px}
+.badge.y{background:#d2992222;color:#e3b341;border-color:#d2992255}
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.card h2{font-size:17px;margin-bottom:10px;color:#58a6ff;display:flex;align-items:center;gap:8px}
+.card h2 .n{background:#1f6feb;color:#fff;width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+col.c1{width:4%}col.c2{width:16%}col.c3{width:20%}col.c4{width:52%}col.c5{width:8%}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #21262d;font-size:13px;vertical-align:middle}
+th{color:#8b949e;font-weight:600;font-size:12px}
+td.cmd{font-family:Consolas,"Courier New",monospace;color:#f0c674;font-size:12px;word-break:break-all}
+td.exp{color:#9ecbff;font-size:12px}
+input[type=checkbox]{width:18px;height:18px;accent-color:#2ea043;cursor:pointer}
+tr.done td{opacity:.55}
+tr.done td.cmd{text-decoration:line-through}
+.progress{position:sticky;top:0;background:#0d1117ee;backdrop-filter:blur(4px);padding:8px 0 12px;margin-bottom:10px;border-bottom:1px solid #21262d;z-index:5}
+.pbar{height:10px;background:#21262d;border-radius:6px;overflow:hidden;margin-bottom:6px}
+.pfill{height:100%;width:0%;background:linear-gradient(90deg,#2ea043,#58a6ff);transition:width .3s}
+.ptext{font-size:13px;color:#8b949e}
+.ptext b{color:#e6edf3}
+.note{background:#1c2128;border-left:3px solid #d29922;padding:10px 14px;border-radius:6px;font-size:13px;color:#d29922;margin:8px 0}
+.foot{color:#8b949e;font-size:12px;margin-top:18px;text-align:center}
+kbd{background:#21262d;border:1px solid #30363d;border-radius:4px;padding:0 6px;font-family:Consolas,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>WinPP 内核 <span class="g">第十一阶段</span> 测试指令表</h1>
+<div class="sub">S11 网络协议栈 · NE2000 网卡 + ARP + IPv4 + UDP + 聊天服务器 · 逐项勾选实测 · 每项都必须测</div>
+<div>
+<span class="badge y">当前阶段 S11</span>
+<span class="badge">环境：Bochs 2.8 + NE2000 (IO 0x240 / IRQ 10 / MAC 52:54:00:12:34:56)</span>
+</div>
+
+<div class="progress">
+<div class="pbar"><div class="pfill" id="pf"></div></div>
+<div class="ptext">已完成 <b id="done">0</b> / <b id="total">15</b> 项 · 勾选自动保存（刷新不丢）</div>
+</div>
+
+<div class="note">操作：双击 <b>D:\WinPP\启动WinPP内核.bat</b> 启动 → 系统起来后在 shell 里逐条输入命令 → 对照"预期显示"逐项打勾。<br>第 1-7 项是内核内部必测项；第 8 项以后是主机联调项（需要 Npcap 桥接，装好后另行告知）。</div>
+
+<div class="card">
+<h2><span class="n">1</span> 网卡驱动与基础命令</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup>
+<tr><th></th><th>输入命令</th><th>中文注释</th><th>预期显示（正常）</th><th>状态</th></tr>
+<tbody id="tb1"></tbody>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">2</span> 网络协议（ARP / IP / UDP / ICMP）</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup>
+<tr><th></th><th>输入命令</th><th>中文注释</th><th>预期显示（正常）</th><th>状态</th></tr>
+<tbody id="tb2"></tbody>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">3</span> 聊天服务器与环回</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup>
+<tr><th></th><th>输入命令</th><th>中文注释</th><th>预期显示（正常）</th><th>状态</th></tr>
+<tbody id="tb3"></tbody>
+</table>
+</div>
+
+<div class="card">
+<h2><span class="n">4</span> 主机联调（进阶 · 装好 Npcap 后）</h2>
+<table>
+<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup>
+<tr><th></th><th>输入命令</th><th>中文注释</th><th>预期显示（正常）</th><th>状态</th></tr>
+<tbody id="tb4"></tbody>
+</table>
+</div>
+
+<div class="foot">WinPP OS · S11 网络协议栈 · 测试完成后把勾选结果发我，我再按结果核验下一阶段</div>
+</div>
+
+<script>
+var items=[
+{id:"t1",cmd:"net",note:"查看网卡信息",exp:"NE2000 at IO=0x240 IRQ=10 MAC=52:54:00:12:34:56 LINK UP"},
+{id:"t2",cmd:"ip 192.168.0.10",note:"设置本机 IP 地址",exp:"IP set: 192.168.0.10"},
+{id:"t3",cmd:"ip",note:"查看当前 IP",exp:"IP: 192.168.0.10  MAC: 52:54:00:12:34:56"},
+{id:"t4",cmd:"udptest",note:"UDP 环回自测（内核两端口互发）",exp:"SEND 20 bytes -> RECV 20 bytes OK (data matches)"},
+{id:"t5",cmd:"arp",note:"查看 ARP 缓存表",exp:"Table shows entries after ARP exchange (IP + MAC)"},
+{id:"t6",cmd:"ping 192.168.0.10",note:"ICMP 自测（ping 自己）",exp:"Reply from 192.168.0.10: seq=0 time=X ms"},
+{id:"t7",cmd:"netstat",note:"查看 UDP 端点列表",exp:"UDP: local port list (e.g. :7777 bound)"},
+{id:"t8",cmd:"chatd 7777",note:"启动 UDP 聊天服务器（后台）",exp:"chatd: UDP server on port 7777, waiting..."},
+{id:"t9",cmd:"udpsend 192.168.0.10 7777 hello",note:"本机向聊天服务器发消息",exp:"chatd: [192.168.0.10:xxxx] hello  (收到并打印)"},
+{id:"t10",cmd:"udpsend 192.168.0.10 7777 你好内核",note:"发中文消息测试",exp:"chatd: [192.168.0.10:xxxx] 你好内核"},
+{id:"t11",cmd:"netstat",note:"再看端点列表（chatd 应保持监听）",exp:"UDP: :7777 still bound"},
+{id:"t12",cmd:"ping 网关IP",note:"主机联调：内核 ping 主机网关",exp:"Reply from 网关IP: seq=0 ..."},
+{id:"t13",cmd:"主机 ping 内核IP",note:"主机联调：Windows 上 ping 内核",exp:"内核串口/屏幕显示收到 ICMP 并回包，主机 Reply"},
+{id:"t14",cmd:"nc -u 内核IP 7777",note:"主机联调：Windows 用 netcat 连内核聊天",exp:"内核 chatd 打印主机发来的消息，可回消息"},
+{id:"t15",cmd:"chatd 回复消息",note:"主机联调：内核主动回消息到主机",exp:"主机 nc 窗口收到内核发来的文字"}
+];
+
+var tables={1:"tb1",2:"tb2",3:"tb3",4:"tb4"};
+var map={t1:1,t2:1,t3:1,t4:2,t5:2,t6:2,t7:2,t8:3,t9:3,t10:3,t11:3,t12:4,t13:4,t14:4,t15:4};
+
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+items.forEach(function(it){
+  var tb=document.getElementById(tables[map[it.id]]);
+  var tr=document.createElement("tr");
+  tr.id="tr-"+it.id;
+  var cb=document.createElement("input");
+  cb.type="checkbox";cb.id=it.id;
+  tr.innerHTML='<td></td><td class="cmd">'+esc(it.cmd)+'</td><td>'+esc(it.note)+'</td><td class="exp">'+esc(it.exp)+'</td><td></td>';
+  tr.cells[0].appendChild(cb);
+  tr.cells[4].innerHTML='<span style="color:#8b949e;font-size:11px">待测</span>';
+  cb.addEventListener("change",function(){
+    var d=cb.checked;
+    tr.classList.toggle("done",d);
+    tr.cells[4].innerHTML=d?'<span style="color:#2ea043;font-size:11px">✔ 通过</span>':'<span style="color:#8b949e;font-size:11px">待测</span>';
+    localStorage.setItem("s11-"+it.id,d?"1":"0");
+    update();
+  });
+  tb.appendChild(tr);
+  if(localStorage.getItem("s11-"+it.id)==="1"){cb.checked=true;cb.dispatchEvent(new Event("change"));}
+});
+
+function update(){
+  var n=document.querySelectorAll("input[type=checkbox]:checked").length;
+  document.getElementById("done").textContent=n;
+  document.getElementById("total").textContent=items.length;
+  document.getElementById("pf").style.width=(n/items.length*100)+"%";
+}
+update();
+</script>
+</body>
+</html>

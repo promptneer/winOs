@@ -55,9 +55,9 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="crumb">WINPP OS / ROADMAP / S1 → S11</div>
+  <div class="crumb">WINPP OS / ROADMAP / S1 → S12</div>
   <h1>WinPP 内核开发<span class="grad">路线图</span></h1>
-  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S10 已实机取证并推 GitHub</b>，<b>S11 是当前战场</b>，后续为规划（可裁剪、可调序）。</p>
+  <p class="sub">从软盘引导的迷你内核，走到对标教学 OS（xv6 级别）的"迷你 Linux"。横向流程，左 → 右；<b>S1–S11 已实机取证并推 GitHub</b>，<b>S12 是当前战场</b>，后续为规划（可裁剪、可调序）。</p>
 
   <div class="legend">
     <span><span class="sw" style="background:var(--green)"></span>已完成</span>
@@ -138,10 +138,17 @@
         <div class="st">已完成</div>
       </div>
       <div class="arrow">→</div>
-      <div class="node now">
-        <div class="sn">S11 · 现在</div>
+      <div class="node done">
+        <div class="sn">S11</div>
         <div class="nm">网络协议栈</div>
-        <div class="ds">以太网 · IP · UDP · 进阶可选</div>
+        <div class="ds">NE2000 网卡 · ARP · IPv4 · UDP · ICMP · chatd 聊天服务器</div>
+        <div class="st">已完成</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node now">
+        <div class="sn">S12 · 现在</div>
+        <div class="nm">多终端会话系统</div>
+        <div class="ds">多虚拟终端 · 终端间互发消息 · 会话隔离</div>
         <div class="st">下一步 · 我们在这里</div>
       </div>
       <div class="arrow">→</div>
@@ -155,7 +162,7 @@
   </div>
 
   <div class="note">
-    <b>当前位置：</b>S1–S10 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径 → 设备驱动 → 用户与权限 → 信号同步 → 图形界面窗口系统），推送 GitHub。下一战场 <b>S11 网络协议栈</b>。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
+    <b>当前位置：</b>S1–S11 全部完成并实机取证（引导 → 分页 → 用户态 → 地址空间/fork/exec/fs → IPC → 目录路径 → 设备驱动 → 用户与权限 → 信号同步 → 图形界面窗口系统 → 网络协议栈），推送 GitHub。下一战场 <b>S12 多终端会话系统</b>。每个阶段完成后机器实测（Bochs 串口 + 截图双通道）。
   </div>
 
   <div class="card">

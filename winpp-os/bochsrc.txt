@@ -12,4 +12,5 @@ clock: sync=realtime, time0=local
 log: D:\WinPP\winpp-os\bochs.log
 com1: enabled=1, mode=file, dev=D:\WinPP\winpp-os\serial.out
 debugger_log: D:\WinPP\winpp-os\dbg.out
+ne2k: enabled=1, ioaddr=0x240, irq=10, mac=52:54:00:12:34:56
 
