@@ -12,6 +12,23 @@ user10.bin: 283 bytes
 user11.bin: 736 bytes
 user12.bin: 274 bytes
 users_inc.c/h generated
+powershell : In file included from D:\WinPP\winpp-os\src\gui.c:1:
+所在位置 行:1 字符: 96
++ ... rt-Sleep 1; powershell -ExecutionPolicy Bypass -File "D:\WinPP\winpp- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (In file include...os\src\gui.c:1::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+D:\WinPP\winpp-os\src/gui.h:12:9: warning: 'GUI_H' macro redefined [-Wmacro-redefined]
+   12 | #define GUI_H 200
+      |         ^
+D:\WinPP\winpp-os\src/gui.h:2:9: note: previous definition is here
+    2 | #define GUI_H
+      |         ^
+D:\WinPP\winpp-os\src\gui.c:381:9: warning: unused variable 'mouse_ok' [-Wunused-variable]
+  381 |     int mouse_ok = 0;
+      |         ^~~~~~~~
+2 warnings generated.
 kernel.bin: 73903 bytes -> 145 sectors
 bootsec.bin: 512 bytes (expect exactly 512)
 boot magic 0xAA55 OK

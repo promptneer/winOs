@@ -381,6 +381,13 @@ void gui_run(void)
     int mouse_ok = 0;
 
     for (;;) {
+        /* 等待下一个 tick（约 10ms）：避免忙等占满 CPU。
+         * Bochs 下无等待的 for(;;) 会吃满模拟 CPU，键盘事件被延迟到"无响应"。 */
+        u32 wait_t = timer_ticks();
+        while ((int)(timer_ticks() - (int)wait_t) < 1) {
+            asm volatile("sti; hlt");
+        }
+
         /* 键盘事件（含串口注入通道） */
         int c = keyboard_poll();
         if (!c) c = serial_getc();   /* S10 自动化测试：串口输入 */
@@ -404,18 +411,16 @@ void gui_run(void)
             last_redraw = (int)t;
         }
 
-        /* 鼠标光标：先擦旧再画新 */
+        /* 鼠标光标：仅位置变化时擦旧画新（避免每圈重绘吃满 CPU） */
         static int last_mx = -1, last_my = -1;
         int mx, my;
         mouse_pos(&mx, &my);
-        if (mouse_ok) {
+        if (mx != last_mx || my != last_my || last_mx < 0) {
             if (last_mx >= 0 && last_my >= 0)
                 gui_cursor(last_mx, last_my, 1);
-        } else {
-            mouse_ok = 1;   /* 首次：光标直接画 */
+            gui_cursor(mx, my, 0);
+            last_mx = mx; last_my = my;
         }
-        gui_cursor(mx, my, 0);
-        last_mx = mx; last_my = my;
     }
 
     /* 退出：回文本模式 */
