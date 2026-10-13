@@ -1,0 +1,4 @@
+﻿agent window station: WinSta0
+agent desktop: Default
+agent session: 1
+bochs pid: 

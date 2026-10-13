@@ -82,6 +82,11 @@ void paging_init(u32 mem_kb)
      *    绝不能替换 PD[0]，否则低 4MB 恒等映射丢失 -> triple fault。 */
     u32 pd0_pt = ((volatile u32 *)pd_phys)[0] & 0xFFFFF000u;
     ((volatile u32 *)pd0_pt)[0xB8] = 0xB8000 | PAGE_PRESENT | PAGE_WRITE;
+    /* 3b) S10 VGA 图形帧缓冲 0xA0000-0xAFFFF（Mode13h 320x200 = 64KB，16 页）。
+     *     补进同一恒等页表。 */
+    for (u32 pg = 0; pg < 16; pg++) {
+        ((volatile u32 *)pd0_pt)[0xA0 + pg] = (0xA0000 + pg * 0x1000) | PAGE_PRESENT | PAGE_WRITE;
+    }
     serial_puts("[pg] step4 selfmap\r\n");
 
     /* 4) 自映射：PD[1023] = PD 自身 */

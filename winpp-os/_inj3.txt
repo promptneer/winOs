@@ -1,0 +1,5 @@
+﻿my desk: 324 bochs desk: 0 same: False
+SetThreadDesktop: 0
+sim: 1248390
+typed x
+done

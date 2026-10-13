@@ -1,0 +1,10 @@
+﻿python : Traceback (most recent call last):
+所在位置 行:1 字符: 1
++ python "D:\WinPP\winpp-os\_vdesk2.py" 1772134 > "D:\WinPP\winpp-os\_v ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\WinPP\winpp-os\_vdesk2.py", line 10, in <module>
+    b = bytes.fromhex('AA509086-5CA9-4C25-8F95-589D3C07B48A')
+ValueError: non-hexadecimal number found in fromhex() arg at position 8

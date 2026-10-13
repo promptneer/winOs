@@ -1,0 +1,18 @@
+﻿zig: C:\Users\Administrator\AppData\Local\Microsoft\WinGet\Packages\zig.zig_Microsoft.Winget.Source_8wekyb3d8bbwe\zig-x86_64-windows-0.17.0\zig.exe
+user1.bin: 107 bytes
+user2.bin: 107 bytes
+user3.bin: 107 bytes
+user4.bin: 150 bytes
+user5.bin: 67 bytes
+user6.bin: 195 bytes
+user7.bin: 137 bytes
+user8.bin: 147 bytes
+user9.bin: 173 bytes
+user10.bin: 283 bytes
+user11.bin: 736 bytes
+user12.bin: 274 bytes
+users_inc.c/h generated
+kernel.bin: 61567 bytes -> 121 sectors
+bootsec.bin: 512 bytes (expect exactly 512)
+boot magic 0xAA55 OK
+OK -> D:\WinPP\winpp-os\floppy.img  (1474560 bytes, kernel at sector 1, 121 sectors)

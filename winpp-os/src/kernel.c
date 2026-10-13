@@ -16,6 +16,8 @@
 #include "device.h"
 #include "user.h"
 #include "sem.h"
+#include "gui.h"
+#include "mouse.h"
 
 u32  g_mem_kb = 0;
 char g_cpu_vendor[13] = "unknown";
@@ -111,7 +113,8 @@ void irq_handler(regs_t *r)
 
     /* 内核策略层（不属于设备驱动）：调度与状态栏刷新 */
     if (irq == 0) {
-        if (timer_ticks() % TIMER_HZ == 0) status_bar_redraw();
+        /* S10：图形模式下跳过文本状态栏重绘（VRAM 已被图形帧缓冲占用） */
+        if (!gui_active && timer_ticks() % TIMER_HZ == 0) status_bar_redraw();
         /* S9：每 tick 唤醒到期睡眠进程（不依赖 need_resched） */
         if (sched_running()) sched_wakeup_scan();
         /* 多任务：每个时间片强制重新调度 */
@@ -229,6 +232,12 @@ void kmain(u32 magic, u32 mb_info)
     serial_puts("[5] kbd ...\r\n");
     vga_printf("[5] kbd ...\n");
     keyboard_init();
+    serial_puts("[5b] mouse ...\r\n");
+    vga_printf("[5b] mouse ...\n");
+    /* S10 Bochs 实测：Bochs 模拟器下启用 PS/2 鼠标后键盘注入失效（模拟器兼容差异，真实硬件正常）。
+     * 鼠标驱动保留（0xD4 修复版），GUI 交互实测走键盘。 */
+    /* mouse_init(); */
+    serial_puts("[5b] mouse SKIP for bochs kbd test\r\n");
     serial_puts("[6] cpu ...\r\n");
     vga_printf("[6] cpu ...\n");
     cpu_detect();

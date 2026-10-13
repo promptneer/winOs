@@ -1,5 +1,6 @@
 #include "device.h"
 #include "serial.h"
+#include "mouse.h"
 
 /* ============ 设备表实现 ============ */
 
@@ -50,6 +51,7 @@ void device_init_all(void)
     device_register(keyboard_device());   /* kbd  major=1 irq=1 */
     device_register(timer_device());      /* timer major=2 irq=0 */
     device_register(serial_device());     /* com1 major=3 irq=4(未开) */
+    device_register(mouse_device());      /* mouse major=4 irq=12 (S10) */
 
     serial_printf("[dev] registered %d devices:\r\n", device_count());
     for (u8 m = 1; m < DEV_MAX; m++) {

@@ -22,6 +22,7 @@ extern void kernel_poweroff(void);
 #include "fs.h"
 #include "device.h"
 #include "user.h"
+#include "gui.h"
 
 /* ---------------- 极简 libc ---------------- */
 
@@ -285,6 +286,17 @@ static void cmd_syncdemo(int argc, char **argv)
     } else {
         vga_printf("failed to create sync-demo process\n");
     }
+}
+
+/* S10：进入图形界面窗口系统（VGA Mode13h；'q' 退出回文本） */
+static void cmd_gui(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    if (sched_running()) { vga_printf("stop scheduler first\n"); return; }
+    vga_printf("entering GUI (VGA 13h 320x200) ... press q to exit\n");
+    serial_puts("[gui] cmd gui\r\n");
+    gui_run();
+    vga_printf("back to text mode\n");
 }
 
 static void cmd_demo(int argc, char **argv)
@@ -660,6 +672,7 @@ static const cmd_t cmds[] = {
     { "fs2",      "dir/path demo (user10)",     cmd_fs2 },
     { "fs11",     "permission demo (user11)",   cmd_fs11 },
     { "syncdemo", "sem/mutex/sleep demo (user12)", cmd_syncdemo },
+    { "gui",      "graphics window system (13h)",  cmd_gui },
     { "fslist",   "list ramdisk files",         cmd_fslist },
     { "dev",      "device table + interface",   cmd_dev },
     { "ps",       "list processes",             cmd_ps },
@@ -676,7 +689,13 @@ static void shell_readline(char *buf, int max)
 {
     int i = 0;
     for (;;) {
-        int k = keyboard_getkey();
+        /* 非阻塞轮询：键盘 + 串口（S10 自动化测试通道）双输入源 */
+        int k = keyboard_poll();
+        if (!k) k = serial_getc();
+        if (k <= 0) {
+            for (volatile int d = 0; d < 20000; d++);   /* 小忙等降频 */
+            continue;
+        }
         serial_printf("[key %d]\r\n", k);
         if (k == KEY_ENTER) { vga_putc('\n'); buf[i] = 0; return; }
         if (k == KEY_BACKSP) {

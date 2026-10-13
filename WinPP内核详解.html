@@ -206,6 +206,7 @@ footer{margin-top:60px;padding:30px 0 50px;border-top:1px solid var(--line);colo
     <a href="#s7">第七阶段</a>
     <a href="#s8">第八阶段</a>
     <a href="#s9">第九阶段</a>
+    <a href="#s10">第十阶段</a>
     <a href="#proof">实测证据</a>
   </div>
 </nav>
@@ -1007,6 +1008,84 @@ zig objcopy -O binary
       <colgroup><col style="width:22%"><col style="width:78%"></colgroup>
       <tr><th>编号</th><th>问题与修复</th></tr>
       <tr><td>修正 1</td><td>V 操作先 value++ 再唤醒：第三方抢先 take，被唤醒者误判拿到锁 → 双进程进临界区（实测 1 次违规）。修复：有等待者时直接交接（handoff），不增 v</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 第十阶段：图形界面与窗口系统 ================= -->
+<section class="sec" id="s10">
+  <div class="wrap">
+    <h2>第十阶段：图形界面与窗口系统（Mode13h / 帧缓冲 / 窗口 / 鼠标）</h2>
+    <p class="sub">一句话意义：内核第一次"画图"——VGA Mode13h 图形模式 + 直接写帧缓冲 + 内置 5x7 点阵字体 + 窗口管理器 + PS/2 鼠标驱动。Bochs 实机 0 页错误，GUI 完整生命周期（进/建窗/激活/新建/关闭/退出）串口全命中。</p>
+
+    <h3>图形模式与帧缓冲（gui.c）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:24%"><col style="width:76%"></colgroup>
+      <tr><th>元素</th><th>说明</th></tr>
+      <tr><td>vga_set_mode13h()</td><td>VGA 320x200×256 色编程序列：Misc 0x63 → SR1/SR4 → GC5/GC6 → 29 项 CRTC 时序 → SR2 全平面</td></tr>
+      <tr><td>vga_set_mode03()</td><td>退出回 80x25 文本（gui 退出后 kernel_redraw_shell 重绘 shell 界面）</td></tr>
+      <tr><td>帧缓冲 0xA0000</td><td>分页补映射 16 页（0xA0000-0xAFFFF），一字节一像素</td></tr>
+      <tr><td>gui_pixel / fill / rect</td><td>三个基础画笔；深蓝渐变桌面由逐行渐变填充</td></tr>
+      <tr><td>5x7 点阵字体</td><td>内置 45 字符（A-Z/0-9/常用符号）位图，gui_char/gui_text 画文字</td></tr>
+    </table>
+
+    <h3>窗口管理器（gui.c）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:24%"><col style="width:76%"></colgroup>
+      <tr><th>元素</th><th>说明</th></tr>
+      <tr><td>窗口表 gw_t</td><td>WIN_MAX=6；x/y/w/h/type/visible/title；标题栏 TITLE_H=9px</td></tr>
+      <tr><td>窗口类型</td><td>WT_CLOCK（时钟）、WT_SYSINFO（系统信息）、WT_DEMO（动画）、WT_LOGO（WinPP Logo）</td></tr>
+      <tr><td>gw_add / gw_activate</td><td>创建窗口 / 切换激活窗口（顶层绘制 + 标题栏高亮）</td></tr>
+      <tr><td>gw_close_active</td><td>关闭激活窗口（回退到前一个可见窗口）</td></tr>
+      <tr><td>gui_draw_all</td><td>全量重绘：桌面 → 窗口（边框/标题/内容）→ 底部帮助栏 "1-5 ACT / X CLOSE / N NEW / Q QUIT / MOUSE PS/2 OK" → 鼠标光标</td></tr>
+      <tr><td>GUI 主循环</td><td>keyboard_poll + serial_getc 双输入；q/x/n/1-5 命令；每 3 ticks 重绘动画</td></tr>
+    </table>
+
+    <h3>PS/2 鼠标驱动（mouse.c，IRQ12）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:24%"><col style="width:76%"></colgroup>
+      <tr><th>元素</th><th>说明</th></tr>
+      <tr><td>mouse_init()</td><td>0xA8 启用辅助设备 → 0xD4 写命令 → 0x60 写 0xF4（enable data reporting）→ 丢 ACK</td></tr>
+      <tr><td>mouse_handle_irq()</td><td>先查 8042 状态 bit5（aux 数据）才读 0x60，防吞键盘扫描码；3 字节包同步（bit0x08）；dx/dy 有符号累加 + 限幅 320x200</td></tr>
+      <tr><td>设备注册</td><td>字符设备 major=4 irq=12（device.c device_init_all）</td></tr>
+      <tr><td>光标</td><td>gui_cursor 8x8 箭头位图，随鼠标坐标绘制</td></tr>
+    </table>
+
+    <h3>实测铁证（Bochs 2.8 + COM1 串口）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+      <tr><th>项目</th><th>结果</th></tr>
+      <tr><td>进入图形模式</td><td>[gui] cmd gui → enter graphics mode (13h 320x200) → windows created: 4</td></tr>
+      <tr><td>窗口激活</td><td>[gui] key '1' → activate win 0 (CLOCK)</td></tr>
+      <tr><td>新建窗口</td><td>[gui] key 'n' → new win id=4</td></tr>
+      <tr><td>关闭窗口</td><td>[gui] key 'x' → close win 4 (WIN)</td></tr>
+      <tr><td>退出回文本</td><td>[gui] key 'q' → exit to text mode（Mode03 恢复 shell）</td></tr>
+      <tr><td>鼠标初始化</td><td>[gui] mouse init: PS/2 enabled（0xD4 修复版）</td></tr>
+      <tr><td>稳定性</td><td>PAGE_FAULT=0（帧缓冲 16 页映射后）</td></tr>
+    </table>
+
+    <h3>新增/修改文件</h3>
+    <table class="tbl">
+      <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+      <tr><th>文件</th><th>职责</th></tr>
+      <tr><td>src/gui.h + gui.c（新）</td><td>Mode13h/Mode03 切换、帧缓冲画笔、5x7 字体、窗口管理器、GUI 主循环</td></tr>
+      <tr><td>src/mouse.h + mouse.c（新）</td><td>PS/2 鼠标驱动（IRQ12、3 字节包、坐标限幅）</td></tr>
+      <tr><td>src/keyboard.h + keyboard.c</td><td>新增非阻塞 keyboard_poll()（GUI 事件循环用）</td></tr>
+      <tr><td>src/serial.h + serial.c</td><td>新增 serial_data_available()/serial_getc()（自动化测试通道，空返回 0）</td></tr>
+      <tr><td>src/device.c</td><td>注册 mouse_device（major 4, irq 12）</td></tr>
+      <tr><td>src/paging.c</td><td>补映射 VGA 帧缓冲 16 页（0xA0000-0xAFFFF）</td></tr>
+      <tr><td>src/kernel.c</td><td>include gui.h/mouse.h；kmain [5b] mouse_init；IRQ0 分支 GUI 激活时跳过状态栏重绘</td></tr>
+      <tr><td>src/shell.c</td><td>cmd_gui 命令表项；shell_readline 非阻塞轮询 + serial_getc 回退</td></tr>
+      <tr><td>bochsrc.txt</td><td>mouse enabled=1, type=ps2</td></tr>
+    </table>
+
+    <h3>设计修正（三个真机 Bug）</h3>
+    <table class="tbl">
+      <colgroup><col style="width:22%"><col style="width:78%"></colgroup>
+      <tr><th>编号</th><th>问题与修复</th></tr>
+      <tr><td>修正 1</td><td>mouse.c 写 0x60 命令（写输出端口）→ 0xF4 bit1=0 关 A20 → 键盘/内存错乱。修复：0xD4（下一字节发给鼠标）。禁用鼠标对照实验实锤</td></tr>
+      <tr><td>修正 2</td><td>分页只映射 0xA0000 一页 → GUI 写满 64KB 帧缓冲在 0xA1000 #PF。修复：映射 16 页</td></tr>
+      <tr><td>修正 3</td><td>serial_getc 空返回 -1 → GUI 主循环 if(c) 当真按键刷屏。修复：空返回 0</td></tr>
     </table>
   </div>
 </section>

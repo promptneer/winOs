@@ -1,0 +1,23 @@
+﻿IsWindow: True
+IsWindowVisible: True
+IsIconic: False
+IsZoomed: False
+ForegroundWindow: 8586574 == target: True
+FG title: Bochs for Windows - Display
+python : Traceback (most recent call last):
+所在位置 行:1 字符: 1
++ python "D:\WinPP\winpp-os\_diag_win.py" 8586574 *> "D:\WinPP\winpp-os ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\WinPP\winpp-os\_diag_win.py", line 22, in <module>
+    ws = k32.GetProcessWindowStation()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Doubao\User Data\sandbox_runtime\bases\d0ace100fdff5b2d247847aca1e3d83b\py
+thon\Lib\ctypes\__init__.py", line 414, in __getattr__
+    func = self.__getitem__(name)
+  File "C:\Users\Administrator\AppData\Local\Doubao\User Data\sandbox_runtime\bases\d0ace100fdff5b2d247847aca1e3d83b\py
+thon\Lib\ctypes\__init__.py", line 419, in __getitem__
+    func = self._FuncPtr((name_or_ordinal, self))
+AttributeError: function 'GetProcessWindowStation' not found

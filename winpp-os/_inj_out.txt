@@ -1,0 +1,4 @@
+﻿my desk: 284 bochs desk: 284 same: True
+sim: 1248250
+typed x
+done

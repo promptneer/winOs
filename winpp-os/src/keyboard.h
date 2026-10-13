@@ -17,5 +17,6 @@ void keyboard_init(void);
 void keyboard_handle_irq(void);
 char keyboard_getchar(void);   /* 阻塞读取普通字符 */
 int  keyboard_getkey(void);    /* 阻塞读取：普通字符或 KEY_* 特殊键 */
+int  keyboard_poll(void);      /* S10: 非阻塞读（0=无键），GUI 用 */
 
 #endif

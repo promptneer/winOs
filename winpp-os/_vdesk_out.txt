@@ -1,0 +1,10 @@
+﻿python : Traceback (most recent call last):
+所在位置 行:1 字符: 1
++ python "D:\WinPP\winpp-os\_vdesk_check.py" > "D:\WinPP\winpp-os\_vdes ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\WinPP\winpp-os\_vdesk_check.py", line 3, in <module>
+    import pythoncom
+ModuleNotFoundError: No module named 'pythoncom'

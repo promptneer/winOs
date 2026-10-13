@@ -1,5 +1,9 @@
 # WinPP OS -- 引导扇区 (real mode, 512B, GAS)
-# 从软盘 LBA 1..N 读取 kernel.bin 到 0x100000，开 A20，进保护模式，跳到内核入口。
+# 从软盘 LBA 1..N 读取 kernel.bin 到 0x10000 中转缓冲，开 A20，进保护模式，
+# 32 位搬运到 0x100000，跳到内核入口。
+# 实模式 ES:BX 无法装载超过 64KB 的目标区（BX 16 位截断会把第 129 扇区
+# 之后的扇区写回低地址、覆盖内核头）——所以先读进低端缓冲，再在保护
+# 模式下用 32 位 rep movsb 搬到最终地址。
 # 链接地址 0x7C00；KERNEL_SECTORS 由 build_flat.ps1 通过 -D 注入。
 
 .code16
@@ -21,19 +25,18 @@ _start16:
     int  $0x13
 
     # ---- 循环读取: sector index si = 0..KERNEL_SECTORS-1, LBA = si+1 ----
+    # 目的 flat = 0x10000 + si*512（中转缓冲）
+    # 段寻址: ES = flat>>4, BX = flat - (ES<<4)，逐扇区重算（ES 随 flat 增长）
     xorl %esi, %esi          # si = 已读扇区数
 read_one:
-    # 目的地址 flat = 0x100000 + si*512
-    # 实模式 ES:BX 够不到 1MB(段寄存器仅16位)，用经典方案:
-    #   ES = 0xFFFF, BX = flat - 0xFFFF0  (0x10..0xFFFF 内)
-    movl $0x100000, %eax
-    movl %esi, %edx
-    shll $9, %edx
-    addl %edx, %eax          # eax = flat
-    subl $0xFFFF0, %eax      # eax = BX 值 (flat - 0xFFFF0)
+    movl %esi, %eax
+    shll $9, %eax
+    addl $0x10000, %eax      # eax = flat = 0x10000 + si*512
+    movl %eax, %edx
+    shrl $4, %edx            # edx = ES = flat>>4 (0x1000..0x2200, 16 位内)
+    movw %dx, %es
+    andl $0xF, %eax          # BX = flat & 0xF (512 对齐 -> 恒 0)
     movw %ax, %bx
-    movw $0xFFFF, %ax
-    movw %ax, %es
 
     # CHS: LBA = si+1; c = LBA/36, h = (LBA%36)/18, s = LBA%18 + 1
     movl %esi, %eax
@@ -85,6 +88,15 @@ pm_entry32:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
+
+    # 32 位搬运: 0x10000 -> 0x100000, KERNEL_SECTORS*512 字节
+    movl $0x10000, %esi
+    movl $0x100000, %edi
+    movl $KERNEL_SECTORS, %ecx
+    shll $9, %ecx
+    cld
+    rep movsb
+
     movl $0x7C00, %esp       # 临时栈（内核 _start 会换自己的栈）
     xorl %eax, %eax          # magic = 0
     xorl %ebx, %ebx          # mb_info = 0

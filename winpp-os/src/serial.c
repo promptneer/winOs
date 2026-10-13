@@ -39,6 +39,21 @@ void serial_puts(const char *s)
     }
 }
 
+/* ============ S10 串口输入（自动化测试通道） ============ */
+
+int serial_data_available(void)
+{
+    if (!serial_ready) return 0;
+    return (inb(0x3F8 + 5) & 0x01) ? 1 : 0;   /* LSR bit0: 接收数据就绪 */
+}
+
+int serial_getc(void)
+{
+    if (!serial_ready) return 0;                          /* 无数据返回 0（与 keyboard_poll 一致） */
+    if (!(inb(0x3F8 + 5) & 0x01)) return 0;
+    return inb(0x3F8 + 0) & 0xFF;
+}
+
 void serial_printf(const char *fmt, ...)
 {
     /* 极简 %s %d %u %x 支持，与 vga_printf 思路一致但只服务调试 */

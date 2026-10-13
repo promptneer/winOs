@@ -43,6 +43,8 @@ void keyboard_init(void)
 
 void keyboard_handle_irq(void)
 {
+    /* S9 原版直接读 0x60（Bochs 下 0x64 状态位时序与真实 8042 不同，
+       门卫会误丢真实按键）；鼠标防吞键由 mouse_handle_irq 的 bit5 检查负责 */
     u8 sc = inb(0x60);
     if (sc == 0xE0) { e0 = 1; return; }
 
@@ -99,6 +101,15 @@ int keyboard_getkey(void)
 {
     int c = get_raw();
     return c;
+}
+
+/* S10: 非阻塞读，无键返回 0（GUI 事件循环用） */
+int keyboard_poll(void)
+{
+    if (head == tail) return 0;
+    char c = (char)buf[tail];
+    tail = (u8)((tail + 1) % BUF_SIZE);
+    return (int)c;
 }
 
 /* ============ S7 设备驱动：键盘作为字符设备 ============ */
