@@ -207,6 +207,43 @@ static gw_t wins[WIN_MAX];
 static int nwins = 0;
 static int active = -1;
 
+/* 状态栏反馈：激活窗口 + 窗口数 + 最近动作（让按键"看得见"） */
+static char status_txt[48];
+static char action_txt[20];
+
+static void status_update(void)
+{
+    int i = 0;
+    const char *pre = "ACT:";
+    const char *a = (active >= 0 && wins[active].visible) ? wins[active].title : "NONE";
+    while (*pre && i < 44) status_txt[i++] = *pre++;
+    while (*a && i < 44) status_txt[i++] = *a++;
+    while (i < 12) status_txt[i++] = ' ';
+    const char *w = "WINS:";
+    while (*w && i < 44) status_txt[i++] = *w++;
+    status_txt[i++] = (char)('0' + nwins / 10);
+    status_txt[i++] = (char)('0' + nwins % 10);
+    status_txt[i++] = '/';
+    status_txt[i++] = (char)('0' + WIN_MAX / 10);
+    status_txt[i++] = (char)('0' + WIN_MAX % 10);
+    status_txt[i] = 0;
+    /* 动作文字清零后拼到状态栏 */
+    if (action_txt[0]) {
+        while (i < 30) status_txt[i++] = ' ';
+        int j = 0;
+        while (action_txt[j] && i < 47) status_txt[i++] = action_txt[j++];
+        status_txt[i] = 0;
+    }
+}
+
+static void status_act(const char *a)
+{
+    int i = 0;
+    while (a[i] && i < 19) { action_txt[i] = a[i]; i++; }
+    action_txt[i] = 0;
+    status_update();
+}
+
 int gui_active = 0;
 
 static int gw_add(int x, int y, int w, int h, u8 bg, int type, const char *title)
@@ -229,9 +266,17 @@ static void gw_draw(gw_t *g, u32 tick)
     /* 窗口外框：激活=亮黄(14)，非激活=灰(7) */
     u8 frame = (g == &wins[active]) ? 14 : 7;
     gui_rect(g->x, g->y, g->w, g->h, frame);
-    /* 标题栏 */
-    gui_fill(g->x + 1, g->y + 1, g->w - 2, TITLE_H, (g == &wins[active]) ? 1 : 8);
-    gui_text(g->x + 4, g->y + 2, 15, g->title);
+    /* 激活窗口加白色内框线（更醒目） */
+    if (g == &wins[active])
+        gui_rect(g->x + 1, g->y + 1, g->w - 2, g->h - 2, 15);
+    /* 标题栏：激活=黄底黑字 + '>' 标记，非激活=灰底白字 */
+    gui_fill(g->x + 1, g->y + 1, g->w - 2, TITLE_H, (g == &wins[active]) ? 14 : 8);
+    if (g == &wins[active]) {
+        gui_char(g->x + 3, g->y + 2, '>', 0);
+        gui_text(g->x + 8, g->y + 2, 0, g->title);
+    } else {
+        gui_text(g->x + 4, g->y + 2, 15, g->title);
+    }
     /* 客户区背景 */
     gui_fill(g->x + 1, g->y + 1 + TITLE_H, g->w - 2, g->h - 2 - TITLE_H, g->bg);
 
@@ -304,6 +349,9 @@ static void gui_draw_all(void)
     /* 桌面背景：深蓝渐变（下深上浅） */
     for (int y = 0; y < GUI_H; y++)
         gui_fill(0, y, GUI_W, 1, (u8)((y / 8) % 16 == 0 ? 1 : 9));
+    /* 状态栏：蓝底白字，实时反馈激活窗口/窗口数/最近动作 */
+    gui_fill(0, GUI_H - 22, GUI_W, 11, 1);
+    gui_text(3, GUI_H - 20, 15, status_txt);
     /* 底部帮助栏 */
     gui_fill(0, GUI_H - 11, GUI_W, 11, 0);
     gui_text(3, GUI_H - 9, 15, "1-5 ACT");
@@ -351,6 +399,7 @@ static void gw_close_active(void)
     for (int i = 0; i < nwins; i++)
         if (wins[i].visible) { na = i; break; }
     active = na;
+    status_act("CLOSE WIN");
 }
 
 static void gw_activate(int idx)
@@ -358,6 +407,15 @@ static void gw_activate(int idx)
     if (idx < 0 || idx >= nwins || !wins[idx].visible) return;
     active = idx;
     serial_printf("[gui] activate win %d (%s)\r\n", idx, wins[idx].title);
+    {
+        char ab[20];
+        int i = 0;
+        const char *pre = "ACT ";
+        while (pre[i] && i < 6) { ab[i] = pre[i]; i++; }
+        ab[i++] = (char)('1' + idx);
+        ab[i] = 0;
+        status_act(ab);
+    }
 }
 
 /* ---------------- 主循环 ---------------- */
@@ -376,6 +434,8 @@ void gui_run(void)
     gw_add(170, 62, 96, 44, 1, WT_LOGO, "WINPP");
     active = 0;
     serial_printf("[gui] windows created: %d\r\n", nwins);
+    action_txt[0] = 0;
+    status_update();
 
     int last_redraw = -100;
     int mouse_ok = 0;
@@ -399,6 +459,7 @@ void gui_run(void)
                 int id = gw_add(20 + (nwins % 4) * 14, 30 + (nwins % 3) * 14,
                                 90, 46, (u8)(nwins % 6 + 2), WT_LOGO, "WIN");
                 serial_printf("[gui] new win id=%d\r\n", id);
+                status_act("NEW WIN");
             }
             if (c >= '1' && c <= '5') gw_activate(c - '1');
             last_redraw = -100;   /* 强制立即重绘 */

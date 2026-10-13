@@ -25,11 +25,11 @@ D:\WinPP\winpp-os\src/gui.h:12:9: warning: 'GUI_H' macro redefined [-Wmacro-rede
 D:\WinPP\winpp-os\src/gui.h:2:9: note: previous definition is here
     2 | #define GUI_H
       |         ^
-D:\WinPP\winpp-os\src\gui.c:381:9: warning: unused variable 'mouse_ok' [-Wunused-variable]
-  381 |     int mouse_ok = 0;
+D:\WinPP\winpp-os\src\gui.c:441:9: warning: unused variable 'mouse_ok' [-Wunused-variable]
+  441 |     int mouse_ok = 0;
       |         ^~~~~~~~
 2 warnings generated.
-kernel.bin: 73903 bytes -> 145 sectors
+kernel.bin: 102575 bytes -> 201 sectors
 bootsec.bin: 512 bytes (expect exactly 512)
 boot magic 0xAA55 OK
-OK -> D:\WinPP\winpp-os\floppy.img  (1474560 bytes, kernel at sector 1, 145 sectors)
+OK -> D:\WinPP\winpp-os\floppy.img  (1474560 bytes, kernel at sector 1, 201 sectors)
